@@ -2041,3 +2041,28 @@ html[data-theme="dark"] .btn.danger{
   .top .actions{width:100%;}
   .globalSearchInput{width:100%;}
 }
+
+/* ==========================================================================
+   v76: compact single-row page nav + dashboard grid fix
+   ========================================================================== */
+
+/* One nav row for all page tabs instead of two stacked boxes. Buttons are
+   slightly smaller here specifically so more fit per row before wrapping. */
+.navStack{gap:6px!important;margin-bottom:10px!important;}
+.nav.navPrimary{
+  gap:5px!important;
+  padding:5px!important;
+}
+.nav.navPrimary button{
+  padding:7px 11px!important;
+  font-size:13px!important;
+}
+.headerActionRow{margin-top:0;}
+
+/* Dashboard: remove the leftover 2-row span that was leaving a large empty
+   gap under "Work by Employee" once that panel had little content. */
+.todayOps{
+  grid-row:auto!important;
+  max-height:330px!important;
+}
+.dashPanel{min-height:0!important;}
