@@ -1,0 +1,1890 @@
+:root{--bg:#f6f7fb;--card:#fff;--ink:#172033;--muted:#657085;--line:#d9dfeb;--accent:#2f6fed;--good:#0f7b4f;--bad:#b42318;--warn:#9a6700}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif}.shell{max-width:1380px;margin:0 auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}.brand h1{margin:0;font-size:28px}.brand p{margin:6px 0 0;color:var(--muted)}.nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}.nav button,.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:650}.nav button.active,.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(20,32,56,.05)}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}h2,h3{margin:0 0 12px}.muted{color:var(--muted)}.kpi{font-size:30px;font-weight:800}.form{display:grid;grid-template-columns:repeat(12,1fr);gap:10px;align-items:flex-end}.field{grid-column:span 3}.field.wide{grid-column:span 6}.field.full{grid-column:span 12}label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:5px}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px;background:#fff}textarea{min-height:70px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px solid var(--line);padding:9px;text-align:left;vertical-align:top}th{font-size:12px;text-transform:uppercase;color:var(--muted);background:#fafbfe}.pill{display:inline-block;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:700}.pill.good{background:#e6f6ef;color:var(--good)}.pill.bad{background:#ffe9e7;color:var(--bad)}.pill.warn{background:#fff4d6;color:var(--warn)}.actions{display:flex;gap:8px;flex-wrap:wrap}.danger{color:var(--bad)}.small{font-size:12px}.week{background:#eef3ff;font-weight:800}.bar{height:9px;background:#e8ecf5;border-radius:99px;overflow:hidden}.bar>span{display:block;height:100%;background:var(--accent)}@media(max-width:900px){.span4,.span6,.span8{grid-column:span 12}.field,.field.wide{grid-column:span 12}.top{display:block}.actions{margin-top:12px}}
+select{background:#ffffff;color:#172033;border:1px solid var(--line);border-radius:8px;padding:8px}select option{background:#ffffff;color:#172033}.empPick{min-width:220px;display:flex;flex-wrap:wrap;gap:6px}.empPick label{background:#f8fafc;border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:12px}.mini{border:1px solid var(--line);background:#f8fafc;color:#172033;border-radius:8px;padding:4px 8px;font-size:12px;margin:2px;cursor:pointer}.tiny{width:70px}.late td{background:#fff0ee}.week{margin:18px 0}.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}.day{min-height:150px;border:1px dashed #cbd5e1;border-radius:16px;padding:12px;background:#f8fafc}.day span{display:block;color:#657085;font-size:12px;margin-bottom:8px}.task{background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;cursor:grab;box-shadow:0 6px 14px rgba(20,32,56,.08)}
+.weekBoard{margin:18px 0;overflow:auto}.employeeBoard{display:grid;grid-template-columns:190px repeat(4,minmax(210px,1fr));gap:8px;min-width:1060px}.employeeHeader,.dayHeader,.employeeCell,.assignmentCell{border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px}.employeeHeader,.dayHeader{background:#f1f5ff;font-weight:800}.dayHeader span,.employeeCell span{display:block;color:var(--muted);font-size:12px;margin-top:4px}.employeeCell{background:#f8fafc}.assignmentCell{min-height:130px;background:#fbfcff;border-style:dashed}.assignmentCell:hover{background:#f4f8ff;border-color:var(--accent)}.unassignedLabel{background:#fff7ed}
+@media(max-width:900px){.employeeBoard{grid-template-columns:160px repeat(4,minmax(180px,1fr));min-width:900px}}
+.treeList{display:flex;flex-direction:column;gap:8px}.treeItem{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px;cursor:pointer}.treeItem b,.treeItem span,.treeItem small{display:block}.treeItem span{color:var(--muted);margin-top:3px}.treeItem small{color:var(--muted);margin-top:5px}.activeTree{border-color:var(--accent);background:#eef4ff}.treeCard{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;background:#fff}.topNode{background:#f8fbff;border-color:#b9cdfa}.subNode{background:#fbfcff}.treeForm{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}.treeCardHead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.treeAdd{display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:flex-end;border:1px dashed #b9cdfa;background:#f8fbff;border-radius:14px;padding:12px;margin:12px 0}.reqLine{display:flex;gap:10px;flex-wrap:wrap}.reqPair{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 8px}.reqPair label{margin:0;white-space:nowrap}.reqPair input[type="checkbox"]{width:auto}.reqPair input[type="number"]{padding:6px}@media(max-width:900px){.treeAdd{grid-template-columns:1fr}.treeForm .field,.treeForm .field.wide{grid-column:span 12}}
+.boardHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:10px}.monthPick{max-width:180px}.assignmentCell.overloaded{background:#ffecec;border-color:#f3b1b1}.assignmentCell.overloaded:hover{background:#ffe4e4}.overBadge{display:inline-block;background:#ffd6d6;color:#9f1d1d;border:1px solid #f3b1b1;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:800;margin-bottom:6px}.hourBadge{display:inline-block;background:#eef4ff;color:#315ea8;border:1px solid #c9d8ff;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:700;margin-bottom:6px}@media(max-width:900px){.boardHeader{display:block}.monthPick{max-width:none;margin-top:12px}}
+.groupHeader td{background:#eef4ff!important;color:#172033;border-top:2px solid #c9d8ff;font-size:14px}.subAssemblyRow td{background:#fbfdff}.indent{display:inline-block;margin-right:6px;color:#657085;font-weight:800}.subAssemblyRow input:first-child{margin-left:4px}
+.capNote{font-size:11px;color:#b45309;margin-top:2px;white-space:nowrap}
+/* v19 readability + availability styling */
+input,select,textarea,button{font-size:15px;line-height:1.35;min-height:38px}
+select{font-size:15px;min-width:150px;background:#fff;color:#172033}
+td input,td select,td textarea{font-size:14px;min-width:110px}
+td textarea{min-width:220px;min-height:76px;resize:vertical}
+.tablewrap table{font-size:14px}.field label{font-size:13px}.tiny{width:86px;min-width:86px}.mini{min-height:30px;font-size:13px}.task{font-size:13px;line-height:1.3}.assignmentCell.unavailable{background:#f6f7fb;border-color:#d7dce8}.assignmentCell.unavailable:hover{background:#f0f3f9}.offBadge{display:inline-block;background:#e5e7eb;color:#4b5563;border:1px solid #d1d5db;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:800;margin-bottom:6px}.otToggle{display:block;margin-bottom:6px;background:#fff}.assignmentCell.overloaded{background:#ffecec!important;border-color:#f3b1b1!important}.employeeBoard{grid-template-columns:190px repeat(var(--week-days,5),minmax(220px,1fr))}.dayHeader b{font-size:15px}.dayHeader span{font-size:13px}.employeeCell b{font-size:15px}
+
+/* v20 project readability and split multi-day task cards */
+.projectDetails{min-height:360px}.projectForm{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:14px;align-items:start}.projectForm .field{grid-column:auto}.projectForm .field.full{grid-column:1 / -1}.largeInput{font-size:16px!important;min-height:44px!important;padding:11px 12px!important}.projectForm textarea.largeInput{min-height:120px!important}.projectForm label{font-size:14px!important;color:#3f4a5f}.chunkHours{font-weight:800;color:#315ea8}.splitBadge{display:inline-block;margin-left:6px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:999px;padding:2px 6px;font-size:11px;font-weight:800;text-transform:uppercase}.task{font-size:13.5px}.employeeBoard{grid-template-columns:190px repeat(var(--week-days,5),minmax(230px,1fr))!important}@media(max-width:900px){.projectForm{grid-template-columns:1fr}.projectForm .field{grid-column:1 / -1}}
+
+/* v21 ship-by and sequencing toggle clarity */
+.fieldHelp{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.3}.checkLine{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;background:#f8fafc;padding:10px;color:#172033;font-size:15px!important;font-weight:700}.checkLine input{width:auto;min-width:auto;min-height:auto}.sequenceToggle{align-self:stretch}.projectForm .sequenceToggle{grid-column:auto}
+
+/* v24 project page redesign */
+.projectRedesign{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}.projectSidebar{position:sticky;top:12px}.projectMain{display:flex;flex-direction:column;gap:16px}.projectList{display:flex;flex-direction:column;gap:8px;margin:14px 0}.projectList button{border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px;text-align:left;cursor:pointer}.projectList button b,.projectList button span,.projectList button small{display:block}.projectList button span{color:var(--muted);margin-top:4px}.projectList button small{color:var(--muted);margin-top:6px}.projectList button.selectedProject{background:#eef4ff;border-color:#9db8ff}.fullWidth{width:100%}.tallBtn{min-height:44px;width:100%}.buildCard{border:1px solid var(--line);background:#fff;border-radius:18px;padding:16px;margin:16px 0;box-shadow:0 4px 14px rgba(20,32,56,.06)}.buildCardHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}.buildCardHead h3{font-size:20px;margin:0}.buildCardHead p{margin:4px 0 0}.buildControls{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;align-items:start}.buildControls .field{grid-column:span 3}.buildControls .field.wide{grid-column:span 6}.multiSelect{min-height:78px!important}.subPanel{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}.subPanel h4{margin:0 0 10px}.subTable{overflow:auto}.subTable table{min-width:1100px}.subTable input,.subTable select{font-size:14px;min-width:120px}.batchGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}.batchCard{border:1px solid var(--line);border-radius:16px;background:#fbfcff;padding:12px}.batchCard label{margin-top:8px}.batchCard input{margin-bottom:6px}.projectMain .card h2{font-size:22px}.addbox .largeInput{min-height:46px}.field.full{grid-column:1 / -1}@media(max-width:1000px){.projectRedesign{grid-template-columns:1fr}.projectSidebar{position:static}.buildControls .field,.buildControls .field.wide{grid-column:span 12}.buildCardHead{display:block}}
+
+.archivedRow{opacity:.65;background:#f7f7f7}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#e7f7ed;color:#166534;font-weight:700;font-size:12px}.pill.warn{background:#fff7ed;color:#9a3412}
+
+/* v28 Assembly Library redesign */
+.libraryWorkspace{display:grid;grid-template-columns:360px 1fr;gap:16px;align-items:start}
+.libraryHeader{grid-column:1/-1;display:flex;justify-content:space-between;gap:18px;align-items:center}
+.libraryStats{display:flex;gap:10px;flex-wrap:wrap}.libraryStats span{background:#f1f5f9;border:1px solid #dbe3ee;border-radius:14px;padding:10px 14px;color:#334155}
+.libraryListPanel{position:sticky;top:10px}.libraryTools{display:grid;gap:10px;margin-bottom:12px}.librarySelectableList{display:grid;gap:8px;max-height:72vh;overflow:auto;padding-right:4px}
+.librarySelect{text-align:left;background:#f8fafc;border:1px solid #dbe3ee;border-radius:14px;padding:12px;display:grid;gap:4px;cursor:pointer;color:#0f172a}.librarySelect:hover{background:#eef6ff}.activeLibrarySelect{border-color:#2563eb;background:#dbeafe}.librarySelect div{display:flex;gap:8px;align-items:center;justify-content:space-between}.librarySelect span{font-size:14px;color:#475569}.librarySelect small{color:#64748b}
+.libraryEditorPanel{min-height:600px}.editorTitle{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid #e2e8f0;padding-bottom:14px;margin-bottom:14px}.editorTitle h2{margin:0}.editorSections{display:grid;gap:18px}.editorSections section{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px}.editorSections h3{margin:0 0 12px}.editorGrid{display:grid;grid-template-columns:1fr 2fr 1fr;gap:12px}.editorGrid .wide{grid-column:span 2}.editorGrid .full{grid-column:1/-1}.reqGrid{display:grid;grid-template-columns:repeat(3,minmax(170px,1fr));gap:12px}.libraryReq{background:white;border:1px solid #dbe3ee;border-radius:14px;padding:12px;display:grid;grid-template-columns:1fr 90px auto;gap:8px;align-items:center}.treeBuilderAdd{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:12px}.treeBuilderList{display:grid;gap:10px}.treeBuilderRow{background:white;border:1px solid #dbe3ee;border-radius:14px;padding:10px;display:grid;grid-template-columns:70px 1fr auto;gap:10px;align-items:center}.treeHandle{font-weight:700;color:#334155}.treeSubFields{display:grid;grid-template-columns:1fr 2fr 100px;gap:8px}.treeRowActions{display:flex;gap:6px;flex-wrap:wrap}.smallNum{max-width:100px}
+@media(max-width:1000px){.libraryWorkspace{grid-template-columns:1fr}.libraryListPanel{position:static}.editorGrid,.reqGrid,.treeSubFields{grid-template-columns:1fr}.treeBuilderRow{grid-template-columns:1fr}.libraryHeader,.editorTitle{display:block}.treeBuilderAdd{grid-template-columns:1fr}}
+
+/* v29 searchable project assembly picker */
+.assemblyPicker{display:grid;gap:12px}.assemblySearchResults{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:16px;background:#f8fafc;padding:10px}.assemblyResult{text-align:left;border:1px solid #dbe3ee;background:#fff;border-radius:14px;padding:12px;cursor:pointer;display:grid;gap:4px;color:#0f172a}.assemblyResult:hover{background:#eef6ff;border-color:#9db8ff}.selectedAssemblyResult{background:#dbeafe!important;border-color:#2563eb!important}.assemblyResult b{font-size:16px}.assemblyResult span{color:#475569}.assemblyResult small{color:#64748b}.selectedAssemblyBox{display:grid;grid-template-columns:1fr 130px auto auto;gap:12px;align-items:flex-end;border:1px solid #c9d8ff;background:#f8fbff;border-radius:16px;padding:12px}.selectedAssemblyBox b{display:block;font-size:16px}.qtyInput{max-width:130px}.noResults{padding:14px}@media(max-width:900px){.selectedAssemblyBox{grid-template-columns:1fr}.qtyInput{max-width:none}}
+
+/* v32 high-level monthly calendar */
+.monthCalendar{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));gap:8px;overflow:auto}.calHead{background:#eef4ff;border:1px solid var(--line);border-radius:12px;padding:9px;font-weight:800;text-align:center}.calDay{min-height:170px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;vertical-align:top}.calMuted{background:#f8fafc;color:#94a3b8}.calDate{font-weight:800;margin-bottom:6px}.calCard{background:#f8fbff;border:1px solid #c9d8ff;border-radius:12px;padding:8px;margin:6px 0;font-size:12px;line-height:1.25;color:#172033}.calCard b,.calCard span,.calCard small{display:block}.calCard small{color:#657085;margin-top:2px}.calLate{background:#fff0ee;border-color:#f3b1b1}.calSub{font-size:11px;color:#475569;margin-top:3px;padding-left:4px}.calMore{font-size:12px;font-weight:800;color:#315ea8;margin-top:6px}@media(max-width:1000px){.monthCalendar{grid-template-columns:repeat(7,minmax(130px,1fr));min-width:980px}}
+.completionEdit{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px}
+.completionEdit label{font-weight:700;color:#334155}
+.completionEdit input{width:64px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#0f172a;font-size:13px}
+
+.dragHandle{display:inline-block;background:#eef2ff;color:#1e3a8a;border:1px solid #c7d2fe;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:800;margin-bottom:6px;cursor:grab;user-select:none}.dragHandle:active{cursor:grabbing}.completionEdit input{cursor:text}.task input,.task button{cursor:auto}
+.completionEdit small{display:block;font-size:11px;color:#64748b;margin-top:2px;line-height:1.2}
+.task.buildTileDone{background:#e0f2fe!important;border-color:#7dd3fc!important;box-shadow:0 6px 14px rgba(14,116,144,.14)}
+.task.buildTilePartial{background:linear-gradient(90deg,#e0f2fe 0%,#e0f2fe 35%,#ffffff 35%,#ffffff 100%);border-color:#bae6fd}
+
+/* v42 dashboard: Today's Work by Employee */
+.todayWorkList{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+.todayEmployee{border:1px solid #d7dee8;border-radius:14px;padding:12px;background:#fbfdff}
+.todayEmployeeHeader{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:16px}
+.todayEmployeeHeader span{background:#eef4ff;border:1px solid #cbdaf5;border-radius:999px;padding:4px 10px;font-weight:700}
+.todayEmployee table{width:100%;border-collapse:collapse;font-size:14px}
+.todayEmployee th,.todayEmployee td{border-bottom:1px solid #e6ebf2;padding:7px;text-align:left;vertical-align:top}
+.emptyToday{padding:10px;background:#f6f8fb;border-radius:10px}
+
+/* v44 dashboard, status colors, filters, and lock/freeze controls */
+.legend{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:12px;font-size:12px;color:var(--muted)}
+.legendDot{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid var(--line);vertical-align:middle;margin-right:4px}.legendDot.blue{background:#dbeafe}.legendDot.gray{background:#e5e7eb}.legendDot.yellow{background:#fef3c7}.legendDot.red{background:#fee2e2}.legendDot.green{background:#dcfce7}
+.boardTools{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}.boardTools .field{min-width:160px}.employeeHeader,.employeeCell{position:sticky;left:0;z-index:2}.employeeHeader{z-index:3}.task.statusBuildComplete{background:#eaf4ff;border-color:#93c5fd}.task.statusBlocked{background:#f3f4f6;border-color:#cbd5e1}.task.statusAtRisk{background:#fff7d6;border-color:#f6d365}.task.statusLate{background:#ffe8e8;border-color:#f5a3a3}.task.statusShipped{background:#e8f8ee;border-color:#86efac}.task.lockedTask{opacity:.82;border-style:dashed;cursor:not-allowed}.statusBadge{display:inline-block;background:#eef2ff;border:1px solid #c7d2fe;color:#334155;border-radius:999px;font-size:11px;font-weight:800;padding:2px 6px;margin-left:4px}.lockBtn{float:right;margin-top:0}.todayWorkList table td{font-size:13px}.card h2{letter-spacing:-.01em}
+
+/* v45 Gantt / timeline planning view */
+.ganttWrap{overflow:auto;border:1px solid var(--line);border-radius:16px;background:#fff}.ganttGrid{display:grid;min-width:1180px;align-items:stretch}.ganttCorner,.ganttDay,.ganttLabel{border-bottom:1px solid var(--line);border-right:1px solid var(--line);background:#f8fafc;padding:8px}.ganttCorner{font-weight:800;position:sticky;left:0;z-index:4}.ganttDay{text-align:center;font-size:12px;min-height:46px}.ganttDay b,.ganttDay span{display:block}.ganttDay span{color:var(--muted)}.ganttWeekend{background:#f3f4f6;color:#94a3b8}.ganttLabel{position:sticky;left:0;z-index:3;background:#fff;min-height:64px}.ganttLabel b,.ganttLabel span,.ganttLabel small{display:block}.ganttLabel span,.ganttLabel small{color:var(--muted);margin-top:3px}.ganttRow{position:relative;min-height:64px;border-bottom:1px solid var(--line);background:repeating-linear-gradient(90deg,#fff 0,#fff 33px,#f6f8fc 34px)}.ganttBar{position:absolute;top:18px;height:24px;border-radius:999px;border:1px solid #cbd5e1;background:#dbeafe;color:#172033;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap}.ganttScheduled{background:#dbeafe;border-color:#bfdbfe}.ganttAtRisk{background:#fef3c7;border-color:#fcd34d}.ganttLate{background:#fee2e2;border-color:#fca5a5}.ganttBlocked{background:#e5e7eb;border-color:#cbd5e1}.ganttComplete{background:#dcfce7;border-color:#86efac}.ganttShip{position:absolute;top:12px;transform:translateX(-50%);color:#7c2d12;font-size:20px;z-index:2}.ganttMilestone{position:absolute;top:40px;transform:translateX(-50%);border-radius:999px;width:20px;height:20px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff}.ganttMilestone.inspect{background:#eef2ff;color:#3730a3}.ganttMilestone.ship{background:#dcfce7;color:#166534}.ganttLegend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:13px}.legend{border:1px solid var(--line);border-radius:999px;padding:4px 9px;font-weight:800;color:#172033}.legend.scheduled{background:#dbeafe}.legend.risk{background:#fef3c7}.legend.late{background:#fee2e2}.legend.blocked{background:#e5e7eb}.legend.complete{background:#dcfce7}.emptyState{padding:12px}
+/* v46 backup and restore */
+.backupWarning{margin-top:12px;border:1px solid #f3b1b1;background:#fff1f1;color:#8a1f1f;border-radius:12px;padding:12px}.backupWarning ul{margin:6px 0 0 18px}
+
+
+/* v47 weekly board refinements */
+.enhancedBoardTools{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:flex-end;min-width:min(720px,100%)}
+.boardCheck{min-height:40px;margin:0;align-self:flex-end}
+.capacitySuggestion{white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;color:#172033;font-size:13px;line-height:1.45}
+.weeklyBoardCard .employeeHeader,.weeklyBoardCard .employeeCell{position:sticky;left:0;z-index:2}
+.weeklyBoardCard .employeeHeader{z-index:3}
+@media print{.top,.nav,.boardTools,.capacitySuggestion,.dragHandle,.lockBtn,.completionEdit button{display:none!important}.shell{max-width:none;padding:10px}.card{box-shadow:none;border:none}.weekBoard{page-break-inside:avoid}.task{box-shadow:none}.employeeBoard{min-width:0!important;grid-template-columns:120px repeat(var(--week-days,5),1fr)!important}.employeeCell,.employeeHeader{position:static!important}}
+.plannerSummary{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.issueList{display:grid;gap:8px;max-height:650px;overflow:auto}.issueRow{text-align:left;border:1px solid #d8dee9;border-radius:12px;background:#fff;padding:10px;display:grid;gap:3px;cursor:pointer}.issueRow:hover{box-shadow:0 4px 14px rgba(15,23,42,.12)}.issueRow.red{border-left:6px solid #ef4444}.issueRow.yellow{border-left:6px solid #f59e0b}.issueRow.gray{border-left:6px solid #94a3b8}.issueRow span{font-size:13px}.issueRow small{color:#64748b}.issueDetails h3{margin-top:0}.issueDetails li{margin:6px 0}.pill.bad{background:#fee2e2;color:#991b1b}.pill.warn{background:#fef3c7;color:#92400e}
+
+/* v52 clearer project assembly trees */
+.projectMain .tablewrap{border:1px solid #d7deeb;border-radius:18px;background:#f8fafc;padding:10px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.65)}
+.projectMain table{border-collapse:separate;border-spacing:0 10px;background:transparent}
+.projectMain thead th{position:sticky;top:0;z-index:1;background:#f1f5fb;border-bottom:1px solid #cfd8e8;color:#42526b;font-size:12px;letter-spacing:.02em}
+.projectMain tbody tr.groupHeader td{background:linear-gradient(90deg,#dbeafe,#eef4ff)!important;border:1px solid #9db8ff!important;border-bottom:none!important;border-radius:16px 16px 0 0!important;padding:14px 16px!important;font-size:16px!important;color:#12233f!important;box-shadow:0 4px 10px rgba(47,111,237,.08)}
+.projectMain tbody tr.groupHeader td b{font-size:18px;display:inline-block;margin-right:8px}
+.projectMain tbody tr.groupHeader td .muted{font-size:13px;color:#4b5f7f!important;font-weight:700}
+.projectMain tbody tr.groupHeader + tr td{border-top:1px solid #9db8ff!important}
+.projectMain tbody tr:not(.groupHeader) td{background:#fff;border-top:1px solid #dbe3ef;border-bottom:1px solid #dbe3ef;padding-top:12px;padding-bottom:12px}
+.projectMain tbody tr:not(.groupHeader) td:first-child{border-left:1px solid #dbe3ef;border-radius:12px 0 0 12px;font-weight:800;min-width:130px}
+.projectMain tbody tr:not(.groupHeader) td:last-child{border-right:1px solid #dbe3ef;border-radius:0 12px 12px 0}
+.projectMain tbody tr.subAssemblyRow td{background:#fbfdff!important;border-color:#e4ebf5!important}
+.projectMain tbody tr.subAssemblyRow td:first-child{padding-left:28px!important;position:relative;color:#334155}
+.projectMain tbody tr.subAssemblyRow td:first-child:before{content:'↳ Sub';display:inline-block;margin-right:8px;background:#e8eef8;color:#46566f;border:1px solid #cfd8e8;border-radius:999px;padding:2px 7px;font-size:11px;font-weight:900;letter-spacing:.02em}
+.projectMain tbody tr:not(.subAssemblyRow):not(.groupHeader) td:first-child:before{content:'Top';display:inline-block;margin-right:8px;background:#e0f2fe;color:#075985;border:1px solid #7dd3fc;border-radius:999px;padding:2px 7px;font-size:11px;font-weight:900;letter-spacing:.02em}
+.projectMain .groupHeader + tr:not(.subAssemblyRow) td{background:#fefefe!important;border-color:#b8cdfa!important}
+.projectMain input,.projectMain select,.projectMain textarea{font-size:14px;min-height:38px}
+.projectMain .tiny{min-width:92px}
+.projectMain .capNote{margin-top:4px;font-size:11px;color:#64748b;line-height:1.25}
+.projectMain .btn.danger{white-space:nowrap}
+
+/* v53 Project page redesign */
+.buildCardRedesign{padding:0;overflow:hidden;border:2px solid #d5def2;border-radius:22px;background:#ffffff;box-shadow:0 12px 32px rgba(31,47,84,.12);margin:24px 0}.buildCardRedesign.batched{border-color:#b8c9ff}.buildCardRedesign.sequenced{border-color:#f3ca72}.buildCardRedesign.complete{border-color:#9fd7b2}.buildCardRedesign.hold{border-color:#f0a1a1}.buildCardBanner{display:grid;grid-template-columns:44px 1fr auto auto;gap:14px;align-items:center;background:linear-gradient(135deg,#eef4ff,#f8fbff);border-bottom:1px solid #cfdaf0;padding:16px 18px}.collapseBtn{width:38px;height:38px;border-radius:12px;border:1px solid #aebfe0;background:#fff;font-size:20px;cursor:pointer}.buildIdentity h3{font-size:24px;margin:2px 0}.buildIdentity p{margin:0;color:#536179}.buildKicker{font-size:11px;letter-spacing:.12em;font-weight:800;color:#47628f}.buildBadges{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;max-width:360px}.strongPill{font-weight:900;background:#e5efff!important}.dangerPill{background:#ffe5e5!important;color:#8f1d1d!important}.buildHeaderActions{display:flex;gap:8px;align-items:center}.buildSummaryStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid #dfe6f2;background:#fbfdff}.buildSummaryStrip div{padding:12px 16px;border-right:1px solid #e1e7f3}.buildSummaryStrip div:last-child{border-right:0}.buildSummaryStrip label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#71809a;font-weight:800}.buildSummaryStrip b{display:block;margin-top:3px;font-size:14px;color:#1f2a44}.buildCardRedesign .sequenceHint{margin:16px 18px;background:#fff9e8;border-color:#ead58c}.buildCardRedesign .buildControls{padding:0 18px 18px}.redesignedSubs{margin:0;border-top:8px solid #f1f5fb;background:#f7f9fd;padding:18px}.subPanelTitle{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}.subPanelTitle h4{font-size:19px;margin:0}.subCards{display:grid;grid-template-columns:1fr;gap:12px}.subAssemblyCard{background:#fff;border:1px solid #d9e2f1;border-left:7px solid #6f8fc9;border-radius:18px;padding:14px;box-shadow:0 4px 12px rgba(20,32,56,.06)}.subAssemblyCard.holdSub{border-left-color:#d66;background:#fffafa}.subCardHeader{display:grid;grid-template-columns:74px 1fr auto;gap:12px;align-items:center;border-bottom:1px solid #edf1f7;padding-bottom:10px;margin-bottom:12px}.subNumber{font-size:12px;font-weight:900;color:#32517c;background:#eaf1ff;border-radius:999px;padding:7px 9px;text-align:center}.subCardHeader b{display:block;font-size:16px;margin-bottom:4px}.subCardHeader input{width:100%;font-size:15px}.subCardGrid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}.subCardGrid label{grid-column:span 3;font-size:12px;font-weight:800;color:#516077}.subCardGrid label input,.subCardGrid label select{display:block;width:100%;margin-top:4px}.subCardGrid .wideSub{grid-column:span 6}.subChecks{display:flex;gap:16px;margin-top:10px;color:#44526b}.emptySubCard{background:#fff;border:1px dashed #bbc7da;border-radius:14px;padding:16px}@media(max-width:1200px){.buildCardBanner{grid-template-columns:40px 1fr}.buildBadges,.buildHeaderActions{grid-column:2}.buildSummaryStrip{grid-template-columns:1fr 1fr}.subCardGrid label,.subCardGrid .wideSub{grid-column:span 12}}@media(max-width:760px){.buildSummaryStrip{grid-template-columns:1fr}.buildSummaryStrip div{border-right:0;border-bottom:1px solid #e1e7f3}.subCardHeader{grid-template-columns:1fr}.subNumber{text-align:left}}
+
+/* v54 production-control polish */
+.globalSearchInput{min-width:320px;max-width:420px;border:1px solid var(--line);border-radius:14px;padding:11px 14px;font-size:15px;background:#fff;color:#172033}
+.globalSearchPanel{position:sticky;top:0;z-index:20;background:#ffffff;border:1px solid #cbd5e1;border-radius:18px;margin:14px 0;padding:14px;box-shadow:0 18px 40px rgba(15,23,42,.18)}
+.searchPanelHeader{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding-bottom:10px;margin-bottom:12px}.searchPanelHeader b{font-size:18px}
+.searchResultsGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.searchResultsGrid h4{margin:0 0 8px}.searchResultsGrid button{width:100%;text-align:left;border:1px solid #dbe3ef;background:#f8fafc;border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer}.searchResultsGrid button:hover{background:#eef4ff;border-color:#9db8ff}.searchResultsGrid button b,.searchResultsGrid button span{display:block}.searchResultsGrid button span{color:#64748b;font-size:12px;margin-top:2px}
+.productionDashboard .card{border-radius:22px}.controlHero{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#eef6ff,#ffffff 55%,#f0fdf4);border:1px solid #bfd5ff}.controlHero h2{font-size:28px;margin:4px 0}.eyebrow{text-transform:uppercase;letter-spacing:.14em;color:#2f6fed;font-size:12px;font-weight:900}.heroStats{display:grid;grid-template-columns:repeat(4,110px);gap:10px}.heroStats div{background:#fff;border:1px solid #dbe3ef;border-radius:16px;padding:12px;text-align:center;box-shadow:0 6px 14px rgba(31,47,84,.07)}.heroStats b{display:block;font-size:24px}.heroStats span{display:block;color:#64748b;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.todayCard{border-left:8px solid #2f6fed}.productionDashboard .card h2{letter-spacing:-.02em}.todayEmployee{border:1px solid #dbe3ef;border-radius:18px;overflow:hidden;margin-bottom:14px;background:#fff}.todayEmployeeHeader{background:#f1f5fb;border-bottom:1px solid #dbe3ef;padding:11px 14px}.todayEmployee table{margin:0}.todayEmployee th{background:#fbfdff}.weeklyBoardCard{border:2px solid #dbe7ff}.weeklyBoardCard .boardHeader{background:#f8fbff;border:1px solid #dbe7ff;border-radius:18px;padding:14px;margin-bottom:12px}.weeklyBoardCard .employeeCell{background:#f8fafc;border-right:2px solid #dbe3ef}.weeklyBoardCard .dayHeader{background:#eef4ff;border-color:#cbdafb}.task{border-left-width:6px!important}.task .dragHandle{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}.task.lockedTask{outline:2px dashed #64748b;opacity:.9}.task.lockedTask:before{content:'LOCKED';display:inline-block;font-size:10px;font-weight:900;color:#334155;background:#e2e8f0;border-radius:999px;padding:2px 7px;margin-right:4px}.assignmentCell.overloaded{background:#fff1f2!important}.assignmentCell.unavailable{background:#f3f4f6!important}.capacitySuggestion{border-left:6px solid #2f6fed}.nav button.active{box-shadow:inset 0 -3px 0 #2f6fed}
+@media(max-width:1050px){.controlHero{display:block}.heroStats{grid-template-columns:repeat(2,1fr);margin-top:12px}.globalSearchInput{min-width:220px}.searchResultsGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.searchResultsGrid{grid-template-columns:1fr}.heroStats{grid-template-columns:1fr}.globalSearchInput{width:100%;max-width:none}.actions{width:100%}}
+
+.offTodayBadge{margin-top:8px;padding:10px 12px;border-radius:12px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;font-weight:700;}
+.offBadge{font-weight:800;}
+
+.tileDescription{font-weight:800;display:inline-block;margin-bottom:2px}.tileMeta{font-size:12px;color:#334155}.offBadge{font-weight:700}
+
+/* v58 availability calendar + project top-level tile editor */
+.availabilityCalendar{display:grid;grid-template-columns:repeat(7,minmax(72px,1fr));gap:8px;margin-top:14px}
+.calDow{font-weight:800;text-align:center;color:#334155;font-size:13px;padding:6px}
+.calendarDay{min-height:86px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:6px;display:flex;flex-direction:column;gap:5px}
+.calendarDay.outsideMonth{opacity:.45;background:#f8fafc}
+.calendarDay.calendarOff{background:#eef2ff;border-color:#9db8ff}
+.calendarDay.calendarOt{box-shadow:inset 0 0 0 2px #f59e0b}
+.calendarDay.calendarHoliday{background:#f1f5f9;border-color:#94a3b8}
+.calendarDay>button:first-child{border:0;background:transparent;text-align:left;min-height:42px;padding:2px;cursor:pointer;color:#172033}
+.calendarDay b{display:block;font-size:15px;margin-bottom:3px}
+.calendarDay small{display:block;font-size:11px;color:#475569;line-height:1.2;margin-top:2px}
+.fridayOtButton{width:100%;font-size:11px!important;min-height:26px!important;padding:2px 4px!important;background:#fff7ed!important;border-color:#fed7aa!important;color:#9a3412!important}
+.availabilityLegend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.legendOff,.legendOt{display:inline-block;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:800;border:1px solid var(--line)}
+.legendOff{background:#eef2ff;color:#315ea8;border-color:#9db8ff}.legendOt{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
+.selectedDateLists{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.datePills{display:flex;gap:6px;flex-wrap:wrap}
+.projectTileSection{position:relative}.topAssemblyTileGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin:14px 0 18px}.topAssemblyTile{border:1px solid var(--line);background:#fff;border-radius:16px;padding:12px;text-align:left;cursor:pointer;min-height:118px;box-shadow:0 2px 8px rgba(20,32,56,.05)}.topAssemblyTile:hover{border-color:#9db8ff;background:#f8fbff}.selectedTopAssemblyTile{border-color:var(--accent)!important;background:#eef4ff!important;box-shadow:0 0 0 2px rgba(47,111,237,.16)}.topAssemblyTile.tileHold{border-color:#f3b1b1;background:#fff7f6}.topAssemblyTile.tileComplete{border-color:#9bd4b5;background:#f0fdf4}.tileTitleRow{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.tileTitleRow b{font-size:15px}.tileTitleRow span{font-size:12px;font-weight:800;border:1px solid var(--line);border-radius:999px;padding:2px 7px;background:#fff}.tileDesc{font-size:13px;color:#475569;margin:8px 0;line-height:1.25}.tileFacts{display:flex;gap:5px;flex-wrap:wrap}.tileFacts span{font-size:11px;border-radius:999px;background:#f1f5f9;color:#334155;padding:3px 7px}.selectedTopEditor{border-top:2px solid #dbe7ff;padding-top:8px;margin-top:8px}
+@media(max-width:900px){.availabilityCalendar{grid-template-columns:repeat(2,1fr)}.calDow{display:none}.selectedDateLists{grid-template-columns:1fr}.topAssemblyTileGrid{grid-template-columns:1fr}}
+
+/* v59 focused project tile and employee picker improvements */
+.topTileDescription{font-size:16px;font-weight:900;line-height:1.15;color:#0f172a;display:block;max-width:170px}.topAssemblyTile .tileDesc{font-size:12px;font-weight:700;color:#475569;margin:8px 0 6px}.topAssemblyTile .tileTitleRow{align-items:flex-start}.compactEmpPick{display:block;min-width:0;width:100%;max-width:100%;}.empPickGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:6px;align-items:center;max-height:150px;overflow:auto;padding:6px;border:1px solid var(--line);border-radius:12px;background:#f8fafc}.empPickGrid label{display:flex;align-items:center;gap:6px;margin:0;background:#fff;border:1px solid #d7deea;border-radius:999px;padding:6px 9px;font-size:12px;white-space:nowrap;line-height:1.1}.empPickGrid label.selectedEmpChip{border-color:#2f6fed;background:#eef4ff;color:#173b85;font-weight:800}.empPickActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.buildControls .field:has(.compactEmpPick){min-width:320px}.subCardGrid label:has(.compactEmpPick),.wideSub:has(.compactEmpPick){grid-column:span 2}.subCardGrid .compactEmpPick{margin-top:4px}
+
+/* v60 fresh project editor layout + print fixes */
+.buildControls{
+  display:grid!important;
+  grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  gap:14px!important;
+  align-items:start!important;
+}
+.buildControls .field{
+  grid-column:span 4!important;
+  min-width:0!important;
+  width:100%!important;
+  overflow:visible!important;
+}
+.buildControls .field.wide,
+.buildControls .field:has(.employeePickerNoScroll){
+  grid-column:span 12!important;
+}
+.buildControls input,
+.buildControls select,
+.buildControls textarea,
+.subCardGrid input,
+.subCardGrid select,
+.subCardGrid textarea{
+  min-height:42px!important;
+  font-size:15px!important;
+  line-height:1.2!important;
+  box-sizing:border-box!important;
+}
+.employeePickerNoScroll{width:100%!important;overflow:visible!important;}
+.noScrollEmpGrid{
+  max-height:none!important;
+  overflow:visible!important;
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(145px,1fr))!important;
+  gap:8px!important;
+  padding:10px!important;
+  background:#f8fafc!important;
+  border:1px solid #cbd5e1!important;
+  border-radius:14px!important;
+}
+.noScrollEmpGrid label{
+  min-height:38px!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  border-radius:12px!important;
+  justify-content:flex-start!important;
+  font-size:13px!important;
+  padding:8px 10px!important;
+}
+.noScrollEmpGrid label span{overflow:hidden;text-overflow:ellipsis;}
+.empPickActions{margin-top:8px!important;}
+.subCardGrid{
+  display:grid!important;
+  grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  gap:12px!important;
+  align-items:start!important;
+}
+.subCardGrid label{
+  grid-column:span 3!important;
+  min-width:0!important;
+  overflow:visible!important;
+}
+.subCardGrid label:has(.employeePickerNoScroll),
+.subCardGrid .wideSub,
+.subCardGrid label.wideSub{
+  grid-column:span 12!important;
+}
+.subCardGrid label:has(select),
+.subCardGrid label:has(input[type="datetime-local"]){
+  grid-column:span 4!important;
+}
+.subCardHeader{
+  grid-template-columns:82px minmax(0,1fr) auto!important;
+}
+.subCardHeader input{min-width:0!important;width:100%!important;}
+.selectedTopEditor .buildCardRedesign{overflow:visible!important;}
+.projectMain .card,.buildCard,.subAssemblyCard{overflow:visible!important;}
+@media(max-width:1100px){
+  .buildControls .field{grid-column:span 6!important;}
+  .buildControls .field.wide,.buildControls .field:has(.employeePickerNoScroll){grid-column:span 12!important;}
+  .subCardGrid label,.subCardGrid label:has(select),.subCardGrid label:has(input[type="datetime-local"]){grid-column:span 6!important;}
+  .subCardGrid label:has(.employeePickerNoScroll),.subCardGrid .wideSub,.subCardGrid label.wideSub{grid-column:span 12!important;}
+}
+@media(max-width:760px){
+  .buildControls .field,.subCardGrid label,.subCardGrid label:has(select),.subCardGrid label:has(input[type="datetime-local"]){grid-column:span 12!important;}
+  .noScrollEmpGrid{grid-template-columns:1fr!important;}
+}
+
+@media print{
+  @page{size:landscape;margin:.25in;}
+  body.printingWeeklyBoard *{visibility:hidden!important;}
+  body.printingWeeklyBoard .weeklyBoardCard,
+  body.printingWeeklyBoard .weeklyBoardCard *{visibility:visible!important;}
+  body.printingWeeklyBoard .weeklyBoardCard{
+    position:absolute!important;left:0!important;top:0!important;width:100%!important;
+    border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;
+  }
+  body.printingWeeklyBoard .nav,
+  body.printingWeeklyBoard .tabs,
+  body.printingWeeklyBoard .boardTools,
+  body.printingWeeklyBoard .capacitySuggestion,
+  body.printingWeeklyBoard button,
+  body.printingWeeklyBoard input,
+  body.printingWeeklyBoard select,
+  body.printingWeeklyBoard .completionEdit,
+  body.printingWeeklyBoard .dragHandle,
+  body.printingWeeklyBoard .lockBtn,
+  body.printingWeeklyBoard .otToggle{display:none!important;}
+  body.printingWeeklyBoard .boardHeader{border:0!important;background:#fff!important;margin:0 0 8px 0!important;padding:0!important;}
+  body.printingWeeklyBoard .boardHeader h2{font-size:16px!important;margin:0!important;}
+  body.printingWeeklyBoard .boardHeader p{font-size:10px!important;margin:2px 0!important;}
+  body.printingWeeklyBoard .weekBoard{break-after:page!important;margin:0!important;}
+  body.printingWeeklyBoard .weekBoard h3{font-size:12px!important;margin:4px 0!important;}
+  body.printingWeeklyBoard .employeeBoard{
+    display:grid!important;
+    grid-template-columns:80px repeat(var(--week-days,5),1fr)!important;
+    gap:2px!important;
+    width:100%!important;
+    font-size:8px!important;
+  }
+  body.printingWeeklyBoard .employeeHeader,
+  body.printingWeeklyBoard .dayHeader,
+  body.printingWeeklyBoard .employeeCell,
+  body.printingWeeklyBoard .assignmentCell{
+    padding:3px!important;border:1px solid #bbb!important;min-height:28px!important;overflow:visible!important;background:#fff!important;
+  }
+  body.printingWeeklyBoard .employeeCell b{font-size:8px!important;}
+  body.printingWeeklyBoard .employeeCell span{display:none!important;}
+  body.printingWeeklyBoard .task{
+    padding:3px!important;margin:2px 0!important;border:1px solid #aaa!important;border-left:3px solid #777!important;
+    box-shadow:none!important;border-radius:4px!important;font-size:7px!important;line-height:1.1!important;page-break-inside:avoid!important;
+  }
+  body.printingWeeklyBoard .tileDescription{font-size:8px!important;margin:0!important;display:block!important;}
+  body.printingWeeklyBoard .tileMeta,
+  body.printingWeeklyBoard .chunkHours,
+  body.printingWeeklyBoard .muted,
+  body.printingWeeklyBoard .phaseBadge,
+  body.printingWeeklyBoard .statusBadge,
+  body.printingWeeklyBoard .batchBadge{font-size:6.5px!important;line-height:1!important;}
+  body.printingWeeklyBoard .overBadge,
+  body.printingWeeklyBoard .hourBadge,
+  body.printingWeeklyBoard .offBadge{font-size:7px!important;padding:1px 2px!important;margin:0!important;}
+}
+
+/* v61 compact dashboard + project type tags */
+.dashboardCompact{display:flex;flex-direction:column;gap:12px;min-height:0}
+.dashTopBar{display:flex;justify-content:space-between;gap:18px;align-items:center;background:linear-gradient(135deg,#eef6ff,#fff 55%,#f0fdf4);border:1px solid #bfd5ff;border-radius:22px;padding:16px 18px;box-shadow:var(--shadow)}
+.dashTopBar h2{margin:2px 0 0;font-size:28px}.dashKpis{display:grid;grid-template-columns:repeat(6,minmax(90px,1fr));gap:8px;min-width:520px}.dashKpis div{background:#fff;border:1px solid #dbe3ef;border-radius:16px;padding:10px;text-align:center}.dashKpis b{display:block;font-size:22px}.dashKpis span{display:block;color:#64748b;font-size:10px;text-transform:uppercase;font-weight:900;letter-spacing:.04em}.dashTypeStrip{display:flex;gap:8px;flex-wrap:wrap}.typeTag{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:900;border:1px solid #dbe3ef;background:#f8fafc;color:#334155}.typeTag.newbuild{background:#eef4ff;border-color:#bfdbfe;color:#1d4ed8}.typeTag.spare{background:#ecfdf5;border-color:#bbf7d0;color:#047857}.typeTag.repairwarranty{background:#fff7ed;border-color:#fed7aa;color:#c2410c}.dashPanels{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px;align-items:stretch}.dashPanel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px;box-shadow:var(--shadow);min-height:180px;max-height:330px;overflow:auto}.dashPanel h3{margin:0 0 10px;font-size:16px}.todayOps{grid-row:span 2;max-height:672px}.miniEmployeeList{display:grid;grid-template-columns:1fr;gap:8px}.miniEmployee{border:1px solid #dbe3ef;border-radius:14px;background:#fbfdff;padding:10px}.miniEmployee.isOut{background:#eef2ff;border-color:#c7d2fe}.miniEmployee>div{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px}.miniEmployee b{font-size:14px}.miniEmployee span{font-size:12px;color:#64748b;font-weight:800}.miniEmployee p{margin:4px 0;font-size:12px;line-height:1.25}.miniEmployee p strong{display:block;color:#172033}.miniEmployee p em{font-style:normal;color:#64748b;margin-right:6px}.compactList{display:flex;flex-direction:column;gap:7px}.alertLine{border:1px solid #dbe3ef;border-left:5px solid #94a3b8;border-radius:12px;padding:8px 10px;background:#fbfdff}.alertLine b,.alertLine span{display:block}.alertLine b{font-size:13px}.alertLine span{font-size:12px;color:#475569;margin-top:2px}.alertLine.bad{border-left-color:#ef4444;background:#fff7f7}.alertLine.warn{border-left-color:#f59e0b;background:#fffaf0}.alertLine.blocked{border-left-color:#64748b;background:#f8fafc}.mixGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.mixGrid div{border:1px solid #dbe3ef;border-radius:14px;background:#f8fafc;padding:12px;text-align:center}.mixGrid b{display:block;font-size:24px}.mixGrid span{font-size:11px;color:#64748b;font-weight:900;text-transform:uppercase}.projectList .typeTag{margin-right:4px}.projectForm{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.projectForm .field.full{grid-column:1/-1}.projectForm .largeInput{width:100%}
+@media(max-width:1150px){.dashTopBar{display:block}.dashKpis{min-width:0;margin-top:12px;grid-template-columns:repeat(3,1fr)}.dashPanels{grid-template-columns:1fr 1fr}.todayOps{grid-row:auto;max-height:none}.projectForm{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.dashPanels{grid-template-columns:1fr}.dashKpis{grid-template-columns:1fr 1fr}.dashPanel{max-height:none}.projectForm{grid-template-columns:1fr}}
+
+/* v62 project calendar + collapsible project sections */
+.sectionHeaderRow{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}
+.sectionHeaderRow h2{margin:0 0 4px 0}
+.collapsibleSection .assemblyPicker{margin-top:12px}
+.projectCalendarCard{overflow:visible}
+.projectMonthCalendar{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));gap:8px;margin-top:12px}
+.projectMonthCalendar .calHead{font-weight:700;text-align:center;background:#f1f5f9;border:1px solid #dbe3ee;border-radius:10px;padding:8px;color:#334155}
+.projectCalDay{min-height:130px;background:#ffffff;border:1px solid #d8e0eb;border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;transition:background .15s,border-color .15s}
+.projectCalDay:hover{background:#f8fbff;border-color:#94a3b8}
+.projectCalDay.calMuted{background:#f8fafc;color:#94a3b8}
+.projectCalDay .calDate{font-size:13px;font-weight:700;color:#475569;margin-bottom:2px}
+.projectCalTile{width:100%;text-align:left;border:1px solid #cbd5e1;background:#eef6ff;border-radius:10px;padding:7px 8px;cursor:grab;display:flex;flex-direction:column;gap:2px;color:#0f172a}
+.projectCalTile:hover{background:#dbeafe;border-color:#60a5fa}
+.projectCalTile b{font-size:13px;line-height:1.15;color:#0f172a}
+.projectCalTile span{font-size:12px;color:#334155}
+.projectCalTile small{font-size:11px;color:#64748b}
+.projectTileSection{margin-top:14px}
+@media(max-width:1100px){.projectMonthCalendar{grid-template-columns:repeat(2,minmax(180px,1fr))}.projectMonthCalendar .calHead{display:none}}
+
+/* v63 project page safety/clarity updates */
+.projectCalendarActions{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.draftNotice{margin:10px 0 0;border:1px solid #f59e0b;background:#fffbeb;color:#92400e;border-radius:12px;padding:10px 12px;font-weight:800}
+.projectMonthCalendar{gap:10px!important;background:#e2e8f0;padding:10px;border-radius:18px;border:2px solid #cbd5e1}
+.projectMonthCalendar .calHead{background:#334155!important;color:white!important;border-color:#334155!important;font-size:14px;position:sticky;top:0;z-index:2}
+.projectCalDay{min-height:155px!important;border:2px solid #cbd5e1!important;border-radius:14px!important;background:#fff!important;box-shadow:0 2px 8px rgba(15,23,42,.05)}
+.projectCalDay.weekStart{border-left:7px solid #2563eb!important}
+.projectCalDay:nth-child(7n+1){border-left-width:7px!important;border-left-color:#2563eb!important}
+.projectCalDay .calDate{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0;margin:-2px -2px 6px;padding:2px 4px 6px;color:#0f172a!important}
+.projectCalDay .calDate span{font-weight:900;font-size:15px;background:#f1f5f9;border-radius:999px;padding:3px 8px}
+.projectCalDay .calDate em{font-style:normal;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#2563eb;font-weight:900}
+.projectCalTile.draftTile{background:#fff7ed!important;border-color:#fb923c!important;box-shadow:0 0 0 2px rgba(251,146,60,.18)}
+.projectCalTile.draftTile small{color:#c2410c!important;font-weight:900}
+.projectList button span:empty{display:none}
+@media print{.projectCalendarActions,.draftNotice{display:none!important}.projectMonthCalendar{break-inside:avoid;gap:4px!important;padding:4px!important}.projectCalDay{min-height:95px!important;padding:4px!important}.projectCalTile{font-size:10px!important;padding:4px!important}}
+
+
+/* v64 weekly board clarity + draft apply/discard */
+.weeklyDraftNotice{margin:12px 0 16px!important;position:sticky;top:0;z-index:8;box-shadow:0 4px 14px rgba(146,64,14,.12)}
+.strongerWeekBoard{margin:28px 0 34px!important;border:3px solid #2563eb!important;border-radius:22px!important;background:#eff6ff!important;padding:12px!important;box-shadow:0 10px 26px rgba(37,99,235,.10)!important;scroll-margin-top:12px}
+.weekDividerHeader{position:sticky!important;top:0!important;z-index:7!important;margin:-12px -12px 12px!important;padding:13px 18px!important;background:linear-gradient(90deg,#1d4ed8,#2563eb)!important;color:white!important;border-radius:18px 18px 0 0!important;font-size:18px!important;letter-spacing:.02em!important;box-shadow:0 6px 16px rgba(37,99,235,.20)!important}
+.strongerWeekBoard .employeeBoard{background:#bfdbfe!important;border:2px solid #93c5fd!important;border-radius:14px!important;gap:3px!important;padding:3px!important}
+.strongerWeekBoard .employeeHeader,.strongerWeekBoard .dayHeader{background:#dbeafe!important;border:1px solid #93c5fd!important;color:#0f172a!important;font-weight:900!important}
+.strongerWeekBoard .employeeCell{background:#f8fbff!important;border-right:3px solid #2563eb!important}
+.strongerWeekBoard .assignmentCell{background:#fff!important;border:1px solid #cbd5e1!important;min-height:120px!important}
+.strongerWeekBoard .assignmentCell:hover{outline:2px solid #60a5fa!important;outline-offset:-2px!important;background:#f8fbff!important}
+.task.draftTask{background:#fff7ed!important;border-color:#fb923c!important;border-left-color:#ea580c!important;box-shadow:0 0 0 2px rgba(251,146,60,.20)!important}
+.task.draftTask:before{content:'DRAFT MOVE';display:inline-block;margin-right:6px;padding:2px 6px;border-radius:999px;background:#fed7aa;color:#9a3412;font-size:10px;font-weight:900;letter-spacing:.04em}
+.modeToggle{display:flex;border:1px solid #cbd5df;border-radius:10px;overflow:hidden;align-self:flex-end;background:#fff;height:40px}
+.modeToggle button{border:0;border-right:1px solid #cbd5df;border-radius:0;background:#fff;color:#334155;padding:0 14px;font-weight:800;cursor:pointer}
+.modeToggle button:last-child{border-right:0}
+.modeToggle button.active{background:#263849;color:#fff}
+.task.liveForecastTask{border-left-color:#2563eb!important;background:#f8fbff!important;cursor:default!important}
+.task.forecastMovedTask{box-shadow:0 0 0 2px rgba(37,99,235,.16)!important}
+.task.forecastBlockedTask{background:#f3f4f6!important;border-left-color:#64748b!important}
+.forecastBadge,.forecastMovedBadge{display:inline-block;margin-left:4px;border-radius:999px;padding:2px 6px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+.forecastBadge{background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd}
+.forecastMovedBadge{background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe}
+@media print{.weeklyDraftNotice,.weekDividerHeader{position:static!important;box-shadow:none!important}.strongerWeekBoard{border:1px solid #999!important;background:#fff!important;padding:0!important;margin:0!important}.weekDividerHeader{background:#fff!important;color:#000!important;border-radius:0!important;padding:2px!important}}
+
+/* v66 global dark mode */
+:root[data-theme="dark"]{
+  --bg:#0f172a;
+  --card:#172033;
+  --ink:#e5e7eb;
+  --muted:#a7b0c0;
+  --line:#334155;
+  --accent:#60a5fa;
+  --good:#34d399;
+  --bad:#f87171;
+  --warn:#fbbf24;
+}
+:root[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .treeCard,
+:root[data-theme="dark"] .buildCard,
+:root[data-theme="dark"] .task,
+:root[data-theme="dark"] .employeeHeader,
+:root[data-theme="dark"] .dayHeader,
+:root[data-theme="dark"] .employeeCell,
+:root[data-theme="dark"] .assignmentCell,
+:root[data-theme="dark"] .projectList button,
+:root[data-theme="dark"] .treeItem,
+:root[data-theme="dark"] .globalSearchPanel,
+:root[data-theme="dark"] .dashPanel,
+:root[data-theme="dark"] .miniEmployee,
+:root[data-theme="dark"] .calendarDay,
+:root[data-theme="dark"] .projectTile,
+:root[data-theme="dark"] .monthDay,
+:root[data-theme="dark"] .timelineRow,
+:root[data-theme="dark"] .issueRow,
+:root[data-theme="dark"] .reqPair{
+  background:var(--card)!important;
+  color:var(--ink)!important;
+  border-color:var(--line)!important;
+}
+:root[data-theme="dark"] .nav button,
+:root[data-theme="dark"] .btn,
+:root[data-theme="dark"] .mini,
+:root[data-theme="dark"] button:not(.active):not(.primary){
+  background:#1e293b;
+  color:var(--ink);
+  border-color:var(--line);
+}
+:root[data-theme="dark"] .nav button.active,
+:root[data-theme="dark"] .btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea{
+  background:#0f172a!important;
+  color:var(--ink)!important;
+  border-color:#475569!important;
+}
+:root[data-theme="dark"] select option{background:#0f172a;color:var(--ink)}
+:root[data-theme="dark"] th,
+:root[data-theme="dark"] .employeeHeader,
+:root[data-theme="dark"] .dayHeader,
+:root[data-theme="dark"] .week,
+:root[data-theme="dark"] .groupHeader td,
+:root[data-theme="dark"] .topNode,
+:root[data-theme="dark"] .treeAdd,
+:root[data-theme="dark"] .activeTree,
+:root[data-theme="dark"] .selectedProject{
+  background:#1e293b!important;
+  color:var(--ink)!important;
+  border-color:#475569!important;
+}
+:root[data-theme="dark"] td,
+:root[data-theme="dark"] th{border-color:var(--line)}
+:root[data-theme="dark"] .muted,
+:root[data-theme="dark"] label,
+:root[data-theme="dark"] small,
+:root[data-theme="dark"] .dayHeader span,
+:root[data-theme="dark"] .employeeCell span{color:var(--muted)!important}
+:root[data-theme="dark"] .assignmentCell{background:#111827!important;border-style:dashed}
+:root[data-theme="dark"] .assignmentCell:hover{background:#172554!important;border-color:var(--accent)!important}
+:root[data-theme="dark"] .assignmentCell.overloaded{background:#3f1d1d!important;border-color:#b91c1c!important}
+:root[data-theme="dark"] .assignmentCell.unavailable{background:#111827!important;border-color:#374151!important}
+:root[data-theme="dark"] .pill.good{background:#064e3b;color:#a7f3d0}
+:root[data-theme="dark"] .pill.bad{background:#7f1d1d;color:#fecaca}
+:root[data-theme="dark"] .pill.warn{background:#713f12;color:#fde68a}
+:root[data-theme="dark"] .bar{background:#334155}
+:root[data-theme="dark"] .bar>span{background:#60a5fa}
+:root[data-theme="dark"] .completedChunk,
+:root[data-theme="dark"] .task.completeBuild{background:#1e3a5f!important;border-color:#60a5fa!important}
+:root[data-theme="dark"] .late td{background:#3f1d1d!important}
+:root[data-theme="dark"] .subAssemblyRow td{background:#111827!important}
+:root[data-theme="dark"] .dashTopBar{background:#111827!important;border-color:var(--line)!important;color:var(--ink)!important}
+@media print{ :root[data-theme="dark"] body{background:#fff!important;color:#000!important} }
+
+
+/* v68 professional visual polish */
+:root{
+  --bg:#f4f5f7;
+  --card:#ffffff;
+  --ink:#18212f;
+  --muted:#647084;
+  --line:#d6dce6;
+  --accent:#3f5f74;
+  --accentSoft:#e8eef2;
+  --accentStrong:#29475a;
+  --good:#227455;
+  --bad:#b33a32;
+  --warn:#9a6a16;
+}
+body.__legacyDarkDisabled{
+  --bg:#111827;
+  --card:#1f2937;
+  --ink:#f3f6fb;
+  --muted:#c3cad6;
+  --line:#445064;
+  --accent:#8fb2c7;
+  --accentSoft:#263647;
+  --accentStrong:#b7d2e2;
+  --good:#7dd3a6;
+  --bad:#fca5a5;
+  --warn:#f6d365;
+  background:#111827;
+  color:#f3f6fb;
+}
+body.__legacyDarkDisabled .card,
+body.__legacyDarkDisabled .todayEmployee,
+body.__legacyDarkDisabled .employeeHeader,
+body.__legacyDarkDisabled .dayHeader,
+body.__legacyDarkDisabled .employeeCell,
+body.__legacyDarkDisabled .assignmentCell,
+body.__legacyDarkDisabled .task,
+body.__legacyDarkDisabled .ganttWrap,
+body.__legacyDarkDisabled .ganttLabel,
+body.__legacyDarkDisabled .projectTile,
+body.__legacyDarkDisabled .treeCard,
+body.__legacyDarkDisabled .modal,
+body.__legacyDarkDisabled .controlHero,
+body.__legacyDarkDisabled .heroStats div{
+  background:var(--card)!important;
+  color:var(--ink)!important;
+  border-color:var(--line)!important;
+}
+body.__legacyDarkDisabled input,
+body.__legacyDarkDisabled select,
+body.__legacyDarkDisabled textarea,
+body.__legacyDarkDisabled option{
+  background:#111827!important;
+  color:#f8fafc!important;
+  border-color:#5b6679!important;
+}
+body.__legacyDarkDisabled input::placeholder,
+body.__legacyDarkDisabled textarea::placeholder{color:#aab3c2!important;}
+body.__legacyDarkDisabled th{background:#263141!important;color:#d4dbe7!important;}
+body.__legacyDarkDisabled td{border-color:#445064!important;}
+body.__legacyDarkDisabled .muted,
+body.__legacyDarkDisabled label,
+body.__legacyDarkDisabled .dayHeader span,
+body.__legacyDarkDisabled .employeeCell span{color:#c3cad6!important;}
+body.__legacyDarkDisabled .mini,
+body.__legacyDarkDisabled .btn,
+body.__legacyDarkDisabled .nav button{
+  background:#263141!important;
+  color:#f8fafc!important;
+  border-color:#526071!important;
+}
+body.__legacyDarkDisabled .btn.primary,
+body.__legacyDarkDisabled .nav button.active{
+  background:#6f91a7!important;
+  color:#0f172a!important;
+  border-color:#8fb2c7!important;
+}
+.nav button.active,.btn.primary{background:var(--accentStrong)!important;border-color:var(--accentStrong)!important;color:#fff!important;box-shadow:none!important;}
+.nav button,.btn{background:#fff;color:var(--ink);border-color:var(--line);}
+.boardHeader{background:linear-gradient(180deg,#ffffff,#f7f9fb)!important;border:1px solid var(--line)!important;}
+.weeklyBoardCard{border:1px solid var(--line)!important;box-shadow:0 10px 30px rgba(15,23,42,.06)!important;}
+.strongerWeekBoard{margin:22px 0 30px!important;border:1px solid #c8d1dc!important;border-radius:18px!important;overflow:hidden!important;background:#fff!important;}
+.weekDividerHeader{margin:0!important;padding:12px 16px!important;background:#e9eef2!important;color:#263849!important;border-bottom:1px solid #c8d1dc!important;font-size:16px!important;letter-spacing:.01em!important;}
+.employeeBoard{gap:0!important;border-collapse:collapse!important;}
+.employeeHeader,.dayHeader,.employeeCell,.assignmentCell{border-radius:0!important;border-width:0 1px 1px 0!important;}
+.employeeHeader,.dayHeader{background:#eef2f5!important;color:#263849!important;}
+.assignmentCell{background:#fbfcfd!important;border-style:solid!important;}
+.assignmentCell:hover{background:#f7fafc!important;border-color:#b7c2ce!important;}
+.task{border-left-color:#6f8798!important;box-shadow:0 3px 10px rgba(15,23,42,.08)!important;}
+.task .dragHandle{background:#eef2f5!important;border-color:#cbd5df!important;color:#334c5f!important;}
+.bar>span{background:var(--accentStrong)!important;}
+.capacitySuggestion{border-left-color:var(--accentStrong)!important;background:#f8fafc!important;color:#18212f!important;}
+body.__legacyDarkDisabled .boardHeader{background:#1f2937!important;}
+body.__legacyDarkDisabled .strongerWeekBoard{background:#1f2937!important;border-color:#526071!important;}
+body.__legacyDarkDisabled .weekDividerHeader{background:#2b3848!important;color:#f8fafc!important;border-color:#526071!important;}
+body.__legacyDarkDisabled .employeeHeader,body.__legacyDarkDisabled .dayHeader{background:#263141!important;color:#f8fafc!important;}
+body.__legacyDarkDisabled .assignmentCell{background:#1b2431!important;}
+body.__legacyDarkDisabled .assignmentCell:hover{background:#223044!important;}
+body.__legacyDarkDisabled .task{background:#273244!important;color:#f8fafc!important;box-shadow:none!important;}
+body.__legacyDarkDisabled .task .dragHandle{background:#344256!important;color:#eaf2f7!important;border-color:#5b6679!important;}
+body.__legacyDarkDisabled .capacitySuggestion{background:#1b2431!important;color:#f8fafc!important;}
+
+/* Cleaner print/export styling */
+@media print{
+  body{background:#fff!important;color:#111827!important;}
+  .weeklyBoardCard{border:0!important;box-shadow:none!important;}
+  .strongerWeekBoard{page-break-after:always;border:1px solid #aeb8c4!important;border-radius:0!important;}
+  .weekDividerHeader{background:#eef2f5!important;color:#111827!important;border-bottom:1px solid #aeb8c4!important;}
+  .employeeHeader,.dayHeader{background:#eef2f5!important;color:#111827!important;}
+  .assignmentCell,.employeeCell{background:#fff!important;color:#111827!important;min-height:90px!important;}
+  .task{box-shadow:none!important;border:1px solid #b8c2cc!important;border-left:5px solid #6f8798!important;color:#111827!important;background:#fff!important;}
+}
+
+/* v69 dark mode contrast + weekly board Friday clipping fix */
+body.__legacyDarkDisabled{color-scheme:dark;}
+body.__legacyDarkDisabled input,
+body.__legacyDarkDisabled select,
+body.__legacyDarkDisabled textarea,
+body.__legacyDarkDisabled .largeInput,
+body.__legacyDarkDisabled td input,
+body.__legacyDarkDisabled td select,
+body.__legacyDarkDisabled td textarea{
+  background:#f8fafc!important;
+  color:#0f172a!important;
+  border:1px solid #94a3b8!important;
+  box-shadow:inset 0 0 0 1px rgba(15,23,42,.03)!important;
+}
+body.__legacyDarkDisabled input[type="date"],
+body.__legacyDarkDisabled input[type="month"],
+body.__legacyDarkDisabled input[type="datetime-local"],
+body.__legacyDarkDisabled input[type="time"],
+body.__legacyDarkDisabled input[type="number"]{
+  background:#f8fafc!important;
+  color:#0f172a!important;
+}
+body.__legacyDarkDisabled select option{background:#f8fafc!important;color:#0f172a!important;}
+body.__legacyDarkDisabled input::placeholder,
+body.__legacyDarkDisabled textarea::placeholder{color:#64748b!important;opacity:1!important;}
+body.__legacyDarkDisabled input:focus,
+body.__legacyDarkDisabled select:focus,
+body.__legacyDarkDisabled textarea:focus{
+  outline:3px solid rgba(143,178,199,.45)!important;
+  border-color:#8fb2c7!important;
+}
+body.__legacyDarkDisabled input[disabled],
+body.__legacyDarkDisabled select[disabled],
+body.__legacyDarkDisabled textarea[disabled],
+body.__legacyDarkDisabled input:read-only{
+  background:#d9e2ea!important;
+  color:#334155!important;
+}
+body.__legacyDarkDisabled .checkLine,
+body.__legacyDarkDisabled .reqPair,
+body.__legacyDarkDisabled .empPick label,
+body.__legacyDarkDisabled .employeePickerNoScroll label,
+body.__legacyDarkDisabled .noScrollEmpGrid label{
+  background:#263141!important;
+  color:#f8fafc!important;
+  border-color:#526071!important;
+}
+body.__legacyDarkDisabled .checkLine input,
+body.__legacyDarkDisabled .reqPair input,
+body.__legacyDarkDisabled input[type="checkbox"],
+body.__legacyDarkDisabled input[type="radio"]{
+  width:auto!important;
+  min-width:auto!important;
+  min-height:auto!important;
+  accent-color:#8fb2c7!important;
+}
+body.__legacyDarkDisabled .pill,
+body.__legacyDarkDisabled .offBadge,
+body.__legacyDarkDisabled .hourBadge,
+body.__legacyDarkDisabled .overBadge{filter:none!important;}
+body.__legacyDarkDisabled .task input,
+body.__legacyDarkDisabled .task select{
+  background:#ffffff!important;
+  color:#0f172a!important;
+  border-color:#94a3b8!important;
+}
+.weekBoard{overflow-x:auto!important;overflow-y:visible!important;padding-bottom:10px!important;}
+.strongerWeekBoard{overflow-x:auto!important;overflow-y:visible!important;}
+.strongerWeekBoard .employeeBoard{min-width:1360px!important;width:max-content!important;padding-right:12px!important;}
+.strongerWeekBoard .assignmentCell:last-child,
+.strongerWeekBoard .dayHeader:last-child{border-right:1px solid var(--line)!important;}
+.weeklyBoardCard{overflow:visible!important;}
+.boardHeader{overflow:visible!important;}
+@media print{
+  .weekBoard,.strongerWeekBoard{overflow:visible!important;break-inside:avoid!important;page-break-inside:avoid!important;}
+  .strongerWeekBoard .employeeBoard{min-width:0!important;width:100%!important;grid-template-columns:120px repeat(var(--week-days,5),1fr)!important;}
+  .employeeHeader,.dayHeader,.employeeCell,.assignmentCell{font-size:9px!important;padding:5px!important;}
+  .task{font-size:8px!important;padding:5px!important;margin:3px 0!important;box-shadow:none!important;}
+}
+
+/* v70: readable dark mode and consistent MM/DD/YYYY display support */
+:root[data-theme="dark"]{
+  --bg:#0f172a;
+  --card:#172033;
+  --ink:#e5e7eb;
+  --muted:#aeb8ca;
+  --line:#334155;
+  --accent:#64748b;
+  --good:#7dd3a7;
+  --bad:#fca5a5;
+  --warn:#fcd34d;
+}
+:root[data-theme="dark"] body,
+:root[data-theme="dark"] .shell{background:var(--bg);color:var(--ink)}
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .dashPanel,
+:root[data-theme="dark"] .buildCard,
+:root[data-theme="dark"] .treeCard,
+:root[data-theme="dark"] .projectCalendar,
+:root[data-theme="dark"] .projectSidebar,
+:root[data-theme="dark"] .projectMain,
+:root[data-theme="dark"] .modal,
+:root[data-theme="dark"] .panel{background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] .globalSearchInput,
+:root[data-theme="dark"] .largeInput,
+:root[data-theme="dark"] .tiny,
+:root[data-theme="dark"] input[type="date"],
+:root[data-theme="dark"] input[type="datetime-local"],
+:root[data-theme="dark"] input[type="number"],
+:root[data-theme="dark"] input[type="time"]{
+  background:#111827!important;
+  color:#f9fafb!important;
+  border-color:#475569!important;
+  box-shadow:none!important;
+  color-scheme:dark;
+}
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder{color:#94a3b8!important}
+:root[data-theme="dark"] select option{background:#111827!important;color:#f9fafb!important}
+:root[data-theme="dark"] button,
+:root[data-theme="dark"] .btn,
+:root[data-theme="dark"] .mini{
+  background:#1f2937!important;
+  color:#f9fafb!important;
+  border-color:#475569!important;
+}
+:root[data-theme="dark"] .btn.primary,
+:root[data-theme="dark"] .nav button.active{background:#475569!important;border-color:#64748b!important;color:#fff!important}
+:root[data-theme="dark"] .nav button{background:#1f2937!important;color:#e5e7eb!important;border-color:#475569!important}
+:root[data-theme="dark"] th,
+:root[data-theme="dark"] td{border-color:#334155!important;color:#e5e7eb!important}
+:root[data-theme="dark"] th{background:#1e293b!important;color:#cbd5e1!important}
+:root[data-theme="dark"] tr,
+:root[data-theme="dark"] table{background:transparent!important;color:#e5e7eb!important}
+:root[data-theme="dark"] .employeeHeader,
+:root[data-theme="dark"] .dayHeader,
+:root[data-theme="dark"] .employeeCell,
+:root[data-theme="dark"] .assignmentCell,
+:root[data-theme="dark"] .day,
+:root[data-theme="dark"] .task,
+:root[data-theme="dark"] .treeItem,
+:root[data-theme="dark"] .projectList button,
+:root[data-theme="dark"] .topTile,
+:root[data-theme="dark"] .calendarDay,
+:root[data-theme="dark"] .monthDay,
+:root[data-theme="dark"] .weekSection,
+:root[data-theme="dark"] .compactList,
+:root[data-theme="dark"] .alertLine{
+  background:#1f2937!important;
+  color:#f3f4f6!important;
+  border-color:#475569!important;
+}
+:root[data-theme="dark"] .assignmentCell:hover,
+:root[data-theme="dark"] .treeItem:hover,
+:root[data-theme="dark"] .projectList button:hover{background:#263244!important}
+:root[data-theme="dark"] .muted,
+:root[data-theme="dark"] label,
+:root[data-theme="dark"] small,
+:root[data-theme="dark"] .fieldHelp{color:#cbd5e1!important}
+:root[data-theme="dark"] .pill{border:1px solid #475569}
+:root[data-theme="dark"] .pill.good{background:#064e3b!important;color:#bbf7d0!important}
+:root[data-theme="dark"] .pill.warn{background:#713f12!important;color:#fde68a!important}
+:root[data-theme="dark"] .pill.bad{background:#7f1d1d!important;color:#fecaca!important}
+:root[data-theme="dark"] .assignmentCell.overloaded{background:#3b1f25!important;border-color:#7f1d1d!important}
+:root[data-theme="dark"] .assignmentCell.unavailable{background:#111827!important;border-color:#475569!important}
+:root[data-theme="dark"] .week,
+:root[data-theme="dark"] .groupHeader td{background:#273449!important;color:#f8fafc!important;border-color:#475569!important}
+:root[data-theme="dark"] .topNode,
+:root[data-theme="dark"] .subNode,
+:root[data-theme="dark"] .treeAdd,
+:root[data-theme="dark"] .reqPair,
+:root[data-theme="dark"] .checkLine{background:#1f2937!important;color:#f3f4f6!important;border-color:#475569!important}
+:root[data-theme="dark"] input:-webkit-autofill,
+:root[data-theme="dark"] textarea:-webkit-autofill,
+:root[data-theme="dark"] select:-webkit-autofill{
+  -webkit-text-fill-color:#f9fafb!important;
+  -webkit-box-shadow:0 0 0 1000px #111827 inset!important;
+}
+
+/* v71: real readability/layout cleanup */
+:root{
+  --accent:#52677a;
+  --accentStrong:#3f5364;
+  --shadow:0 8px 24px rgba(15,23,42,.07);
+}
+.shell{max-width:1560px;padding:18px 20px 28px;}
+.top{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px 16px;
+  box-shadow:var(--shadow);
+  margin-bottom:14px;
+}
+.brand h1{font-size:24px;letter-spacing:-.02em}.brand p{font-size:13px;max-width:820px}.top .actions{align-items:center}.globalSearchInput{min-width:300px;max-width:420px}.nav{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:16px;padding:8px;position:sticky;top:0;z-index:30;backdrop-filter:blur(8px)}.nav button{border-radius:11px;padding:8px 11px;background:transparent}.nav button.active,.btn.primary{background:#3f5364!important;border-color:#3f5364!important;color:#fff!important}
+
+/* make the controls above weekly board readable and compact */
+.weeklyBoardCard{padding:16px!important;overflow:visible!important}.boardHeader{display:grid!important;grid-template-columns:minmax(260px,1fr) minmax(620px,1.8fr);align-items:start;gap:18px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}.boardHeader h2{margin:0 0 4px}.boardHeader p{margin:0;line-height:1.35}.enhancedBoardTools{display:grid!important;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;align-items:flex-end}.enhancedBoardTools .field{grid-column:auto!important;min-width:0}.enhancedBoardTools .monthPick{max-width:none!important}.enhancedBoardTools .checkLine{min-height:40px;align-self:flex-end}.enhancedBoardTools button{white-space:nowrap;min-height:40px}.capacitySuggestion{white-space:pre-wrap;max-height:180px;overflow:auto}
+
+/* weekly board: fit Mon-Fri cleanly instead of clipping to only early week columns */
+.weekBoard{width:100%!important;overflow:visible!important;margin:22px 0 28px!important}.strongerWeekBoard{border:1px solid #c8d1dc!important;border-radius:18px!important;background:#ffffff!important;padding:0!important;box-shadow:var(--shadow)!important;overflow:visible!important}.weekDividerHeader{position:sticky!important;top:62px!important;z-index:18!important;margin:0!important;padding:11px 14px!important;background:#eef2f5!important;color:#263849!important;border-bottom:1px solid #c8d1dc!important;border-radius:18px 18px 0 0!important}.strongerWeekBoard .employeeBoard,.employeeBoard{display:grid!important;grid-template-columns:150px repeat(var(--week-days,5),minmax(135px,1fr))!important;gap:0!important;min-width:0!important;width:100%!important;padding:0!important}.employeeHeader,.dayHeader,.employeeCell,.assignmentCell{border-radius:0!important;border:0!important;border-right:1px solid #d5dde7!important;border-bottom:1px solid #d5dde7!important;padding:8px!important;min-width:0!important}.employeeHeader,.dayHeader{background:#f3f6f9!important;color:#263849!important;position:sticky;top:109px;z-index:10}.employeeHeader{left:0;z-index:14}.employeeCell{background:#f8fafc!important;position:sticky;left:0;z-index:9}.assignmentCell{background:#fbfcfd!important;min-height:118px!important;overflow:visible!important}.assignmentCell:hover{background:#f6f9fb!important}.dayHeader b{font-size:13px}.dayHeader span,.employeeCell span{font-size:11px}.task{padding:7px!important;margin:6px 0!important;border-radius:10px!important;box-shadow:0 2px 8px rgba(15,23,42,.08)!important;overflow:hidden}.tileDescription{font-size:12.5px!important;line-height:1.18!important}.tileMeta,.task small{font-size:11px!important}.dragHandle{min-height:26px!important;padding:2px 6px!important}.completionEdit{min-height:28px!important;font-size:12px!important;padding:4px!important}
+
+/* dates shown as month/day/year in text areas/cards */
+.weekDividerHeader::first-letter{text-transform:uppercase}
+
+/* dark mode: final catch-all to stop white-on-white / bright white fields */
+html[data-theme="dark"] body{background:#0b1220!important;color:#e8edf5!important;color-scheme:dark}html[data-theme="dark"] .shell{background:#0b1220!important;color:#e8edf5!important}html[data-theme="dark"] .top,html[data-theme="dark"] .nav,html[data-theme="dark"] .card,html[data-theme="dark"] .boardHeader,html[data-theme="dark"] .dashPanel,html[data-theme="dark"] .buildCard,html[data-theme="dark"] .treeCard,html[data-theme="dark"] .projectList button,html[data-theme="dark"] .treeItem,html[data-theme="dark"] .projectCalDay,html[data-theme="dark"] .projectMonthCalendar,html[data-theme="dark"] .strongerWeekBoard{background:#111827!important;color:#e8edf5!important;border-color:#334155!important;box-shadow:none!important}html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea,html[data-theme="dark"] .largeInput,html[data-theme="dark"] .globalSearchInput,html[data-theme="dark"] .tiny,html[data-theme="dark"] .completionEdit,html[data-theme="dark"] td input,html[data-theme="dark"] td select,html[data-theme="dark"] td textarea{background:#0f172a!important;color:#f8fafc!important;border:1px solid #64748b!important;box-shadow:none!important;caret-color:#f8fafc!important}html[data-theme="dark"] input[type="date"],html[data-theme="dark"] input[type="month"],html[data-theme="dark"] input[type="datetime-local"],html[data-theme="dark"] input[type="time"],html[data-theme="dark"] input[type="number"]{background:#0f172a!important;color:#f8fafc!important;color-scheme:dark!important}html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:#94a3b8!important;opacity:1!important}html[data-theme="dark"] select option{background:#0f172a!important;color:#f8fafc!important}html[data-theme="dark"] label,html[data-theme="dark"] .muted,html[data-theme="dark"] small,html[data-theme="dark"] .fieldHelp{color:#cbd5e1!important}html[data-theme="dark"] .employeeHeader,html[data-theme="dark"] .dayHeader,html[data-theme="dark"] .weekDividerHeader{background:#1e293b!important;color:#f8fafc!important;border-color:#334155!important}html[data-theme="dark"] .employeeCell,html[data-theme="dark"] .assignmentCell,html[data-theme="dark"] .task,html[data-theme="dark"] .day{background:#172033!important;color:#f8fafc!important;border-color:#334155!important}html[data-theme="dark"] .assignmentCell:hover{background:#1f2a3a!important}html[data-theme="dark"] .task{box-shadow:none!important}html[data-theme="dark"] button,html[data-theme="dark"] .btn,html[data-theme="dark"] .mini{background:#1f2937!important;color:#f8fafc!important;border-color:#475569!important}html[data-theme="dark"] .btn.primary,html[data-theme="dark"] .nav button.active{background:#64748b!important;border-color:#94a3b8!important;color:#fff!important}html[data-theme="dark"] .nav button{background:transparent!important;color:#dbe5ee!important}html[data-theme="dark"] .nav button:hover{background:#1f2937!important}html[data-theme="dark"] th{background:#1e293b!important;color:#e2e8f0!important}html[data-theme="dark"] td{color:#e2e8f0!important;border-color:#334155!important}html[data-theme="dark"] .checkLine,html[data-theme="dark"] .reqPair,html[data-theme="dark"] .empPick label,html[data-theme="dark"] .employeePickerNoScroll label,html[data-theme="dark"] .noScrollEmpGrid label{background:#172033!important;color:#f8fafc!important;border-color:#475569!important}html[data-theme="dark"] input[type="checkbox"],html[data-theme="dark"] input[type="radio"]{accent-color:#94a3b8!important;background:transparent!important;border:0!important;width:auto!important;min-width:auto!important}html[data-theme="dark"] .projectCalTile{background:#1f2937!important;color:#f8fafc!important;border-color:#475569!important}html[data-theme="dark"] .projectCalTile b,html[data-theme="dark"] .projectCalTile span,html[data-theme="dark"] .projectCalTile small{color:#f8fafc!important}
+
+@media(max-width:1180px){.boardHeader{grid-template-columns:1fr}.enhancedBoardTools{grid-template-columns:repeat(3,minmax(140px,1fr))}.strongerWeekBoard .employeeBoard,.employeeBoard{grid-template-columns:130px repeat(var(--week-days,5),minmax(120px,1fr))!important}.tileDescription{font-size:11.5px!important}.tileMeta,.task small{font-size:10.5px!important}}
+@media(max-width:850px){.shell{padding:12px}.top{display:block}.globalSearchInput{min-width:0;max-width:none;width:100%}.enhancedBoardTools{grid-template-columns:1fr 1fr}.weekBoard{overflow-x:auto!important}.strongerWeekBoard .employeeBoard,.employeeBoard{min-width:860px!important;width:860px!important}.employeeHeader,.dayHeader{top:0}.weekDividerHeader{top:0!important}}
+
+@media print{.nav,.top .actions,.boardTools,.draftNotice,.capacitySuggestion{display:none!important}.shell{max-width:none!important;padding:0!important}.top{border:0!important;box-shadow:none!important}.boardHeader{display:block!important;border:0!important;box-shadow:none!important;padding:0!important}.strongerWeekBoard .employeeBoard,.employeeBoard{grid-template-columns:90px repeat(var(--week-days,5),1fr)!important;min-width:0!important;width:100%!important}.weekDividerHeader,.employeeHeader,.dayHeader{position:static!important}.assignmentCell{min-height:86px!important}.task{font-size:8px!important;padding:4px!important;margin:3px 0!important}}
+
+/* v72: date/readability polish and stronger dark-mode coverage */
+html[data-theme="dark"] .editorSections section,
+html[data-theme="dark"] .editorGrid,
+html[data-theme="dark"] .reqGrid,
+html[data-theme="dark"] .libraryReq,
+html[data-theme="dark"] .treeBuilderRow,
+html[data-theme="dark"] .treeBuilderAdd,
+html[data-theme="dark"] .librarySelectableList,
+html[data-theme="dark"] .librarySelect,
+html[data-theme="dark"] .libraryTools,
+html[data-theme="dark"] .libraryHeader,
+html[data-theme="dark"] .libraryStats span,
+html[data-theme="dark"] .libraryListPanel,
+html[data-theme="dark"] .libraryEditorPanel,
+html[data-theme="dark"] .assemblyEditor,
+html[data-theme="dark"] .selectedTopEditor,
+html[data-theme="dark"] .buildCardRedesign,
+html[data-theme="dark"] .subAssemblyCard,
+html[data-theme="dark"] .topAssemblyTile,
+html[data-theme="dark"] .projectTileSection,
+html[data-theme="dark"] .projectCalendarCard,
+html[data-theme="dark"] .projectCalCell,
+html[data-theme="dark"] .projectCalTile,
+html[data-theme="dark"] .calendarDay,
+html[data-theme="dark"] .availabilityCalendar,
+html[data-theme="dark"] .dashTopBar,
+html[data-theme="dark"] .dashPanel,
+html[data-theme="dark"] .miniEmployee,
+html[data-theme="dark"] .alertLine,
+html[data-theme="dark"] .ganttWrap,
+html[data-theme="dark"] .ganttGrid,
+html[data-theme="dark"] .ganttLabel,
+html[data-theme="dark"] .ganttRow,
+html[data-theme="dark"] .plannerPanel,
+html[data-theme="dark"] .backupWarning,
+html[data-theme="dark"] .noScrollEmpGrid,
+html[data-theme="dark"] .empPickGrid{
+  background:#111827!important;
+  color:#f8fafc!important;
+  border-color:#475569!important;
+  box-shadow:none!important;
+}
+html[data-theme="dark"] .editorSections h3,
+html[data-theme="dark"] .libraryEditorPanel h2,
+html[data-theme="dark"] .libraryEditorPanel h3,
+html[data-theme="dark"] .treeHandle,
+html[data-theme="dark"] .topTileDescription,
+html[data-theme="dark"] .tileDescription,
+html[data-theme="dark"] .tileMeta,
+html[data-theme="dark"] .tileDesc,
+html[data-theme="dark"] .tileFacts span,
+html[data-theme="dark"] .subCardHeader b,
+html[data-theme="dark"] .buildCardHead b,
+html[data-theme="dark"] .ganttLabel b,
+html[data-theme="dark"] .ganttLabel span,
+html[data-theme="dark"] .ganttLabel small{
+  color:#f8fafc!important;
+}
+html[data-theme="dark"] .field,
+html[data-theme="dark"] .field.wide,
+html[data-theme="dark"] .field.full,
+html[data-theme="dark"] .projectForm,
+html[data-theme="dark"] .buildControls,
+html[data-theme="dark"] .subCardGrid{
+  background:transparent!important;
+  color:#f8fafc!important;
+}
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] .largeInput,
+html[data-theme="dark"] .globalSearchInput,
+html[data-theme="dark"] .completionEdit input,
+html[data-theme="dark"] .treeSubFields input,
+html[data-theme="dark"] .editorGrid input,
+html[data-theme="dark"] .editorGrid select,
+html[data-theme="dark"] .editorGrid textarea,
+html[data-theme="dark"] .reqGrid input,
+html[data-theme="dark"] .treeBuilderAdd select,
+html[data-theme="dark"] .libraryTools input,
+html[data-theme="dark"] .libraryTools select,
+html[data-theme="dark"] .buildControls input,
+html[data-theme="dark"] .buildControls select,
+html[data-theme="dark"] .buildControls textarea,
+html[data-theme="dark"] .subCardGrid input,
+html[data-theme="dark"] .subCardGrid select,
+html[data-theme="dark"] .subCardGrid textarea,
+html[data-theme="dark"] .boardHeader input,
+html[data-theme="dark"] .boardHeader select,
+html[data-theme="dark"] table input,
+html[data-theme="dark"] table select,
+html[data-theme="dark"] table textarea{
+  background:#0b1220!important;
+  color:#f8fafc!important;
+  border:1px solid #64748b!important;
+  color-scheme:dark!important;
+}
+html[data-theme="dark"] input[type="checkbox"],
+html[data-theme="dark"] input[type="radio"]{
+  background:transparent!important;
+  border:0!important;
+  color-scheme:dark!important;
+  accent-color:#94a3b8!important;
+}
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus{
+  outline:2px solid #94a3b8!important;
+  outline-offset:1px!important;
+  border-color:#cbd5e1!important;
+}
+html[data-theme="dark"] .task,
+html[data-theme="dark"] .assignmentCell,
+html[data-theme="dark"] .employeeCell,
+html[data-theme="dark"] .employeeHeader,
+html[data-theme="dark"] .dayHeader{
+  border-color:#3f4d61!important;
+}
+html[data-theme="dark"] .task{
+  background:#182235!important;
+  border:1px solid #5b6b82!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.04)!important;
+}
+html[data-theme="dark"] .task.buildTileDone{background:#14324a!important;border-color:#64a0c8!important;}
+html[data-theme="dark"] .task.buildTilePartial{background:#1d3144!important;border-color:#7aa5c0!important;}
+html[data-theme="dark"] .statusBadge,
+html[data-theme="dark"] .phaseBadge,
+html[data-theme="dark"] .batchBadge,
+html[data-theme="dark"] .splitBadge,
+html[data-theme="dark"] .hourBadge,
+html[data-theme="dark"] .offBadge{
+  background:#263449!important;
+  color:#f8fafc!important;
+  border-color:#64748b!important;
+}
+html[data-theme="dark"] .overBadge,
+html[data-theme="dark"] .lateBadge{background:#5f1f2a!important;color:#fecaca!important;border-color:#b91c1c!important;}
+html[data-theme="dark"] .assignmentCell.overloaded{background:#311922!important;border-color:#7f1d1d!important;}
+html[data-theme="dark"] .assignmentCell.unavailable{background:#0b1220!important;border-color:#334155!important;}
+html[data-theme="dark"] .weekDividerHeader{background:#172033!important;color:#f8fafc!important;border-bottom:1px solid #475569!important;}
+html[data-theme="dark"] .strongerWeekBoard{background:#0f172a!important;border-color:#475569!important;}
+html[data-theme="dark"] .employeeHeader,
+html[data-theme="dark"] .dayHeader{background:#172033!important;color:#f8fafc!important;}
+html[data-theme="dark"] .employeeCell{background:#111827!important;color:#f8fafc!important;}
+html[data-theme="dark"] .assignmentCell{background:#0f172a!important;color:#f8fafc!important;}
+
+/* cleaner weekly board tile definition in both modes */
+.task{border-width:1px!important;border-left-width:5px!important;border-left-color:#6f8798!important;}
+.task.statusLate{border-left-color:#b42318!important;}
+.task.statusAtRisk{border-left-color:#d97706!important;}
+.task.statusBlocked{border-left-color:#64748b!important;}
+.task.statusBuildComplete,.task.buildTileDone{border-left-color:#0284c7!important;}
+.task.statusShipped{border-left-color:#0f7b4f!important;}
+
+/* Force visible date text to use MM/DD/YYYY through the React formatter; keep native inputs ISO for browser controls. */
+.datePills .mini{white-space:nowrap;}
+
+/* v73 full-app dark mode and print polish */
+html[data-theme="dark"]{
+  --bg:#0f172a;
+  --card:#172033;
+  --ink:#f8fafc;
+  --muted:#cbd5e1;
+  --line:#475569;
+  --accent:#94a3b8;
+  --good:#86efac;
+  --bad:#fca5a5;
+  --warn:#facc15;
+}
+html[data-theme="dark"] body{background:#0b1120!important;color:#f8fafc!important;}
+html[data-theme="dark"] .shell,
+html[data-theme="dark"] .page,
+html[data-theme="dark"] main{background:#0b1120!important;color:#f8fafc!important;}
+html[data-theme="dark"] .top,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .dashPanel,
+html[data-theme="dark"] .dashTopBar,
+html[data-theme="dark"] .weeklyBoardCard,
+html[data-theme="dark"] .projectRedesign,
+html[data-theme="dark"] .projectSidebar,
+html[data-theme="dark"] .projectMain,
+html[data-theme="dark"] .projectDetails,
+html[data-theme="dark"] .projectTileSection,
+html[data-theme="dark"] .projectCalendarCard,
+html[data-theme="dark"] .libraryListPanel,
+html[data-theme="dark"] .libraryEditorPanel,
+html[data-theme="dark"] .assemblyEditor,
+html[data-theme="dark"] .editorSections section,
+html[data-theme="dark"] .buildCard,
+html[data-theme="dark"] .buildCardRedesign,
+html[data-theme="dark"] .subAssemblyCard,
+html[data-theme="dark"] .treeCard,
+html[data-theme="dark"] .treeItem,
+html[data-theme="dark"] .topAssemblyTile,
+html[data-theme="dark"] .availabilityCalendar,
+html[data-theme="dark"] .plannerPanel,
+html[data-theme="dark"] .ganttWrap,
+html[data-theme="dark"] .backupWarning,
+html[data-theme="dark"] .tablewrap,
+html[data-theme="dark"] .collapsibleSection,
+html[data-theme="dark"] .setupPanel,
+html[data-theme="dark"] .formPanel{
+  background:#111827!important;
+  color:#f8fafc!important;
+  border-color:#475569!important;
+  box-shadow:0 1px 0 rgba(255,255,255,.04)!important;
+}
+html[data-theme="dark"] .nav button,
+html[data-theme="dark"] .btn,
+html[data-theme="dark"] button,
+html[data-theme="dark"] .mini{
+  background:#1f2937!important;
+  color:#f8fafc!important;
+  border-color:#64748b!important;
+}
+html[data-theme="dark"] .nav button.active,
+html[data-theme="dark"] .btn.primary{
+  background:#334155!important;
+  color:#ffffff!important;
+  border-color:#94a3b8!important;
+}
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] input[type="date"],
+html[data-theme="dark"] input[type="datetime-local"],
+html[data-theme="dark"] input[type="month"],
+html[data-theme="dark"] input[type="number"],
+html[data-theme="dark"] input[type="search"],
+html[data-theme="dark"] input[type="text"]{
+  background:#0f172a!important;
+  color:#f8fafc!important;
+  border-color:#64748b!important;
+  box-shadow:none!important;
+  color-scheme:dark!important;
+}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder{color:#94a3b8!important;opacity:1!important;}
+html[data-theme="dark"] select option{background:#0f172a!important;color:#f8fafc!important;}
+html[data-theme="dark"] label,
+html[data-theme="dark"] .muted,
+html[data-theme="dark"] small,
+html[data-theme="dark"] .fieldHelp,
+html[data-theme="dark"] .tileMeta,
+html[data-theme="dark"] .capNote,
+html[data-theme="dark"] .brand p,
+html[data-theme="dark"] .treeItem span,
+html[data-theme="dark"] .treeItem small,
+html[data-theme="dark"] .projectList button span,
+html[data-theme="dark"] .projectList button small{
+  color:#cbd5e1!important;
+}
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] b,
+html[data-theme="dark"] strong,
+html[data-theme="dark"] td,
+html[data-theme="dark"] th,
+html[data-theme="dark"] p,
+html[data-theme="dark"] span{
+  color:inherit;
+}
+html[data-theme="dark"] table,
+html[data-theme="dark"] thead,
+html[data-theme="dark"] tbody,
+html[data-theme="dark"] tr,
+html[data-theme="dark"] td,
+html[data-theme="dark"] th{border-color:#475569!important;}
+html[data-theme="dark"] th,
+html[data-theme="dark"] .groupHeader td,
+html[data-theme="dark"] .employeeHeader,
+html[data-theme="dark"] .dayHeader,
+html[data-theme="dark"] .weekDividerHeader{
+  background:#1e293b!important;
+  color:#f8fafc!important;
+  border-color:#475569!important;
+}
+html[data-theme="dark"] .employeeCell,
+html[data-theme="dark"] .assignmentCell,
+html[data-theme="dark"] .projectCalCell,
+html[data-theme="dark"] .calendarDay{
+  background:#0f172a!important;
+  color:#f8fafc!important;
+  border-color:#334155!important;
+}
+html[data-theme="dark"] .assignmentCell:hover,
+html[data-theme="dark"] .projectCalCell:hover{background:#162036!important;border-color:#64748b!important;}
+html[data-theme="dark"] .task,
+html[data-theme="dark"] .projectCalTile{
+  background:#1e293b!important;
+  color:#f8fafc!important;
+  border-color:#64748b!important;
+  border-left-color:#94a3b8!important;
+  box-shadow:0 2px 6px rgba(0,0,0,.28)!important;
+}
+html[data-theme="dark"] .task span,
+html[data-theme="dark"] .task small,
+html[data-theme="dark"] .projectCalTile span,
+html[data-theme="dark"] .projectCalTile small{color:#dbe4ef!important;}
+html[data-theme="dark"] .task.buildTileDone{background:#13324a!important;border-color:#38bdf8!important;border-left-color:#38bdf8!important;}
+html[data-theme="dark"] .task.buildTilePartial{background:#1b3146!important;border-color:#7dd3fc!important;border-left-color:#7dd3fc!important;}
+html[data-theme="dark"] .modeToggle{background:#0f172a!important;border-color:#475569!important}
+html[data-theme="dark"] .modeToggle button{background:#0f172a!important;color:#e5e7eb!important;border-color:#475569!important}
+html[data-theme="dark"] .modeToggle button.active{background:#64748b!important;color:#fff!important}
+html[data-theme="dark"] .task.liveForecastTask{background:#15233a!important;border-left-color:#60a5fa!important}
+html[data-theme="dark"] .task.forecastBlockedTask{background:#1f2937!important;border-left-color:#94a3b8!important}
+html[data-theme="dark"] .forecastBadge{background:#1e3a8a!important;color:#dbeafe!important;border-color:#60a5fa!important}
+html[data-theme="dark"] .forecastMovedBadge{background:#312e81!important;color:#e0e7ff!important;border-color:#818cf8!important}
+html[data-theme="dark"] .assignmentCell.overloaded{background:#3b1820!important;border-color:#991b1b!important;}
+html[data-theme="dark"] .assignmentCell.unavailable{background:#111827!important;border-color:#334155!important;}
+html[data-theme="dark"] .pill,
+html[data-theme="dark"] .statusBadge,
+html[data-theme="dark"] .phaseBadge,
+html[data-theme="dark"] .batchBadge,
+html[data-theme="dark"] .splitBadge,
+html[data-theme="dark"] .hourBadge,
+html[data-theme="dark"] .offBadge{
+  background:#263449!important;
+  color:#f8fafc!important;
+  border-color:#64748b!important;
+}
+html[data-theme="dark"] .lateBadge,
+html[data-theme="dark"] .overBadge{background:#5f1f2a!important;color:#fecaca!important;border-color:#ef4444!important;}
+html[data-theme="dark"] .checkLine,
+html[data-theme="dark"] .reqPair,
+html[data-theme="dark"] .empPick label,
+html[data-theme="dark"] .empPickGrid label,
+html[data-theme="dark"] .noScrollEmpGrid label{
+  background:#1e293b!important;
+  color:#f8fafc!important;
+  border-color:#475569!important;
+}
+html[data-theme="dark"] .topNode,
+html[data-theme="dark"] .subNode,
+html[data-theme="dark"] .treeAdd,
+html[data-theme="dark"] .activeTree,
+html[data-theme="dark"] .selectedProject,
+html[data-theme="dark"] .projectList button.selectedProject{
+  background:#1e293b!important;
+  color:#f8fafc!important;
+  border-color:#64748b!important;
+}
+html[data-theme="dark"] .editorSections section > div,
+html[data-theme="dark"] .basicInfo,
+html[data-theme="dark"] .basic-info,
+html[data-theme="dark"] [class*="basic"],
+html[data-theme="dark"] [class*="Basic"]{
+  background:#111827!important;
+  color:#f8fafc!important;
+  border-color:#475569!important;
+}
+
+@media print{
+  .splitBadge,.statusBadge,.phaseBadge,.batchBadge,.lateBadge,.hourBadge,.offBadge,.overBadge{font-size:7px!important;line-height:1!important;padding:1px 3px!important;margin:1px!important;display:inline-block!important;max-width:48px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  .task .splitBadge{font-size:7px!important;transform:none!important;}
+  .completionEdit,.dragHandle,.lockBtn{display:none!important;}
+}
+
+/* v80 dashboard date toggle and calendar dark-mode hardening */
+.dashDateToggle{display:inline-flex;gap:4px;margin-top:8px;border:1px solid #dbe3ef;background:#f8fafc;border-radius:12px;padding:4px}
+.dashDateToggle button{border:0;background:transparent;border-radius:9px;min-height:32px;padding:6px 10px;font-weight:900;color:#334155}
+.dashDateToggle button.active{background:#3f5364;color:#fff}
+
+html[data-theme="dark"] .dashDateToggle{
+  background:#0f172a!important;
+  border-color:#475569!important;
+}
+html[data-theme="dark"] .dashDateToggle button{
+  background:transparent!important;
+  color:#cbd5e1!important;
+  border-color:transparent!important;
+}
+html[data-theme="dark"] .dashDateToggle button.active{
+  background:#334155!important;
+  color:#f8fafc!important;
+}
+html[data-theme="dark"] .monthCalendar,
+html[data-theme="dark"] .projectMonthCalendar{
+  background:#0f172a!important;
+  color:#f8fafc!important;
+  border-color:#334155!important;
+}
+html[data-theme="dark"] .calHead{
+  background:#1e293b!important;
+  color:#f8fafc!important;
+  border-color:#475569!important;
+}
+html[data-theme="dark"] .calDay,
+html[data-theme="dark"] .projectCalDay{
+  background:#111827!important;
+  color:#f8fafc!important;
+  border-color:#334155!important;
+}
+html[data-theme="dark"] .calMuted,
+html[data-theme="dark"] .projectCalDay.calMuted,
+html[data-theme="dark"] .calendarDay.outsideMonth{
+  background:#0f172a!important;
+  color:#94a3b8!important;
+  border-color:#334155!important;
+}
+html[data-theme="dark"] .calCard,
+html[data-theme="dark"] .projectCalTile{
+  background:#1e293b!important;
+  color:#f8fafc!important;
+  border-color:#475569!important;
+  box-shadow:none!important;
+}
+html[data-theme="dark"] .calLate{
+  background:#3b1820!important;
+  color:#fecaca!important;
+  border-color:#991b1b!important;
+}
+html[data-theme="dark"] .calSub,
+html[data-theme="dark"] .calMore,
+html[data-theme="dark"] .projectCalDay .calDate,
+html[data-theme="dark"] .projectCalDay .calDate span,
+html[data-theme="dark"] .projectCalTile b,
+html[data-theme="dark"] .projectCalTile span,
+html[data-theme="dark"] .projectCalTile small{
+  color:#cbd5e1!important;
+}
+html[data-theme="dark"] .projectCalTile b,
+html[data-theme="dark"] .projectCalDay .calDate span{
+  color:#f8fafc!important;
+}
+html[data-theme="dark"] .calendarDay.calendarOff{
+  background:#1f2937!important;
+  color:#f8fafc!important;
+  border-color:#475569!important;
+}
+html[data-theme="dark"] .calendarDay.calendarOt{
+  background:#123524!important;
+  color:#dcfce7!important;
+  border-color:#166534!important;
+}
+html[data-theme="dark"] .calendarDay.calendarHoliday{
+  background:#312e81!important;
+  color:#e0e7ff!important;
+  border-color:#6366f1!important;
+}
+html[data-theme="dark"] .calendarDay.calendarOff button,
+html[data-theme="dark"] .calendarDay.calendarOt button,
+html[data-theme="dark"] .calendarDay.calendarHoliday button,
+html[data-theme="dark"] .fridayOtButton{
+  background:#1e293b!important;
+  color:#f8fafc!important;
+  border-color:#64748b!important;
+}
+
+
+/* v81 project page width + Mon-Fri project calendar */
+.projectRedesign{grid-template-columns:minmax(220px,260px) minmax(0,1fr)!important;width:100%;max-width:100%;overflow-x:hidden!important;}
+.projectMain{min-width:0!important;width:100%;max-width:100%;overflow-x:hidden!important;}
+.projectSidebar{min-width:0!important;}
+.projectMain .card,.projectCalendarCard,.collapsibleSection,.buildCard{max-width:100%!important;min-width:0!important;overflow-x:hidden!important;}
+.projectMonthCalendar{grid-template-columns:repeat(5,minmax(0,1fr))!important;width:100%;max-width:100%;overflow:hidden!important;}
+.projectCalDay{min-width:0!important;}
+.projectCalTile{min-width:0!important;overflow:hidden!important;}
+.projectCalTile b,.projectCalTile span,.projectCalTile small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.projectCalDay.weekStart{border-left:7px solid #2563eb!important;}
+.projectCalDay:nth-child(7n+1){border-left-width:2px!important;border-left-color:#cbd5e1!important;}
+.projectCalDay:nth-child(5n+1){border-left-width:7px!important;border-left-color:#2563eb!important;}
+.projectMain .tablewrap{max-width:100%;overflow-x:auto!important;}
+.projectMain table{width:100%;max-width:100%;}
+.projectForm{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+@media(max-width:1200px){.projectRedesign{grid-template-columns:1fr!important}.projectSidebar{position:static!important}.projectForm{grid-template-columns:1fr 1fr!important}.projectMonthCalendar{grid-template-columns:repeat(5,minmax(110px,1fr))!important;overflow-x:auto!important}}
+@media(max-width:760px){.projectForm{grid-template-columns:1fr!important}.projectMonthCalendar{grid-template-columns:1fr!important}.projectMonthCalendar .calHead{display:none!important}}
+html[data-theme="dark"] .projectCalDay:nth-child(7n+1){border-left-color:#334155!important;}
+html[data-theme="dark"] .projectCalDay:nth-child(5n+1){border-left-color:#60a5fa!important;}
+
+
+/* v82 project and employee usability fixes */
+.projectRedesign{grid-template-columns:minmax(210px,250px) minmax(0,1fr)!important;max-width:100vw!important;overflow-x:hidden!important;}
+.projectMain{min-width:0!important;max-width:100%!important;overflow-x:hidden!important;}
+.projectForm{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))!important;}
+.projectCalendarActions{gap:8px!important;}
+.empPickGrid{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important;max-height:none!important;overflow:visible!important;}
+.empPickGrid label{white-space:normal!important;min-width:0!important;align-items:flex-start!important;border-radius:12px!important;}
+.empPickGrid label span{display:inline-block;min-width:0;overflow:visible;text-overflow:clip;line-height:1.25;}
+.employeeSettingsTable table{min-width:980px;}
+.partTimeGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:6px;min-width:420px;}
+.partDay{display:grid;grid-template-columns:auto 34px minmax(52px,1fr) 24px;gap:5px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:5px 6px;background:#f8fafc;font-size:12px;}
+.partDay input[type="number"]{min-width:52px;width:100%;padding:4px 6px;min-height:28px;}
+.selectedPartDay{background:#eef4ff;border-color:#9db8ff;font-weight:800;}
+.testRowLabel{background:#fff7ed!important;border-color:#fed7aa!important;}
+.testAssignmentCell{background:#fffaf0!important;border-color:#fed7aa!important;}
+.testMiniCard{border:1px solid #fdba74;border-radius:10px;background:#fff7ed;padding:7px;margin:5px 0;font-size:12px;}
+.testMiniCard b,.testMiniCard span,.testMiniCard small{display:block;line-height:1.25;}
+html[data-theme="dark"] .partDay,html[data-theme="dark"] .selectedPartDay{background:#172033!important;color:#f8fafc!important;border-color:#475569!important;}
+html[data-theme="dark"] .testRowLabel,html[data-theme="dark"] .testAssignmentCell{background:#1f2937!important;border-color:#854d0e!important;color:#f8fafc!important;}
+html[data-theme="dark"] .testMiniCard{background:#292524!important;border-color:#a16207!important;color:#f8fafc!important;}
+@media(max-width:1100px){.projectRedesign{grid-template-columns:1fr!important}.projectSidebar{position:static!important}.partTimeGrid{min-width:0;}}
+
+/* v83 cleanup: compact recurring weekly availability controls */
+.partTimeControls{display:flex;flex-direction:column;gap:8px;min-width:0;max-width:520px;}
+.normalScheduleBtn{align-self:flex-start;white-space:nowrap;}
+.compactPartTimeGrid,.partTimeGrid.compactPartTimeGrid{display:grid;grid-template-columns:repeat(5,minmax(74px,1fr));gap:6px;min-width:0!important;width:100%;}
+.compactPartTimeGrid .partDay{display:flex;flex-direction:column;gap:5px;align-items:stretch;padding:6px;border-radius:10px;min-width:0;font-size:11px;}
+.partDayTop{display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.partDayTop b{font-size:11px;line-height:1;}
+.partHourLine{display:grid;grid-template-columns:minmax(42px,1fr) auto;gap:4px;align-items:center;}
+.partHourLine input[type="number"]{min-width:42px!important;width:100%!important;padding:3px 4px!important;min-height:24px!important;font-size:11px!important;}
+.partHourLine small{font-size:10px!important;}
+.employeeSettingsTable th:nth-child(8),.employeeSettingsTable td:nth-child(8){min-width:390px;}
+.tileAssemblyNo{display:inline-block;margin-right:5px;font-size:1.16em;font-weight:900;line-height:1;color:#0f172a;}
+.testMiniCard b{font-size:12px;font-weight:800;}
+.testMiniCard span,.testMiniCard small{font-size:11px;}
+html[data-theme="dark"] .tileAssemblyNo{color:#f8fafc!important;}
+@media(max-width:1200px){.compactPartTimeGrid,.partTimeGrid.compactPartTimeGrid{grid-template-columns:repeat(3,minmax(76px,1fr));}.employeeSettingsTable th:nth-child(8),.employeeSettingsTable td:nth-child(8){min-width:280px;}}
+@media(max-width:760px){.compactPartTimeGrid,.partTimeGrid.compactPartTimeGrid{grid-template-columns:repeat(2,minmax(88px,1fr));}.employeeSettingsTable th:nth-child(8),.employeeSettingsTable td:nth-child(8){min-width:220px;}}
+
+/* v85 mobile viewer */
+.mobileViewer{min-height:100vh;padding:18px 14px 120px;background:#f8fafc;color:#0f172a;}
+.mobileStack{display:flex;flex-direction:column;gap:14px;}
+.mobileHero{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px;border:1px solid #cbd5e1;border-radius:18px;background:linear-gradient(180deg,#ffffff 0%,#eef2ff 100%);}
+.mobileHero h1{margin:4px 0 6px;font-size:28px;line-height:1.05;}
+.mobileHero p{margin:0;color:#475569;font-size:14px;line-height:1.45;}
+.mobileEyebrow{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#2563eb;}
+.mobileStatusBar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px;}
+.mobileBadge,.mobilePill,.mobileTaskBadge{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:6px 10px;border:1px solid #cbd5e1;border-radius:999px;background:#ffffff;color:#0f172a;font-size:12px;font-weight:700;}
+.mobileReadOnly{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8;}
+.mobileWarning{margin:0 0 16px;padding:12px 14px;border:1px solid #f5c2c7;border-radius:14px;background:#fff1f2;color:#9f1239;font-size:14px;line-height:1.4;}
+.mobileNav{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 16px;padding:10px;border:1px solid #cbd5e1;border-radius:18px;background:rgba(248,250,252,.96);backdrop-filter:blur(10px);}
+.mobileNav button,.mobileActionButton,.mobileField select{min-height:46px;border:1px solid #cbd5e1;border-radius:14px;background:#ffffff;color:#0f172a;font-size:14px;font-weight:700;}
+.mobileNav button{padding:10px 8px;}
+.mobileNav button.active{background:#0f172a;color:#f8fafc;border-color:#0f172a;}
+.mobileActionButton{padding:0 16px;white-space:nowrap;}
+.mobileActionButton.secondary{background:#f8fafc;color:#0f172a;}
+.mobilePanel{padding:16px;border:1px solid #cbd5e1;border-radius:18px;background:#ffffff;box-shadow:0 8px 24px rgba(15,23,42,.06);}
+.mobilePanelHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.mobilePanelHeader h2,.mobilePanel h2{margin:0;font-size:20px;line-height:1.15;}
+.mobilePanelHeader p,.mobilePanel p{margin:4px 0 0;color:#475569;font-size:14px;line-height:1.45;}
+.mobileKpiGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.mobileKpiCard{padding:14px;border:1px solid #dbe3ef;border-radius:16px;background:#f8fafc;}
+.mobileKpiCard b{display:block;font-size:24px;line-height:1;margin-bottom:6px;}
+.mobileKpiCard span{font-size:13px;color:#475569;}
+.mobileCardList{display:flex;flex-direction:column;gap:12px;}
+.mobileInfoCard{display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid #dbe3ef;border-radius:16px;background:#ffffff;color:inherit;text-align:left;}
+.mobileInfoCard.isOut{background:#fff7ed;border-color:#fdba74;}
+.mobileSelectable{width:100%;cursor:pointer;}
+.mobileSelectable.selected{border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.12);}
+.mobileInfoTop,.mobileTaskTop,.mobileLaneHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.mobileInfoTop h3,.mobileGroup h3,.mobileDualList h3{margin:0;font-size:18px;line-height:1.15;}
+.mobileInfoTop p{margin:4px 0 0;color:#64748b;font-size:13px;}
+.mobileMetaGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.mobileMetaGrid span{padding:10px 12px;border-radius:12px;background:#f8fafc;color:#334155;font-size:13px;line-height:1.35;}
+.mobileMiniList,.mobileTaskList,.mobileSubList{display:flex;flex-direction:column;gap:8px;}
+.mobileMiniItem,.mobileSubItem{padding:10px 12px;border:1px solid #dbe3ef;border-radius:12px;background:#f8fafc;}
+.mobileMiniItem b,.mobileSubItem b,.mobileTaskCard b{display:block;font-size:14px;line-height:1.25;}
+.mobileMiniItem span,.mobileMiniItem small,.mobileSubItem span,.mobileSubItem small,.mobileTaskCard span,.mobileTaskCard small{display:block;margin-top:2px;color:#475569;font-size:13px;line-height:1.35;}
+.mobileGroup{display:flex;flex-direction:column;gap:10px;}
+.mobileField{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.mobileField label{font-size:13px;font-weight:700;color:#475569;}
+.mobileField select{padding:0 14px;}
+.mobileWeekNav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.mobileDayPanel{padding-bottom:14px;}
+.mobileBoardDay{display:flex;flex-direction:column;gap:10px;}
+.mobileLane{padding:12px;border:1px solid #dbe3ef;border-radius:14px;background:#f8fafc;}
+.mobileLaneHeader b{display:block;font-size:15px;}
+.mobileLaneHeader span{display:block;margin-top:2px;color:#64748b;font-size:12px;}
+.mobileTaskCard{padding:12px;border:1px solid #dbe3ef;border-radius:14px;background:#ffffff;}
+.mobileTaskBadge{min-height:26px;padding:4px 9px;font-size:11px;}
+.mobileTaskCard small{font-size:12px;}
+.mobileDualList{display:grid;grid-template-columns:1fr;gap:12px;}
+.tone-late{border-color:#fca5a5!important;background:#fff1f2!important;}
+.tone-blocked{border-color:#fcd34d!important;background:#fffbeb!important;}
+.tone-good{border-color:#86efac!important;background:#f0fdf4!important;}
+.tone-neutral{border-color:#dbe3ef!important;background:#f8fafc!important;}
+.mobilePill.late{background:#fff1f2;border-color:#fca5a5;color:#b91c1c;}
+.mobilePill.good{background:#f0fdf4;border-color:#86efac;color:#166534;}
+.mobilePill.blocked{background:#fffbeb;border-color:#fcd34d;color:#92400e;}
+
+@media (max-width:720px){
+  .mobileViewer{padding:14px 12px 110px;}
+  .mobileHero{flex-direction:column;align-items:stretch;}
+  .mobileHero h1{font-size:26px;}
+  .mobileNav{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .mobileMetaGrid{grid-template-columns:1fr;}
+}
+
+html[data-theme="dark"] .mobileViewer{background:#020617;color:#f8fafc;}
+html[data-theme="dark"] .mobileHero,
+html[data-theme="dark"] .mobilePanel,
+html[data-theme="dark"] .mobileNav,
+html[data-theme="dark"] .mobileInfoCard,
+html[data-theme="dark"] .mobileTaskCard{background:#0f172a!important;border-color:#334155!important;color:#f8fafc!important;box-shadow:none!important;}
+html[data-theme="dark"] .mobileHero{background:linear-gradient(180deg,#0f172a 0%,#111827 100%)!important;}
+html[data-theme="dark"] .mobileHero p,
+html[data-theme="dark"] .mobilePanelHeader p,
+html[data-theme="dark"] .mobileInfoTop p,
+html[data-theme="dark"] .mobileMiniItem span,
+html[data-theme="dark"] .mobileMiniItem small,
+html[data-theme="dark"] .mobileSubItem span,
+html[data-theme="dark"] .mobileSubItem small,
+html[data-theme="dark"] .mobileTaskCard span,
+html[data-theme="dark"] .mobileTaskCard small,
+html[data-theme="dark"] .mobileLaneHeader span,
+html[data-theme="dark"] .mobileField label,
+html[data-theme="dark"] .mobileKpiCard span,
+html[data-theme="dark"] .mobileMetaGrid span{color:#cbd5e1!important;}
+html[data-theme="dark"] .mobileActionButton,
+html[data-theme="dark"] .mobileField select,
+html[data-theme="dark"] .mobileBadge,
+html[data-theme="dark"] .mobilePill,
+html[data-theme="dark"] .mobileTaskBadge,
+html[data-theme="dark"] .mobileNav button{background:#111827!important;color:#f8fafc!important;border-color:#475569!important;}
+html[data-theme="dark"] .mobileNav button.active{background:#2563eb!important;border-color:#2563eb!important;color:#eff6ff!important;}
+html[data-theme="dark"] .mobileKpiCard,
+html[data-theme="dark"] .mobileMetaGrid span,
+html[data-theme="dark"] .mobileMiniItem,
+html[data-theme="dark"] .mobileLane{background:#111827!important;border-color:#334155!important;color:#f8fafc!important;}
+html[data-theme="dark"] .mobileSelectable.selected{border-color:#60a5fa!important;box-shadow:0 0 0 2px rgba(96,165,250,.18)!important;}
+html[data-theme="dark"] .mobileInfoCard.isOut{background:#1f2937!important;border-color:#a16207!important;}
+html[data-theme="dark"] .mobileWarning{background:#3b0d17!important;border-color:#881337!important;color:#fecdd3!important;}
+html[data-theme="dark"] .mobileReadOnly{background:#172554!important;border-color:#1d4ed8!important;color:#dbeafe!important;}
+html[data-theme="dark"] .tone-late{background:#3f121a!important;border-color:#991b1b!important;}
+html[data-theme="dark"] .tone-blocked{background:#2b2111!important;border-color:#92400e!important;}
+html[data-theme="dark"] .tone-good{background:#0f2419!important;border-color:#166534!important;}
+
+/* v86/v87 schedule warnings */
+.scheduleWarningsPanel{display:flex;flex-direction:column;gap:12px;min-width:0;}
+.scheduleWarningsHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.scheduleWarningsHeader h3{margin:0;font-size:18px;line-height:1.15;}
+.scheduleWarningCounts{display:flex;flex-wrap:wrap;gap:8px;}
+.warningCount,.warningLevel{display:inline-flex;align-items:center;justify-content:center;min-height:26px;padding:4px 10px;border-radius:999px;border:1px solid #cbd5e1;background:#f8fafc;font-size:12px;font-weight:800;text-transform:capitalize;}
+.warningCount.critical,.warningLevel.critical{background:#fff1f2;border-color:#fda4af;color:#b91c1c;}
+.warningCount.capacity,.warningLevel.capacity{background:#fffbeb;border-color:#fcd34d;color:#92400e;}
+.warningCount.info,.warningLevel.info{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8;}
+.warningList{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
+.warningCard{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:14px;border:1px solid #dbe3ef;background:#ffffff;min-width:0;}
+.warningCard.critical{border-left:4px solid #e11d48;}
+.warningCard.capacity{border-left:4px solid #d97706;}
+.warningCard.info{border-left:4px solid #2563eb;}
+.warningCardTop{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.warningCard b{display:block;font-size:14px;line-height:1.3;color:#0f172a;}
+.warningCard span,.warningCard small{display:block;line-height:1.35;color:#475569;}
+.warningDate{font-size:12px;color:#64748b;font-weight:700;}
+.scheduleWarningsDashPanel{grid-column:span 2;}
+.weeklyWarningWrap{margin:14px 0 18px;}
+@media(max-width:980px){.scheduleWarningsDashPanel{grid-column:span 1;}.warningList{grid-template-columns:1fr;}}
+html[data-theme="dark"] .warningCount,html[data-theme="dark"] .warningLevel{background:#111827!important;border-color:#475569!important;color:#f8fafc!important;}
+html[data-theme="dark"] .warningCount.critical,html[data-theme="dark"] .warningLevel.critical{background:#3f121a!important;border-color:#991b1b!important;color:#fecdd3!important;}
+html[data-theme="dark"] .warningCount.capacity,html[data-theme="dark"] .warningLevel.capacity{background:#2b2111!important;border-color:#92400e!important;color:#fde68a!important;}
+html[data-theme="dark"] .warningCount.info,html[data-theme="dark"] .warningLevel.info{background:#172554!important;border-color:#1d4ed8!important;color:#dbeafe!important;}
+html[data-theme="dark"] .warningCard{background:#0f172a!important;border-color:#334155!important;}
+html[data-theme="dark"] .warningCard b{color:#f8fafc!important;}
+html[data-theme="dark"] .warningCard span,html[data-theme="dark"] .warningCard small,html[data-theme="dark"] .warningDate{color:#cbd5e1!important;}
+
+/* v87 weekly focus, project health, actionable warnings */
+.projectFocusBar{display:grid;grid-template-columns:minmax(220px,1.3fr) minmax(180px,1fr) auto auto auto;gap:10px;align-items:end;margin-bottom:14px;padding:12px 14px;border:1px solid #dbe3ef;border-radius:18px;background:#f8fafc}
+.projectFocusField{margin:0}
+.projectFocusSummary{display:flex;align-items:center;gap:8px;min-height:40px}
+.projectFocusSummary span{font-size:13px;font-weight:700;color:#334155}
+.healthBadge,.timelineDuePill,.timelineWarningTag{display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:4px 10px;border-radius:999px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:800}
+.healthBadge.tone-good{background:#ecfdf5;border-color:#86efac;color:#166534}
+.healthBadge.tone-warn{background:#fffbeb;border-color:#fcd34d;color:#92400e}
+.healthBadge.tone-late{background:#fff1f2;border-color:#fda4af;color:#be123c}
+.healthBadge.tone-info{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
+.projectHealthSummaryGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.projectHealthSummaryCard,.projectHealthPreviewCard{display:flex;flex-direction:column;gap:6px;border:1px solid #dbe3ef;border-radius:16px;background:#fff;padding:12px;text-align:left;cursor:pointer}
+.projectHealthSummaryCard b{font-size:24px;line-height:1}
+.projectHealthSummaryCard span{font-size:12px;font-weight:800;color:#475569}
+.projectHealthSummaryCard.tone-good{background:#f0fdf4;border-color:#bbf7d0}
+.projectHealthSummaryCard.tone-warn{background:#fffbeb;border-color:#fcd34d}
+.projectHealthSummaryCard.tone-late{background:#fff1f2;border-color:#fda4af}
+.projectHealthSummaryCard.tone-info{background:#eff6ff;border-color:#bfdbfe}
+.projectHealthPreviewList{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.projectHealthPreviewCard div,.projectListTop,.projectHeaderRow,.projectTimelineHeader,.projectTimelineActions,.warningActionRow,.warningMetaRow,.taskBadgeRow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.projectHealthPreviewCard b,.projectListTop b{font-size:15px}
+.projectHealthPreviewCard span,.projectListReason,.projectHealthReason{color:#475569;font-size:13px;line-height:1.35}
+.projectHealthPreviewCard small{color:#64748b;font-size:12px;line-height:1.35}
+.projectTimelinePanel{border:1px solid #dbe3ef;border-radius:18px;background:#fff;padding:16px;display:flex;flex-direction:column;gap:12px}
+.projectTimelineActions{flex-wrap:wrap;justify-content:flex-end}
+.projectTimelineFlow{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+.timelineArrow{display:flex;align-items:center;font-size:18px;font-weight:900;color:#64748b}
+.timelineStepCard{flex:1 1 150px;min-width:150px;display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:16px;border:1px solid #dbe3ef;background:#f8fafc}
+.timelineStepTop{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.timelineStepLabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:900;color:#475569}
+.timelineStepBadge{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid #cbd5e1;background:#fff;color:#334155}
+.timelineStepCard.state-complete{background:#f0fdf4;border-color:#86efac}
+.timelineStepCard.state-scheduled{background:#eff6ff;border-color:#93c5fd}
+.timelineStepCard.state-waiting{background:#faf5ff;border-color:#c4b5fd}
+.timelineStepCard.state-blocked{background:#fff7ed;border-color:#fdba74}
+.timelineStepCard.state-pending{background:#f8fafc;border-color:#dbe3ef}
+.timelineStepCard.state-not-needed{background:#f8fafc;border-style:dashed}
+.timelineStepBadge.state-complete{background:#dcfce7;border-color:#86efac;color:#166534}
+.timelineStepBadge.state-scheduled{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8}
+.timelineStepBadge.state-waiting{background:#ede9fe;border-color:#c4b5fd;color:#6d28d9}
+.timelineStepBadge.state-blocked{background:#ffedd5;border-color:#fdba74;color:#9a3412}
+.timelineStepBadge.state-pending,.timelineStepBadge.state-not-needed{background:#f8fafc;border-color:#cbd5e1;color:#475569}
+.timelineDuePill{background:#eef2ff;border-color:#c7d2fe;color:#3730a3}
+.timelineWarningTag{background:#fff1f2;border-color:#fda4af;color:#be123c;align-self:flex-start}
+.warningMetaRow{flex-wrap:wrap;justify-content:flex-start}
+.warningActionRow{margin-top:4px;justify-content:flex-start}
+.warningActionButton{border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer}
+.phaseCard{border-left-width:8px!important}
+.phaseCard.phase-build{background:#ffffff;border-left-color:#475569!important}
+.phaseCard.phase-inspect{background:#fffaf0;border-left-color:#d97706!important}
+.phaseCard.phase-ship{background:#f0fdf9;border-left-color:#0f766e!important}
+.phaseCard.phase-test{background:#faf5ff;border-left-color:#7c3aed!important}
+.phaseBadge{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:3px 8px;border-radius:999px;border:1px solid #cbd5e1;background:#fff;font-size:11px;font-weight:900;letter-spacing:.05em}
+.phaseBadge.phase-build{background:#e5e7eb;border-color:#cbd5e1;color:#334155}
+.phaseBadge.phase-inspect{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.phaseBadge.phase-ship{background:#ccfbf1;border-color:#5eead4;color:#115e59}
+.phaseBadge.phase-test,.mobileTaskBadge.phase-test,.mobileTaskBadge.phase-slate{background:#ede9fe;border-color:#c4b5fd;color:#6d28d9}
+.taskDimmed{opacity:.34;filter:blur(.6px)}
+.taskFocused{box-shadow:0 0 0 2px rgba(37,99,235,.16)!important}
+.compactWeekBoard .assignmentCell{min-height:96px!important;padding:8px}
+.compactTask{padding:8px;margin:6px 0;font-size:12px}
+.compactTask .tileMeta,.compactTask .chunkHours{font-size:11px}
+.highlightedBoardDate{outline:2px solid #60a5fa;outline-offset:-2px}
+.testMiniCard{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:14px;border:1px solid #dbe3ef;background:#faf5ff}
+.testReturnPill{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:3px 8px;border-radius:999px;border:1px solid #cbd5e1;background:#fff;color:#475569;font-size:11px;font-weight:800}
+.resetSplitBtn{margin-top:8px}
+.projectListReason{display:block;margin-top:6px}
+.mobileHealthBadge{display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:4px 10px;border-radius:999px;border:1px solid #cbd5e1;background:#fff;font-size:11px;font-weight:800}
+.mobileHealthBadge.tone-good{background:#ecfdf5;border-color:#86efac;color:#166534}
+.mobileHealthBadge.tone-warn{background:#fffbeb;border-color:#fcd34d;color:#92400e}
+.mobileHealthBadge.tone-late{background:#fff1f2;border-color:#fda4af;color:#be123c}
+.mobileHealthBadge.tone-info{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
+.mobileInfoBadgeStack{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.mobileTaskBadge.phase-build{background:#e5e7eb;border-color:#cbd5e1;color:#334155}
+.mobileTaskBadge.phase-inspect{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.mobileTaskBadge.phase-ship{background:#ccfbf1;border-color:#5eead4;color:#115e59}
+.mobileTaskCard.phase-build{border-left:5px solid #475569}
+.mobileTaskCard.phase-inspect{border-left:5px solid #d97706}
+.mobileTaskCard.phase-ship{border-left:5px solid #0f766e}
+.mobileTaskCard.phase-test{border-left:5px solid #7c3aed}
+.mobileTimeline{display:flex;flex-direction:column;gap:8px}
+.mobileTimelineStep{display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid #dbe3ef;border-radius:14px;background:#f8fafc}
+.mobileTimelineTop{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mobileTimelineStep.state-complete{background:#f0fdf4;border-color:#86efac}
+.mobileTimelineStep.state-scheduled{background:#eff6ff;border-color:#93c5fd}
+.mobileTimelineStep.state-waiting{background:#faf5ff;border-color:#c4b5fd}
+.mobileTimelineStep.state-blocked{background:#fff7ed;border-color:#fdba74}
+
+@media(max-width:1100px){
+  .projectFocusBar{grid-template-columns:1fr 1fr;align-items:stretch}
+  .projectHealthSummaryGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .projectFocusBar{grid-template-columns:1fr}
+  .projectTimelineFlow{flex-direction:column}
+  .timelineArrow{display:none}
+}
+
+html[data-theme="dark"] .projectFocusBar,
+html[data-theme="dark"] .projectTimelinePanel,
+html[data-theme="dark"] .projectHealthSummaryCard,
+html[data-theme="dark"] .projectHealthPreviewCard,
+html[data-theme="dark"] .timelineStepCard,
+html[data-theme="dark"] .warningActionButton,
+html[data-theme="dark"] .testMiniCard,
+html[data-theme="dark"] .mobileHealthBadge,
+html[data-theme="dark"] .mobileTimelineStep{background:#0f172a!important;border-color:#334155!important;color:#f8fafc!important}
+html[data-theme="dark"] .projectFocusSummary span,
+html[data-theme="dark"] .projectHealthPreviewCard span,
+html[data-theme="dark"] .projectHealthPreviewCard small,
+html[data-theme="dark"] .projectListReason,
+html[data-theme="dark"] .projectHealthReason,
+html[data-theme="dark"] .timelineStepLabel,
+html[data-theme="dark"] .mobileTimelineStep small,
+html[data-theme="dark"] .mobileTimelineStep span{color:#cbd5e1!important}
+html[data-theme="dark"] .projectHealthSummaryCard.tone-good,
+html[data-theme="dark"] .timelineStepCard.state-complete,
+html[data-theme="dark"] .mobileTimelineStep.state-complete{background:#0f2419!important;border-color:#166534!important}
+html[data-theme="dark"] .projectHealthSummaryCard.tone-warn,
+html[data-theme="dark"] .timelineStepCard.state-blocked,
+html[data-theme="dark"] .mobileTimelineStep.state-blocked{background:#2b2111!important;border-color:#92400e!important}
+html[data-theme="dark"] .projectHealthSummaryCard.tone-late{background:#3f121a!important;border-color:#991b1b!important}
+html[data-theme="dark"] .projectHealthSummaryCard.tone-info,
+html[data-theme="dark"] .timelineStepCard.state-scheduled,
+html[data-theme="dark"] .mobileTimelineStep.state-scheduled{background:#172554!important;border-color:#1d4ed8!important}
+html[data-theme="dark"] .timelineStepCard.state-waiting,
+html[data-theme="dark"] .mobileTimelineStep.state-waiting{background:#2b1644!important;border-color:#7c3aed!important}
+html[data-theme="dark"] .phaseCard.phase-build{background:#111827!important;border-left-color:#64748b!important}
+html[data-theme="dark"] .phaseCard.phase-inspect{background:#2b2111!important;border-left-color:#f59e0b!important}
+html[data-theme="dark"] .phaseCard.phase-ship{background:#0f2423!important;border-left-color:#14b8a6!important}
+html[data-theme="dark"] .phaseCard.phase-test,
+html[data-theme="dark"] .testMiniCard{background:#231436!important;border-left-color:#8b5cf6!important}
+html[data-theme="dark"] .phaseBadge.phase-build,
+html[data-theme="dark"] .mobileTaskBadge.phase-build{background:#1f2937!important;border-color:#475569!important;color:#e2e8f0!important}
+html[data-theme="dark"] .phaseBadge.phase-inspect,
+html[data-theme="dark"] .mobileTaskBadge.phase-inspect{background:#3f2b11!important;border-color:#d97706!important;color:#fde68a!important}
+html[data-theme="dark"] .phaseBadge.phase-ship,
+html[data-theme="dark"] .mobileTaskBadge.phase-ship{background:#11312e!important;border-color:#14b8a6!important;color:#ccfbf1!important}
+html[data-theme="dark"] .phaseBadge.phase-test,
+html[data-theme="dark"] .mobileTaskBadge.phase-test,
+html[data-theme="dark"] .mobileTaskBadge.phase-slate{background:#2b1644!important;border-color:#8b5cf6!important;color:#ede9fe!important}
+html[data-theme="dark"] .warningActionButton,
+html[data-theme="dark"] .timelineDuePill,
+html[data-theme="dark"] .timelineWarningTag,
+html[data-theme="dark"] .testReturnPill{background:#111827!important;border-color:#475569!important;color:#f8fafc!important}
+html[data-theme="dark"] .highlightedBoardDate{outline-color:#60a5fa}
+
+.priorityList{display:flex;flex-direction:column;gap:10px}
+.priorityCard{width:100%;text-align:left;border:1px solid #dbe3ef;border-radius:16px;background:#f8fafc;padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+.priorityCardTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.priorityTitle{font-weight:800;color:#0f172a}
+.priorityCount{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:28px;padding:0 9px;border-radius:999px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:900;color:#0f172a}
+.priorityCard small{color:#475569;line-height:1.35}
+.priorityCard.tone-critical{background:#fff7f7;border-color:#fecaca}
+.priorityCard.tone-critical .priorityCount{background:#fff1f2;border-color:#fda4af;color:#be123c}
+.priorityCard.tone-capacity{background:#fffaf0;border-color:#fed7aa}
+.priorityCard.tone-capacity .priorityCount{background:#fffbeb;border-color:#fcd34d;color:#92400e}
+.priorityCard.tone-info{background:#f8fbff;border-color:#bfdbfe}
+.priorityCard.tone-info .priorityCount{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
+
+.mobileAccessOverlay{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:22px}
+.mobileAccessPanel{width:min(760px,100%);padding:18px}
+.mobileAccessHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.mobileAccessBody{display:grid;grid-template-columns:240px minmax(0,1fr);gap:18px;align-items:center;margin-top:14px}
+.mobileAccessQr{display:flex;align-items:center;justify-content:center;min-height:240px;border:1px solid #dbe3ef;border-radius:18px;background:#fff;padding:12px}
+.mobileAccessQr img{width:220px;height:220px;object-fit:contain}
+.mobileAccessQrFallback{display:flex;align-items:center;justify-content:center;text-align:center;color:#64748b;font-size:13px}
+.mobileAccessDetails label{display:block;margin-bottom:6px;font-size:13px;font-weight:700}
+
+.weeklyBoardCard .weekBoard{overflow:auto;position:relative}
+.weeklyBoardCard .employeeHeader,.weeklyBoardCard .dayHeader{position:sticky;top:0;z-index:6;box-shadow:0 1px 0 rgba(148,163,184,.18)}
+.weeklyBoardCard .employeeHeader{left:0;z-index:8}
+.weeklyBoardCard .employeeCell{position:sticky;left:0;z-index:4}
+.weeklyBoardCard .weekDividerHeader{margin-bottom:8px}
+.weekBoardEmpty{border:1px dashed #cbd5e1;border-radius:16px;background:#f8fafc;padding:16px}
+.weeklyBoardCard.density-comfortable .employeeBoard{gap:8px}
+.weeklyBoardCard.density-compact .employeeBoard{gap:6px}
+.weeklyBoardCard.density-compact .assignmentCell,.weeklyBoardCard.density-compact .employeeCell,.weeklyBoardCard.density-compact .employeeHeader,.weeklyBoardCard.density-compact .dayHeader{padding:8px}
+.weeklyBoardCard.density-compact .task{font-size:12px}
+.weeklyBoardCard.density-ultra .employeeBoard{gap:4px}
+.weeklyBoardCard.density-ultra .assignmentCell,.weeklyBoardCard.density-ultra .employeeCell,.weeklyBoardCard.density-ultra .employeeHeader,.weeklyBoardCard.density-ultra .dayHeader{padding:6px}
+.weeklyBoardCard.density-ultra .employeeCell b,.weeklyBoardCard.density-ultra .dayHeader b{font-size:13px}
+.weeklyBoardCard.density-ultra .employeeCell span,.weeklyBoardCard.density-ultra .dayHeader span{font-size:11px}
+.compactTask{padding:8px}
+.ultraCompactTask{padding:6px}
+.ultraCompactTask .tileMeta,.ultraCompactTask .chunkHours,.ultraCompactTask .completionEdit small{font-size:11px}
+.ultraCompactTask .dragHandle{min-height:24px;font-size:11px}
+
+html[data-theme="dark"] .dashKpis div,
+html[data-theme="dark"] .miniEmployee,
+html[data-theme="dark"] .alertLine,
+html[data-theme="dark"] .priorityCard,
+html[data-theme="dark"] .mobileAccessPanel,
+html[data-theme="dark"] .mobileAccessQr,
+html[data-theme="dark"] .mobileAccessQrFallback,
+html[data-theme="dark"] .weekBoardEmpty,
+html[data-theme="dark"] .partDay,
+html[data-theme="dark"] .selectedPartDay,
+html[data-theme="dark"] .employeeSettingsTable td,
+html[data-theme="dark"] .employeeSettingsTable th,
+html[data-theme="dark"] .availabilityLegend span{background:#111827!important;border-color:#334155!important;color:#f8fafc!important}
+html[data-theme="dark"] .dashKpis span,
+html[data-theme="dark"] .alertLine span,
+html[data-theme="dark"] .priorityCard small,
+html[data-theme="dark"] .mobileAccessQrFallback,
+html[data-theme="dark"] .partHourLine small,
+html[data-theme="dark"] .miniEmployee span,
+html[data-theme="dark"] .miniEmployee p em{color:#cbd5e1!important}
+html[data-theme="dark"] .priorityTitle,
+html[data-theme="dark"] .miniEmployee p strong,
+html[data-theme="dark"] .mobileAccessDetails label{color:#f8fafc!important}
+html[data-theme="dark"] .priorityCount{background:#0f172a!important;border-color:#475569!important;color:#f8fafc!important}
+html[data-theme="dark"] .priorityCard.tone-critical{background:#3b0d17!important;border-color:#9f1239!important}
+html[data-theme="dark"] .priorityCard.tone-capacity{background:#2b2111!important;border-color:#92400e!important}
+html[data-theme="dark"] .priorityCard.tone-info{background:#172554!important;border-color:#1d4ed8!important}
+html[data-theme="dark"] .mobileAccessOverlay{background:rgba(2,6,23,.8)!important}
+html[data-theme="dark"] .mobileAccessQr img{background:#fff;border-radius:12px}
+html[data-theme="dark"] .dashKpis div,
+html[data-theme="dark"] .alertLine,
+html[data-theme="dark"] .priorityCard,
+html[data-theme="dark"] .miniEmployee,
+html[data-theme="dark"] .weekBoardEmpty{box-shadow:none!important}
+html[data-theme="dark"] .weeklyBoardCard .employeeHeader,
+html[data-theme="dark"] .weeklyBoardCard .dayHeader{background:#1e293b!important;border-color:#475569!important;color:#f8fafc!important}
+html[data-theme="dark"] .weeklyBoardCard .employeeCell{background:#111827!important;border-color:#334155!important}
+html[data-theme="dark"] .projectFocusBar,
+html[data-theme="dark"] .dashPanel,
+html[data-theme="dark"] .projectList button,
+html[data-theme="dark"] .buildCard,
+html[data-theme="dark"] .availabilityCalendar{background:#0f172a!important;border-color:#334155!important}
+html[data-theme="dark"] input:disabled,
+html[data-theme="dark"] select:disabled,
+html[data-theme="dark"] textarea:disabled{background:#1e293b!important;color:#cbd5e1!important;border-color:#475569!important;opacity:1!important}
+
+@media(max-width:760px){
+  .mobileAccessBody{grid-template-columns:1fr}
+  .mobileAccessQr{min-height:220px}
+}
+.navStack{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.navPrimary,.navSecondary,.headerActionRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.navPrimary{position:sticky;top:0;z-index:30}
+.navSecondary{padding:0 4px}
+.headerActionRow{padding:0 4px}
+.topUtilityActions{justify-content:flex-end}
+.navPrimary button,.navSecondary button,.headerActionRow .btn{min-height:40px}
+.trainingPicker{display:flex;flex-direction:column;gap:8px;min-width:320px}
+.trainingProjectList{display:flex;flex-direction:column;gap:6px;max-height:210px;overflow:auto;padding-right:2px}
+.trainingProjectOption{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid #dbe3ef;border-radius:12px;background:#f8fafc}
+.trainingProjectOption b,.trainingProjectOption span,.trainingProjectOption small{display:block}
+.trainingProjectOption span{color:#334155}
+.trainingProjectOption small{color:#64748b}
+.selectedTrainingProjectOption{border-color:#94a3b8;background:#eef4ff}
+.trainedProjectChips{display:flex;flex-wrap:wrap;gap:6px}
+.trainedProjectChip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#e2e8f0;color:#0f172a;font-size:12px;font-weight:700}
+.trainedProjectChip .mini{min-height:24px;padding:2px 6px}
+.qualifiedEmployeesPanel{display:flex;flex-direction:column;gap:14px}
+.qualifiedEmployeeGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.qualifiedEmployeeCol{border:1px solid #dbe3ef;border-radius:14px;background:#f8fafc;padding:12px;display:flex;flex-direction:column;gap:8px}
+.qualifiedEmployeeChip{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:#e8eef8;color:#0f172a;font-size:13px;font-weight:700;margin:0 6px 6px 0}
+.preferredEmployeeChip{background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd}
+.autoAssignPreviewPanel{margin:12px 0 16px;padding:14px;border:1px solid #dbe3ef;border-radius:18px;background:#f8fafc}
+.autoAssignPreviewHeader{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.autoAssignPreviewList{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}
+.smartAssignOptionGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:14px 0}
+.smartAssignOption{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #dbe3ef;border-radius:14px;background:#fff}
+.smartAssignOption input,.smartAssignCardSelect input{width:auto;min-width:auto;min-height:auto}
+.smartAssignOption span{display:flex;flex-direction:column;gap:2px}
+.smartAssignOption small{color:#64748b}
+.smartAssignSelectionBar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 2px}
+.smartAssignReasonMeta{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.smartAssignReasonMeta small{display:inline-flex;padding:3px 7px;border-radius:999px;background:#eef2ff;color:#334155;border:1px solid #c7d2fe}
+.smartAssignCardSelect{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;font-weight:700;color:#334155}
+.taskProgress{position:relative;height:7px;border-radius:999px;background:#e2e8f0;overflow:hidden;margin:8px 0 6px}
+.taskProgressFill{height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#60a5fa)}
+.suggestedAssignBadge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-size:11px;font-weight:800}
+.mobileAccessCallout{margin:10px 0 12px;padding:10px 12px;border-radius:12px;background:#eef6ff;border:1px solid #bfdbfe;color:#1e3a8a;font-size:13px;font-weight:700}
+.employeeSettingsTable th:nth-child(8),.employeeSettingsTable td:nth-child(8){min-width:340px}
+.employeeSettingsTable th:nth-child(9),.employeeSettingsTable td:nth-child(9){min-width:390px}
+html[data-theme="dark"] .navStack,
+html[data-theme="dark"] .navPrimary,
+html[data-theme="dark"] .navSecondary,
+html[data-theme="dark"] .headerActionRow{background:transparent!important}
+html[data-theme="dark"] .projectList button,
+html[data-theme="dark"] .projectMain .card,
+html[data-theme="dark"] .projectSidebar,
+html[data-theme="dark"] .qualifiedEmployeeCol,
+html[data-theme="dark"] .autoAssignPreviewPanel,
+html[data-theme="dark"] .trainingProjectOption,
+html[data-theme="dark"] .trainedProjectChip,
+html[data-theme="dark"] .qualifiedEmployeeChip,
+html[data-theme="dark"] .projectHealthPreviewCard,
+html[data-theme="dark"] .projectHealthSummaryCard,
+html[data-theme="dark"] .projectTimelinePanel,
+html[data-theme="dark"] .projectCalDay,
+html[data-theme="dark"] .projectCalTile,
+html[data-theme="dark"] .batchCard,
+html[data-theme="dark"] .selectedAssemblyBox,
+html[data-theme="dark"] .assemblyResult,
+html[data-theme="dark"] .topAssemblyTile,
+html[data-theme="dark"] .subAssemblyCard,
+html[data-theme="dark"] .warningCard,
+html[data-theme="dark"] .mobileMiniItem,
+html[data-theme="dark"] .mobileSubItem,
+html[data-theme="dark"] .mobileTaskCard,
+html[data-theme="dark"] .mobileLane,
+html[data-theme="dark"] .mobileHero,
+html[data-theme="dark"] .mobileCard,
+html[data-theme="dark"] .mobileNav,
+html[data-theme="dark"] .mobileField select,
+html[data-theme="dark"] .mobileActionButton{background:#111827!important;border-color:#334155!important;color:#f8fafc!important;box-shadow:none!important}
+html[data-theme="dark"] .projectList button small,
+html[data-theme="dark"] .projectList button span,
+html[data-theme="dark"] .projectHealthReason,
+html[data-theme="dark"] .projectTimelinePanel p,
+html[data-theme="dark"] .projectTimelinePanel small,
+html[data-theme="dark"] .qualifiedEmployeeCol p,
+html[data-theme="dark"] .trainingProjectOption span,
+html[data-theme="dark"] .trainingProjectOption small,
+html[data-theme="dark"] .mobileMiniItem span,
+html[data-theme="dark"] .mobileMiniItem small,
+html[data-theme="dark"] .mobileTaskCard span,
+html[data-theme="dark"] .mobileTaskCard small,
+html[data-theme="dark"] .mobileLaneHeader span,
+html[data-theme="dark"] .mobileWarning,
+html[data-theme="dark"] .mobileSurface .muted{color:#cbd5e1!important}
+html[data-theme="dark"] .trainingProjectOption{background:#0f172a!important}
+html[data-theme="dark"] .selectedTrainingProjectOption{background:#1e293b!important;border-color:#64748b!important}
+html[data-theme="dark"] .trainedProjectChip,
+html[data-theme="dark"] .qualifiedEmployeeChip,
+html[data-theme="dark"] .suggestedAssignBadge{background:#1e293b!important;color:#f8fafc!important;border:1px solid #475569}
+html[data-theme="dark"] .preferredEmployeeChip{background:#172554!important;color:#dbeafe!important;border-color:#3b82f6!important}
+html[data-theme="dark"] .smartAssignOption{background:#0f172a!important;border-color:#334155!important}
+html[data-theme="dark"] .smartAssignOption small,
+html[data-theme="dark"] .smartAssignCardSelect{color:#cbd5e1!important}
+html[data-theme="dark"] .smartAssignReasonMeta small{background:#1e293b!important;color:#f8fafc!important;border-color:#475569!important}
+html[data-theme="dark"] .taskProgress{background:#334155!important}
+html[data-theme="dark"] .taskProgressFill{background:linear-gradient(90deg,#60a5fa,#93c5fd)!important}
+html[data-theme="dark"] .mobileAccessCallout{background:#0f172a!important;border-color:#334155!important;color:#cbd5e1!important}
+html[data-theme="dark"] .mobileAccessPanel,
+html[data-theme="dark"] .mobileAccessQr,
+html[data-theme="dark"] .mobileAccessDetails input{background:#111827!important;border-color:#334155!important;color:#f8fafc!important}
+html[data-theme="dark"] .projectList button.selectedProject,
+html[data-theme="dark"] .assemblyResult.selectedAssemblyResult,
+html[data-theme="dark"] .topAssemblyTile.selectedTopAssemblyTile{background:#1e293b!important;border-color:#60a5fa!important}
+html[data-theme="dark"] .projectCalDay .calDate,
+html[data-theme="dark"] .projectCalDay .calDate span,
+html[data-theme="dark"] .projectCalTile b,
+html[data-theme="dark"] .projectCalTile span,
+html[data-theme="dark"] .projectCalTile small{color:#f8fafc!important}
+html[data-theme="dark"] .mobileNav button{background:#0f172a!important;color:#f8fafc!important;border-color:#334155!important}
+html[data-theme="dark"] .mobileNav button.active{background:#2563eb!important;border-color:#2563eb!important;color:#eff6ff!important}
+html[data-theme="dark"] .mobileBadge,
+html[data-theme="dark"] .mobilePill,
+html[data-theme="dark"] .mobileTaskBadge{background:#1e293b!important;border-color:#475569!important;color:#f8fafc!important}
+html[data-theme="dark"] .mobileSurface,
+html[data-theme="dark"] .mobilePage{background:#020617!important;color:#f8fafc!important}
+html[data-theme="dark"] input:disabled,
+html[data-theme="dark"] select:disabled,
+html[data-theme="dark"] textarea:disabled{background:#1e293b!important;color:#cbd5e1!important;border-color:#475569!important;opacity:1!important}
+@media(max-width:1200px){
+  .qualifiedEmployeeGrid{grid-template-columns:1fr}
+  .trainingPicker{min-width:260px}
+}
+@media(max-width:760px){
+  .topUtilityActions{justify-content:flex-start}
+  .trainingPicker{min-width:0}
+  .smartAssignSelectionBar{align-items:flex-start}
+}
+.collapsibleSection{border:1px solid #dbe2ea;border-radius:10px;background:#fff;padding:0;overflow:hidden}
+.collapsibleHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid #e2e8f0}
+.collapsibleToggle{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;color:inherit;text-align:left;width:100%;cursor:pointer}
+.collapsibleToggle span:last-child{display:flex;flex-direction:column;gap:2px}
+.collapsibleToggle small{color:#64748b}
+.collapsibleActions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.collapsibleSummary{padding:0 16px 16px;color:#475569}
+.collapsibleBody{padding:16px}
+.chevron{font-size:14px;transition:transform .18s ease}
+.chevron.open{transform:rotate(0deg)}
+.collapsibleSection.collapsed .chevron{transform:rotate(-90deg)}
+.trainingPickerSummary{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.miniStat{display:inline-flex;gap:4px;align-items:center;padding:4px 8px;border:1px solid #cbd5e1;border-radius:999px;background:#f8fafc;font-size:12px;color:#334155}
+.projectHeroCard{padding:18px}
+.projectAutoAssignPanel .autoAssignPreviewList{margin-top:0}
+.standaloneSubSummary{margin-top:14px}
+.plannerHeroCard .plannerSummary{display:flex;gap:8px;flex-wrap:wrap}
+.plannerHeatmap{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.heatCell{border:1px solid #cbd5e1;border-radius:10px;padding:12px;background:#fff;display:flex;flex-direction:column;gap:4px;min-height:110px}
+.heatCell b{font-size:14px}
+.heatCell span,.heatCell small{color:#475569}
+.heatCell.tone-info{border-color:#93c5fd;background:#eff6ff}
+.heatCell.tone-capacity{border-color:#f59e0b;background:#fffbeb}
+.heatCell.tone-critical{border-color:#fda4af;background:#fff1f2}
+.autoAssignBoardSummary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+.autoAssignPrimaryButton{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.buttonBadge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.24);font-size:12px;line-height:1.2}
+.buttonBadge.good{background:#dcfce7;color:#14532d;border-color:#86efac}
+.autoAssignResultsPanel{margin:12px 0;border:1px solid #cbd5e1;border-radius:12px;padding:16px;background:#f8fafc}
+.mobileAccessCandidates{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.mobileAccessCandidate{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc}
+.mobileAccessCandidate span{color:#475569;word-break:break-all}
+.taskFocused{border-left:5px solid var(--project-accent)!important;box-shadow:0 0 0 1px color-mix(in srgb, var(--project-accent) 28%, transparent),0 10px 26px rgba(15,23,42,.14)!important}
+.taskDimmed{opacity:.46;filter:blur(.3px) saturate(.72)}
+.autoAssignedTask{box-shadow:0 0 0 2px rgba(34,197,94,.35),0 0 0 5px rgba(34,197,94,.12)!important;animation:autoAssignPulse 1.3s ease-in-out 2}
+.autoBadge{background:#dcfce7!important;color:#14532d!important;border:1px solid #86efac}
+.projectFocusBar .projectFocusSummary{border-left:4px solid #60a5fa;padding-left:10px}
+@keyframes autoAssignPulse{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-1px)}
+  100%{transform:translateY(0)}
+}
+html[data-theme="dark"] .collapsibleSection,
+html[data-theme="dark"] .projectHeroCard,
+html[data-theme="dark"] .autoAssignResultsPanel,
+html[data-theme="dark"] .heatCell,
+html[data-theme="dark"] .plannerHeroCard,
+html[data-theme="dark"] .autoAssignBoardSummary,
+html[data-theme="dark"] .mobileCard,
+html[data-theme="dark"] .mobileTaskCard,
+html[data-theme="dark"] .mobileLane,
+html[data-theme="dark"] .mobileWarning,
+html[data-theme="dark"] .projectTileSection,
+html[data-theme="dark"] .projectAutoAssignPanel,
+html[data-theme="dark"] .projectHealthPreviewCard,
+html[data-theme="dark"] .projectHealthSummaryCard,
+html[data-theme="dark"] .warningActionButton{background:#111827!important;border-color:#334155!important;color:#f8fafc!important;box-shadow:none!important}
+html[data-theme="dark"] .collapsibleHeader{border-color:#334155!important}
+html[data-theme="dark"] .collapsibleSummary,
+html[data-theme="dark"] .collapsibleToggle small,
+html[data-theme="dark"] .heatCell span,
+html[data-theme="dark"] .heatCell small,
+html[data-theme="dark"] .miniStat,
+html[data-theme="dark"] .projectMain .muted,
+html[data-theme="dark"] .mobileSurface .muted{color:#cbd5e1!important}
+html[data-theme="dark"] .miniStat{background:#0f172a!important;border-color:#475569!important}
+html[data-theme="dark"] .mobileAccessCandidate{background:#0f172a!important;border-color:#475569!important}
+html[data-theme="dark"] .mobileAccessCandidate span{color:#cbd5e1!important}
+html[data-theme="dark"] .heatCell.tone-info{background:#172554!important;border-color:#1d4ed8!important}
+html[data-theme="dark"] .heatCell.tone-capacity{background:#2b2111!important;border-color:#92400e!important}
+html[data-theme="dark"] .heatCell.tone-critical{background:#3b0d17!important;border-color:#9f1239!important}
+html[data-theme="dark"] .buttonBadge{background:#1e293b!important;border-color:#475569!important;color:#f8fafc!important}
+html[data-theme="dark"] .buttonBadge.good{background:#14532d!important;border-color:#22c55e!important;color:#ecfdf5!important}
+html[data-theme="dark"] .taskFocused{box-shadow:0 0 0 1px color-mix(in srgb, var(--project-accent) 35%, transparent),0 12px 30px rgba(2,6,23,.55)!important}
+html[data-theme="dark"] .taskDimmed{opacity:.34}
+html[data-theme="dark"] .autoBadge{background:#14532d!important;color:#ecfdf5!important;border-color:#22c55e!important}
+html[data-theme="dark"] .mobilePage,
+html[data-theme="dark"] .mobileSurface{background:#020617!important;color:#f8fafc!important}
+html[data-theme="dark"] .mobileCard,
+html[data-theme="dark"] .mobileTaskCard,
+html[data-theme="dark"] .mobileLane,
+html[data-theme="dark"] .mobileWarning,
+html[data-theme="dark"] .mobileHero{background:#111827!important;border-color:#334155!important}
+html[data-theme="dark"] .mobileNav button,
+html[data-theme="dark"] .mobileActionButton,
+html[data-theme="dark"] .mobileField select{background:#0f172a!important;color:#f8fafc!important;border-color:#475569!important}
+html[data-theme="dark"] .projectMain input,
+html[data-theme="dark"] .projectMain select,
+html[data-theme="dark"] .projectMain textarea,
+html[data-theme="dark"] .projectSidebar input,
+html[data-theme="dark"] .projectSidebar select,
+html[data-theme="dark"] .autoAssignPreviewPanel input,
+html[data-theme="dark"] .autoAssignPreviewPanel select,
+html[data-theme="dark"] .autoAssignPreviewPanel textarea,
+html[data-theme="dark"] .availabilityCalendar input,
+html[data-theme="dark"] .availabilityCalendar select,
+html[data-theme="dark"] .availabilityCalendar textarea{background:#0f172a!important;color:#f8fafc!important;border-color:#475569!important}
+html[data-theme="dark"] .projectMain input::placeholder,
+html[data-theme="dark"] .projectMain textarea::placeholder,
+html[data-theme="dark"] .projectSidebar input::placeholder,
+html[data-theme="dark"] .projectSidebar textarea::placeholder{color:#94a3b8!important;opacity:1!important}
+html[data-theme="dark"] .projectMain input:disabled,
+html[data-theme="dark"] .projectMain select:disabled,
+html[data-theme="dark"] .projectMain textarea:disabled{background:#1e293b!important;color:#cbd5e1!important;border-color:#475569!important;opacity:1!important}
