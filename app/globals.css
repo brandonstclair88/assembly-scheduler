@@ -1888,3 +1888,156 @@ html[data-theme="dark"] .projectSidebar textarea::placeholder{color:#94a3b8!impo
 html[data-theme="dark"] .projectMain input:disabled,
 html[data-theme="dark"] .projectMain select:disabled,
 html[data-theme="dark"] .projectMain textarea:disabled{background:#1e293b!important;color:#cbd5e1!important;border-color:#475569!important;opacity:1!important}
+
+/* ==========================================================================
+   v75: unified button, header, and navigation system
+   A single authoritative layer for the app's most-used controls, so buttons
+   and the top bar look and behave consistently everywhere instead of
+   inheriting whatever a given feature pass left behind. Feature-specific
+   layouts (board grids, calendars, Gantt, etc.) are intentionally left
+   alone here.
+   ========================================================================== */
+:root{
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:18px;
+  --gap-sm:8px;
+  --gap-md:14px;
+  --btn-shadow:0 1px 2px rgba(15,23,42,.06);
+  --btn-shadow-hover:0 4px 10px rgba(15,23,42,.10);
+}
+
+/* --- Buttons: one consistent system for .btn, .nav button, and .mini --- */
+.btn,
+.nav button,
+button.mini,
+.mini{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  border-radius:var(--radius-sm)!important;
+  border:1px solid var(--line)!important;
+  background:#fff!important;
+  color:var(--ink)!important;
+  font-weight:600!important;
+  cursor:pointer!important;
+  box-shadow:var(--btn-shadow)!important;
+  transition:background .12s ease,border-color .12s ease,box-shadow .12s ease,transform .06s ease!important;
+  white-space:nowrap;
+}
+.btn,
+.nav button{
+  padding:9px 14px!important;
+  font-size:14px!important;
+}
+.mini{
+  padding:5px 9px!important;
+  font-size:12px!important;
+  border-radius:999px!important;
+}
+.btn:hover,
+.nav button:hover,
+.mini:hover{
+  background:var(--accentSoft,#eef2f6)!important;
+  border-color:var(--accent)!important;
+  box-shadow:var(--btn-shadow-hover)!important;
+}
+.btn:active,
+.nav button:active,
+.mini:active{transform:translateY(1px);}
+.btn:focus-visible,
+.nav button:focus-visible,
+.mini:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible{
+  outline:2px solid var(--accent)!important;
+  outline-offset:2px!important;
+}
+.btn:disabled,
+.nav button:disabled,
+.mini:disabled{opacity:.5!important;cursor:not-allowed!important;box-shadow:none!important;}
+
+.btn.primary,
+.nav button.active{
+  background:var(--accentStrong,var(--accent))!important;
+  border-color:var(--accentStrong,var(--accent))!important;
+  color:#fff!important;
+  box-shadow:var(--btn-shadow)!important;
+}
+.btn.primary:hover,
+.nav button.active:hover{filter:brightness(1.08);box-shadow:var(--btn-shadow-hover)!important;}
+
+.btn.danger{
+  background:#fff!important;
+  color:var(--bad)!important;
+  border-color:#f0c4bf!important;
+}
+.btn.danger:hover{background:#fdf1f0!important;border-color:var(--bad)!important;}
+
+/* --- Header / top bar --- */
+.top{
+  display:flex!important;
+  flex-wrap:wrap;
+  gap:var(--gap-md);
+}
+.brand{min-width:220px}
+.top .actions{
+  display:flex!important;
+  align-items:center!important;
+  gap:var(--gap-sm)!important;
+  flex-wrap:wrap;
+}
+.topUtilityActions .btn{white-space:nowrap;}
+
+/* --- Nav rows: tighter, calmer grouping --- */
+.navStack{display:flex;flex-direction:column;gap:var(--gap-sm);margin-bottom:var(--gap-md);}
+.nav{
+  gap:6px!important;
+  padding:6px!important;
+}
+.nav button{border-radius:var(--radius-sm)!important;}
+.headerActionRow{
+  display:flex;
+  gap:var(--gap-sm);
+  flex-wrap:wrap;
+  padding-top:2px;
+}
+
+/* --- Cards: consistent rounding/spacing rhythm --- */
+.card{border-radius:var(--radius-lg)!important;}
+.grid{gap:var(--gap-md)!important;}
+
+/* --- Dark mode equivalents for the unified button system --- */
+html[data-theme="dark"] .btn,
+html[data-theme="dark"] .nav button,
+html[data-theme="dark"] .mini{
+  background:#1b2536!important;
+  color:#f1f5f9!important;
+  border-color:#3f4c5f!important;
+  box-shadow:none!important;
+}
+html[data-theme="dark"] .btn:hover,
+html[data-theme="dark"] .nav button:hover,
+html[data-theme="dark"] .mini:hover{
+  background:#243247!important;
+  border-color:var(--accent)!important;
+}
+html[data-theme="dark"] .btn.primary,
+html[data-theme="dark"] .nav button.active{
+  background:#4b6478!important;
+  border-color:#7a93a8!important;
+  color:#fff!important;
+}
+html[data-theme="dark"] .btn.danger{
+  background:#241417!important;
+  color:#fca5a5!important;
+  border-color:#5f2b2b!important;
+}
+
+@media(max-width:850px){
+  .top{align-items:flex-start;}
+  .top .actions{width:100%;}
+  .globalSearchInput{width:100%;}
+}
