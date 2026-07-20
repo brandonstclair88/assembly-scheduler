@@ -2066,3 +2066,209 @@ html[data-theme="dark"] .btn.danger{
   max-height:330px!important;
 }
 .dashPanel{min-height:0!important;}
+
+/* ==========================================================================
+   v77: dropdown page nav + app-wide page redesign
+   Restyles the shared building blocks every page is built from (page shell,
+   cards/panels, section headers, tables, forms, KPI/stat chips, empty
+   states) so every tab gets a more organized, modern look without touching
+   page-specific logic. Also replaces the multi-row tab bar with a single
+   dropdown menu.
+   ========================================================================== */
+
+:root{
+  --shell-bg-a:#eef2f9;
+  --shell-bg-b:#f7f9fc;
+  --panel-shadow:0 1px 3px rgba(15,23,42,.06),0 8px 24px -12px rgba(15,23,42,.10);
+  --panel-shadow-hover:0 4px 10px rgba(15,23,42,.08),0 14px 32px -14px rgba(15,23,42,.16);
+  --panel-radius:16px;
+}
+
+/* --- App shell / page background --- */
+body{
+  background:linear-gradient(180deg,var(--shell-bg-a) 0,var(--shell-bg-b) 260px)!important;
+}
+.shell{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:16px!important;
+  padding:22px 24px 48px!important;
+}
+.top{margin-bottom:0!important;}
+.navStack{margin-bottom:4px!important;}
+
+/* --- Page dropdown nav --- */
+.pageNav{position:relative;display:inline-block;}
+.pageNavTrigger{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:10px 14px!important;
+  border-radius:12px!important;
+  border:1px solid var(--line)!important;
+  background:#fff!important;
+  font-weight:700!important;
+  cursor:pointer!important;
+  box-shadow:var(--panel-shadow)!important;
+  min-width:230px;
+}
+.pageNavCurrentLabel{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:var(--muted);
+  font-weight:800;
+}
+.pageNavCurrent{font-size:15px;color:var(--ink);flex:1;text-align:left;}
+.pageNavChevron{transition:transform .15s ease;color:var(--muted);font-size:12px;}
+.pageNavChevron.open{transform:rotate(180deg);}
+.pageNavTrigger:hover{border-color:var(--accent)!important;}
+.pageNavMenu{
+  position:absolute;
+  top:calc(100% + 6px);
+  left:0;
+  z-index:40;
+  min-width:280px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:0 12px 28px -8px rgba(15,23,42,.25);
+  padding:8px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  max-height:70vh;
+  overflow:auto;
+}
+.pageNavGroup+.pageNavGroup{border-top:1px solid var(--line);margin-top:4px;padding-top:8px;}
+.pageNavGroupLabel{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  font-weight:800;
+  color:var(--muted);
+  padding:4px 10px 6px;
+}
+.pageNavItem{
+  display:block;
+  width:100%;
+  text-align:left;
+  border:none;
+  background:transparent;
+  padding:9px 10px;
+  border-radius:9px;
+  font-size:14px;
+  font-weight:600;
+  color:var(--ink);
+  cursor:pointer;
+}
+.pageNavItem:hover{background:var(--accentSoft,#eef2f6);}
+.pageNavItem.active{background:var(--accent);color:#fff;}
+
+/* --- Cards & panels: shared rhythm --- */
+.card,.dashPanel{
+  border-radius:var(--panel-radius)!important;
+  box-shadow:var(--panel-shadow)!important;
+  border-color:var(--line)!important;
+}
+.grid{gap:16px!important;}
+.card>h2:first-child,.card>h3:first-child,.dashPanel>h2:first-child,.dashPanel>h3:first-child{
+  padding-bottom:10px;
+  margin-bottom:14px!important;
+  border-bottom:1px solid var(--line);
+}
+.sectionHeaderRow{margin-bottom:16px!important;}
+
+/* --- KPI / stat chips --- */
+.dashKpis div,.miniStat{box-shadow:var(--panel-shadow);}
+.kpi{letter-spacing:-.01em;}
+
+/* --- Tables --- */
+.tablewrap{
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:auto;
+}
+.tablewrap table{font-size:13.5px;}
+.tablewrap th{
+  position:sticky;
+  top:0;
+  z-index:1;
+  background:#fafbfe;
+  box-shadow:inset 0 -1px 0 var(--line);
+}
+.tablewrap tbody tr:hover{background:#f6f8fc;}
+.tablewrap tbody tr:nth-child(even){background:rgba(148,163,184,.06);}
+.tablewrap tbody tr:nth-child(even):hover{background:#f6f8fc;}
+
+/* --- Forms --- */
+input,select,textarea{
+  border-radius:10px!important;
+  transition:border-color .12s ease,box-shadow .12s ease;
+}
+label{letter-spacing:.02em;}
+
+/* --- Empty states --- */
+.emptyState,.noResults,.weekBoardEmpty{
+  text-align:center;
+  color:var(--muted);
+  padding:28px 16px!important;
+  border:1px dashed var(--line);
+  border-radius:12px;
+  background:rgba(148,163,184,.05);
+}
+
+/* --- Dark mode --- */
+html[data-theme="dark"] body{
+  background:linear-gradient(180deg,#0d1526 0,#0b1120 260px)!important;
+}
+html[data-theme="dark"] .pageNavTrigger{
+  background:#111827!important;
+  border-color:#334155!important;
+  color:#f1f5f9!important;
+  box-shadow:none!important;
+}
+html[data-theme="dark"] .pageNavCurrent{color:#f1f5f9!important;}
+html[data-theme="dark"] .pageNavMenu{
+  background:#111827!important;
+  border-color:#334155!important;
+  box-shadow:0 12px 28px -8px rgba(0,0,0,.6)!important;
+}
+html[data-theme="dark"] .pageNavGroup+.pageNavGroup{border-color:#334155!important;}
+html[data-theme="dark"] .pageNavItem{color:#e5e7eb!important;}
+html[data-theme="dark"] .pageNavItem:hover{background:#1b2536!important;}
+html[data-theme="dark"] .pageNavItem.active{background:#4b6478!important;color:#fff!important;}
+html[data-theme="dark"] .card>h2:first-child,
+html[data-theme="dark"] .card>h3:first-child,
+html[data-theme="dark"] .dashPanel>h2:first-child,
+html[data-theme="dark"] .dashPanel>h3:first-child{border-color:#334155!important;}
+html[data-theme="dark"] .tablewrap{border-color:#334155!important;}
+html[data-theme="dark"] .tablewrap th{background:#1e293b!important;box-shadow:inset 0 -1px 0 #334155!important;}
+html[data-theme="dark"] .tablewrap tbody tr:hover{background:#17202f!important;}
+html[data-theme="dark"] .tablewrap tbody tr:nth-child(even){background:rgba(148,163,184,.04)!important;}
+html[data-theme="dark"] .tablewrap tbody tr:nth-child(even):hover{background:#17202f!important;}
+html[data-theme="dark"] .emptyState,html[data-theme="dark"] .noResults,html[data-theme="dark"] .weekBoardEmpty{
+  border-color:#334155;
+  background:rgba(148,163,184,.05);
+  color:#94a3b8;
+}
+
+/* --- Responsive --- */
+@media(max-width:850px){
+  .pageNav{width:100%;}
+  .pageNavTrigger{width:100%;min-width:0;}
+  .pageNavMenu{width:100%;left:0;right:0;}
+  .shell{padding:16px 14px 32px!important;}
+}
+
+/* ==========================================================================
+   v78: secondary containers + hover affordances
+   ========================================================================== */
+.ganttWrap{
+  border-radius:var(--panel-radius)!important;
+  box-shadow:var(--panel-shadow)!important;
+}
+.treeItem,.buildCard{transition:box-shadow .12s ease,border-color .12s ease;}
+.treeItem:hover,.buildCard:hover{box-shadow:var(--panel-shadow-hover)!important;border-color:var(--accent)!important;}
+html[data-theme="dark"] .ganttWrap{box-shadow:none!important;}
+html[data-theme="dark"] .treeItem:hover,html[data-theme="dark"] .buildCard:hover{border-color:var(--accent)!important;}
