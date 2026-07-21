@@ -1099,14 +1099,21 @@ function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,boardInte
 	 const autoScrollDelta=useRef(0);
 	 const autoAssignResultsRef=useRef<HTMLDivElement>(null);
 	 useEffect(()=>{
-	   // Applying a Smart Assign suggestion collapses the (often very tall)
-	   // preview panel and replaces it with this results panel further up the
-	   // page. Without scrolling to it, clicking Apply can look like it did
-	   // nothing at all - the button you clicked disappears and the
-	   // confirmation renders somewhere off-screen.
+	   // Applying a Smart Assign suggestion collapses the (often very tall,
+	   // many-hundred-px) preview panel and replaces it with this much
+	   // shorter results panel higher up the page. A single scrollIntoView
+	   // right after the click lands in the wrong place: it fires before
+	   // the browser finishes reflowing the now-shorter page, so the very
+	   // collapse we're scrolling to react to shifts the target out of
+	   // view again a moment later. Re-running scrollIntoView a few times
+	   // over the following half-second reliably lands after that reflow
+	   // settles, however long it takes.
 	   if(!lastAutoAssignRun)return;
-	   const id=requestAnimationFrame(()=>autoAssignResultsRef.current?.scrollIntoView({behavior:'smooth',block:'start'}));
-	   return()=>cancelAnimationFrame(id);
+	   const delays=[0,50,150,300,600];
+	   const timers=delays.map(ms=>setTimeout(()=>{
+	     autoAssignResultsRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
+	   },ms));
+	   return()=>{timers.forEach(clearTimeout)};
 	 },[lastAutoAssignRun]);
  const activeEmployees=data.employees.filter((e:any)=>e.active);
  const visibleProjects=(data.projects||[]).filter((p:any)=>!p.archived);
