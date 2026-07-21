@@ -580,7 +580,7 @@ function modeDefaults(options?: SmartAssignOptions) {
   };
 }
 
-function buildTaskCandidates(data: AppData, schedule: ScheduledItem[]) {
+function buildTaskCandidates(data: AppData, schedule: ScheduledItem[], prioritizeShipDates: boolean) {
   const projectsById = Object.fromEntries((data.projects || []).map(project => [project.id, project]));
   const assemblies = (data.projectAssemblies || []) as ProjectAssembly[];
   const scheduleByKey = Object.fromEntries(schedule.map(item => [`${item.sourceAssemblyId || String(item.id).split('|')[0]}|${item.phase || 'Build'}`, item]));
@@ -597,13 +597,26 @@ function buildTaskCandidates(data: AppData, schedule: ScheduledItem[]) {
     if (needsWork(assembly, shippingItem, 'Shipping')) tasks.push({ assembly, item: shippingItem!, phase: 'Shipping', chunks: chunkPlanForItem(data, shippingItem!, assembly), project, shipDate, currentIds: phaseAssignmentIds(assembly, 'Shipping'), protected: isProtected(assembly), urgentScore: urgent });
   }
   return tasks.sort((a, b) => {
-    const urgencyCompare = Number(b.urgentScore || 0) - Number(a.urgentScore || 0);
-    if (urgencyCompare) return urgencyCompare;
-    const shipCompare = String(a.shipDate || '9999-12-31').localeCompare(String(b.shipDate || '9999-12-31'));
-    if (shipCompare) return shipCompare;
+    // "Prioritize ship dates" now genuinely changes behavior: it controls
+    // which tasks get processed - and therefore claim any given employee's
+    // capacity - first. (Previously this only added an identical bonus to
+    // every candidate for a task, which never changed which employee won,
+    // since ranking within a task is always relative.) With it off, tasks
+    // are ordered neutrally so urgency doesn't quietly dominate who gets
+    // suggested first.
+    if (prioritizeShipDates) {
+      const urgencyCompare = Number(b.urgentScore || 0) - Number(a.urgentScore || 0);
+      if (urgencyCompare) return urgencyCompare;
+      const shipCompare = String(a.shipDate || '9999-12-31').localeCompare(String(b.shipDate || '9999-12-31'));
+      if (shipCompare) return shipCompare;
+    }
     const phaseCompare = phaseOrder(a.phase) - phaseOrder(b.phase);
     if (phaseCompare) return phaseCompare;
-    return String(a.item?.scheduledStart || '').localeCompare(String(b.item?.scheduledStart || ''));
+    const startCompare = String(a.item?.scheduledStart || '').localeCompare(String(b.item?.scheduledStart || ''));
+    if (startCompare) return startCompare;
+    const partCompare = String(a.assembly.partNumber || '').localeCompare(String(b.assembly.partNumber || ''));
+    if (partCompare) return partCompare;
+    return String(a.assembly.id).localeCompare(String(b.assembly.id));
   });
 }
 
@@ -627,9 +640,15 @@ export function previewSmartAssignSuggestions(data: AppData, scheduleInput?: Sch
     const weekKey = weeklyKey(chunk.employeeId, chunk.date);
     weeklyUsage.set(weekKey, (weeklyUsage.get(weekKey) || 0) + Number(chunk.hours || 0));
   }
+  // Counts how many fresh suggestions each employee has already picked up
+  // within this single preview pass. Used to gently spread similar/blank
+  // work across multiple qualified people instead of stacking it all on
+  // whoever scores highest first, purely because they were on top of the
+  // list before anyone else had any hours reserved against them.
+  const suggestedCount = new Map<string, number>();
 
   const suggestions: SmartAssignSuggestion[] = [];
-  const tasks = buildTaskCandidates(data, schedule);
+  const tasks = buildTaskCandidates(data, schedule, mode.prioritizeShipDates);
   const thisWeek = mondayOfValue(dateOnly(new Date()));
 
   for (const task of tasks) {
@@ -639,8 +658,13 @@ export function previewSmartAssignSuggestions(data: AppData, scheduleInput?: Sch
     const wantsAssignment = currentIds.length === 0;
     const candidateWeek = mondayOfValue(task.chunks[0]?.date || task.item?.scheduledStart || task.shipDate || dateOnly(new Date()));
     const shouldReviewAssigned = currentIds.length > 0 && (mode.improveExistingUnlockedAssignments || mode.balanceThisWeek || mode.reduceOverloads);
+    // "Assign blanks only" is now the sole, literal gate for unassigned work.
+    // Previously this was OR'd with balanceThisWeek/reduceOverloads/prioritizeShipDates,
+    // and prioritizeShipDates defaults true - so unchecking "Assign blanks only"
+    // never actually stopped blank assignment. Reassignment of already-assigned
+    // work is still gated separately by shouldReviewAssigned.
     const shouldReview = wantsAssignment
-      ? (mode.assignBlanksOnly || mode.balanceThisWeek || mode.reduceOverloads || mode.prioritizeShipDates)
+      ? mode.assignBlanksOnly
       : (shouldReviewAssigned && (!mode.balanceThisWeek || candidateWeek === thisWeek));
     if (!shouldReview) continue;
 
@@ -700,8 +724,31 @@ export function previewSmartAssignSuggestions(data: AppData, scheduleInput?: Sch
       const stabilityBonus = employee.id === currentEmployeeId && fits ? 12 : 0;
       const loadBonus = Math.max(0, 10 - (weeklyLoad / weeklyCapacity) * 8);
       const openBonus = Math.min(18, openAcrossTask * 1.4);
-      const urgencyBonus = mode.prioritizeShipDates ? task.urgentScore : 0;
-      const score = urgencyBonus + preferredBonus + stabilityBonus + loadBonus + openBonus;
+      // Worst-case day utilization this task would push the employee to,
+      // used below for the "reduce overloads" penalty. Computed once here
+      // so it stays in lockstep with the fits/openAcrossTask math above.
+      const worstUtilization = task.chunks.reduce((max, chunk) => {
+        const cap = capacityForDate(data, employee.id, chunk.date);
+        if (cap <= 0) return max;
+        const key = `${employee.id}|${chunk.date}`;
+        const existing = usage.get(key) || 0;
+        const ownHours = employee.id === currentEmployeeId
+          ? task.chunks.filter(currentChunk => currentChunk.date === chunk.date).reduce((n, currentChunk) => n + Number(currentChunk.hours || 0), 0)
+          : 0;
+        const projected = Math.max(0, existing - ownHours) + Number(chunk.hours || 0);
+        return Math.max(max, projected / cap);
+      }, 0);
+      // Only bites once "Reduce overloads" is checked, and only past 75%
+      // utilization - so it nudges scoring toward candidates with real
+      // slack instead of ones who just barely fit, without overriding the
+      // preferred/stability bonuses on its own.
+      const overloadPenalty = mode.reduceOverloads ? Math.max(0, worstUtilization - 0.75) * 32 : 0;
+      // Grows every time this employee has already been freshly suggested
+      // elsewhere in this same preview pass, so near-identical blank tasks
+      // spread across the team instead of all landing on whoever scored
+      // highest before anyone else had hours reserved against them.
+      const spreadPenalty = (suggestedCount.get(employee.id) || 0) * 6;
+      const score = preferredBonus + stabilityBonus + loadBonus + openBonus - overloadPenalty - spreadPenalty;
       return { employee, fits, anyWorkingDay, preferred, openAcrossTask, weeklyLoad, score };
     });
 
@@ -747,7 +794,7 @@ export function previewSmartAssignSuggestions(data: AppData, scheduleInput?: Sch
         continue;
       }
 
-      const urgencyNote = mode.prioritizeShipDates && task.urgentScore >= 95 ? ' Chosen because this project ships sooner.' : '';
+      const urgencyNote = mode.prioritizeShipDates && task.urgentScore >= 95 ? ' This item was reviewed early because it ships soon.' : '';
       const preferredNote = best.preferred
         ? ` ${best.employee.name || 'Employee'} prefers this project.`
         : noPreferredAvailable
@@ -780,6 +827,26 @@ export function previewSmartAssignSuggestions(data: AppData, scheduleInput?: Sch
         score: best.score,
         overloadResolved: overloadedNow && best.employee.id !== currentEmployeeId,
       });
+      suggestedCount.set(best.employee.id, (suggestedCount.get(best.employee.id) || 0) + 1);
+      // Reserve this employee's hours against the shared usage/weeklyUsage
+      // tallies right away. Without this, every task in this preview pass
+      // is scored against the *original* schedule only, so the same
+      // in-demand employee gets suggested for far more work on the same
+      // day than they actually have capacity for. Apply-time then has to
+      // silently skip most of them as "stale," which is what made Smart
+      // Assign look broken: 21 suggestions in preview, 4 actually applied.
+      for (const chunk of task.chunks) {
+        const dayKey = `${best.employee.id}|${chunk.date}`;
+        usage.set(dayKey, (usage.get(dayKey) || 0) + Number(chunk.hours || 0));
+        const weekKey = weeklyKey(best.employee.id, chunk.date);
+        weeklyUsage.set(weekKey, (weeklyUsage.get(weekKey) || 0) + Number(chunk.hours || 0));
+        if (!wantsAssignment && currentEmployeeId && currentEmployeeId !== best.employee.id) {
+          const oldDayKey = `${currentEmployeeId}|${chunk.date}`;
+          usage.set(oldDayKey, Math.max(0, (usage.get(oldDayKey) || 0) - Number(chunk.hours || 0)));
+          const oldWeekKey = weeklyKey(currentEmployeeId, chunk.date);
+          weeklyUsage.set(oldWeekKey, Math.max(0, (weeklyUsage.get(oldWeekKey) || 0) - Number(chunk.hours || 0)));
+        }
+      }
       continue;
     }
 
