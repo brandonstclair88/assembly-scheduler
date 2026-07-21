@@ -2272,3 +2272,22 @@ html[data-theme="dark"] .emptyState,html[data-theme="dark"] .noResults,html[data
 .treeItem:hover,.buildCard:hover{box-shadow:var(--panel-shadow-hover)!important;border-color:var(--accent)!important;}
 html[data-theme="dark"] .ganttWrap{box-shadow:none!important;}
 html[data-theme="dark"] .treeItem:hover,html[data-theme="dark"] .buildCard:hover{border-color:var(--accent)!important;}
+
+/* ==========================================================================
+   v79: page dropdown moved into top banner; header button cluster removed
+   ========================================================================== */
+.topLeft{
+  display:flex!important;
+  align-items:center!important;
+  gap:18px!important;
+  flex-wrap:wrap;
+}
+.dangerZoneCard{border-color:#f0c4bf!important;}
+.dangerZoneCard h2{color:var(--bad);}
+@media(max-width:850px){
+  .topLeft{width:100%;justify-content:space-between;}
+}
+@media(max-width:600px){
+  .topLeft{flex-direction:column;align-items:flex-start!important;gap:10px!important;}
+  .pageNav{width:100%;}
+}
