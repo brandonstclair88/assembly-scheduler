@@ -1097,6 +1097,17 @@ function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,boardInte
 	 const lastAutoScrollAt=useRef(0);
 	 const autoScrollFrame=useRef<any>(null);
 	 const autoScrollDelta=useRef(0);
+	 const autoAssignResultsRef=useRef<HTMLDivElement>(null);
+	 useEffect(()=>{
+	   // Applying a Smart Assign suggestion collapses the (often very tall)
+	   // preview panel and replaces it with this results panel further up the
+	   // page. Without scrolling to it, clicking Apply can look like it did
+	   // nothing at all - the button you clicked disappears and the
+	   // confirmation renders somewhere off-screen.
+	   if(!lastAutoAssignRun)return;
+	   const id=requestAnimationFrame(()=>autoAssignResultsRef.current?.scrollIntoView({behavior:'smooth',block:'start'}));
+	   return()=>cancelAnimationFrame(id);
+	 },[lastAutoAssignRun]);
  const activeEmployees=data.employees.filter((e:any)=>e.active);
  const visibleProjects=(data.projects||[]).filter((p:any)=>!p.archived);
  const autoAssignSuggestions=useMemo(()=>previewSmartAssignSuggestions(data,schedule,smartAssignOptions),[data,schedule,smartAssignOptions]);
@@ -1862,7 +1873,7 @@ function TaskCard({s}:any){
  function SmartAssignResultsPanel(){
   const items=[...(lastAutoAssignRun.applied||[]),...(lastAutoAssignRun.skipped||[]),...(lastAutoAssignRun.failed||[])];
   return (
-    <div className="autoAssignResultsPanel">
+    <div className="autoAssignResultsPanel" ref={autoAssignResultsRef}>
       <div className="autoAssignPreviewHeader">
         <div>
           <h3>Last Smart Assign Apply</h3>
