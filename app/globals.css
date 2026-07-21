@@ -2347,6 +2347,113 @@ html[data-theme="dark"] .treeItem:hover,html[data-theme="dark"] .buildCard:hover
   .topRight{width:100%;justify-content:space-between;}
   .topSearch{max-width:none;}
 }
+/* --- Weekly Board toolbar reorganization ---
+   The toolbar used to be one flat grid of 17 same-sized controls: view
+   toggles, filters, data-changing actions (Smart Assign, Apply, Discard),
+   and export buttons all rendered identically with no separation, which is
+   what read as "chaotic." Now it's three labeled clusters - View, Actions,
+   Export - each its own row, with Export visually quieted down so it stops
+   competing with Apply/Discard for attention. */
+.boardTools.enhancedBoardTools{
+  display:flex!important;
+  flex-direction:column;
+  gap:10px;
+}
+.boardToolGroup{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.boardToolGroupLabel{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  font-weight:800;
+  color:var(--muted);
+}
+.boardToolGroupRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:flex-end;
+}
+.boardToolGroupRow .field{min-width:150px;}
+.boardToolGroupView{
+  padding-bottom:10px;
+  border-bottom:1px solid var(--line);
+}
+.boardToolGroupExport{
+  padding-top:2px;
+}
+.btn.quiet{
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--muted)!important;
+  border-color:transparent!important;
+}
+.btn.quiet:hover{
+  background:var(--accentSoft,#eef2f6)!important;
+  color:var(--ink)!important;
+  border-color:var(--line)!important;
+}
+.buttonBadge.warn{background:#fff4d6;color:#92400e;border-color:#fcd34d}
+html[data-theme="dark"] .boardToolGroupView{border-color:#334155!important;}
+html[data-theme="dark"] .btn.quiet{color:#94a3b8!important;}
+html[data-theme="dark"] .buttonBadge.warn{background:#2b2111!important;border-color:#92400e!important;color:#fde68a!important;}
+
+/* --- Weekly Board: collapsible Schedule Warnings ---
+   This card used to render open by default, every time, ahead of the
+   actual week grid - meaning you scrolled past a full warnings list before
+   reaching any scheduled work. It now starts collapsed behind a toggle
+   that still shows the critical/capacity/info counts, so nothing important
+   is hidden, it's just not taking up the top of the page uninvited. */
+.weeklyWarningToggle{
+  width:100%;
+  display:flex!important;
+  align-items:center;
+  gap:12px;
+  justify-content:flex-start;
+  padding:12px 14px!important;
+  text-align:left;
+  font-weight:700;
+}
+.weeklyWarningToggle .scheduleWarningCounts{margin-left:auto;}
+.weeklyWarningChevron{transition:transform .15s ease;color:var(--muted);}
+.weeklyWarningChevron.open{transform:rotate(180deg);}
+
+/* --- Smart Assign preview/results: compact rows instead of tall cards ---
+   Each suggestion used to be a full card (~200px) with all detail always
+   visible, so 13+ suggestions meant several screens of scrolling. Rows are
+   now single-line by default; clicking one expands just its reasoning. */
+.autoAssignCompactList{
+  display:flex;
+  flex-direction:column;
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+}
+.autoAssignRow{border-bottom:1px solid var(--line);background:#fff;}
+.autoAssignRow:last-child{border-bottom:0;}
+.autoAssignRow.critical{border-left:4px solid #e11d48;}
+.autoAssignRow.capacity{border-left:4px solid #d97706;}
+.autoAssignRow.info{border-left:4px solid #2563eb;}
+.autoAssignRowMain{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 12px;
+  cursor:pointer;
+  flex-wrap:wrap;
+}
+.autoAssignRowMain:hover{background:#f8fafc;}
+.autoAssignRowSpacer{width:16px;display:inline-block;}
+.autoAssignRowDesc{color:var(--muted);flex:1 1 auto;min-width:120px;}
+.autoAssignRowChevron{margin-left:auto;color:var(--muted);transition:transform .15s ease;}
+.autoAssignRowChevron.open{transform:rotate(180deg);}
+.autoAssignRowDetail{padding:0 12px 12px 38px;}
+html[data-theme="dark"] .autoAssignRow{background:#0f172a!important;border-color:#334155!important;}
+html[data-theme="dark"] .autoAssignRowMain:hover{background:#172033!important;}
+
 @media(max-width:560px){
   .topRight{flex-direction:column;align-items:stretch!important;}
   .topSearch{max-width:none;}
