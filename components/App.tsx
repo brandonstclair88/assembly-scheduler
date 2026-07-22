@@ -40,11 +40,12 @@ function migrate(raw:any):AppData{
   return {...d,version:APP_VERSION,settings:{...defaultData.settings,...d.settings}};
 }
 function load():AppData{try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)return migrate(JSON.parse(raw));}catch{}return defaultData}
+let remoteUpdatedAt='';
 async function loadFromDatabase():Promise<AppData>{
   try{
     const res=await fetch('/api/data',{cache:'no-store'});
     const json=await res.json();
-    if(json?.ok&&json?.data)return migrate(json.data);
+    if(json?.ok&&json?.data){remoteUpdatedAt=String(json.updatedAt||'');return migrate(json.data);}
   }catch{}
   return load();
 }
@@ -53,20 +54,18 @@ function saveLocal(d:AppData){
 }
 function saveRemote(d:AppData){
   remoteSaveQueue=remoteSaveQueue.catch(()=>undefined).then(async()=>{
-    const res=await fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+    const res=await fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:d,baseUpdatedAt:remoteUpdatedAt})});
+    const json=await res.json().catch(()=>null);
     if(!res.ok){
-      const json=await res.json().catch(()=>null);
       throw new Error(json?.error||'Failed to save scheduler database.');
     }
+    if(json?.updatedAt)remoteUpdatedAt=String(json.updatedAt);
   });
   return remoteSaveQueue;
 }
 function download(name:string,text:string){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
 
-const BACKUP_KEY='assembly-scheduler-backup-history-v1';
 function backupName(reason:string){const stamp=new Date().toISOString().replace(/[:.]/g,'-');return `scheduler-${reason}-${stamp}.json`}
-function readBackups(){try{return JSON.parse(localStorage.getItem(BACKUP_KEY)||'[]')}catch{return []}}
-function writeBackups(backups:any[]){localStorage.setItem(BACKUP_KEY,JSON.stringify(backups.slice(0,30)))}
 function validateBackup(raw:any){
   const problems:string[]=[];
   if(!raw||typeof raw!=='object')problems.push('File is not a valid scheduler backup.');
@@ -76,11 +75,17 @@ function validateBackup(raw:any){
   if(!Array.isArray(raw.projectAssemblies)&&!Array.isArray(raw.assemblies))problems.push('Missing project assemblies list.');
   return problems;
 }
-function createBackupSnapshot(data:AppData,reason='manual'){
-  const backups=readBackups();
-  const snapshot={id:uid('bak'),createdAt:new Date().toISOString(),reason,appVersion:APP_VERSION,itemCounts:{employees:data.employees?.length||0,projects:data.projects?.length||0,library:data.assemblyTemplates?.length||0,projectAssemblies:data.projectAssemblies?.length||0,holds:data.holds?.length||0},data:{...data,version:APP_VERSION}};
-  writeBackups([snapshot,...backups]);
-  return snapshot;
+// Snapshots now live in the database (app_backups table) so they survive browser
+// cache clears and are visible from any machine. Fire-and-forget.
+function createBackupSnapshot(_data:AppData,reason='manual'){
+  try{fetch('/api/backups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason})}).catch(()=>undefined)}catch{}
+}
+const AUTO_BACKUP_STAMP_KEY='assembly-scheduler-last-auto-backup';
+function maybeAutoBackup(data:AppData){
+  try{
+    const last=Number(localStorage.getItem(AUTO_BACKUP_STAMP_KEY)||0);
+    if(Date.now()-last>1000*60*30){localStorage.setItem(AUTO_BACKUP_STAMP_KEY,String(Date.now()));createBackupSnapshot(data,'auto');}
+  }catch{}
 }
 function projectAccentColor(projectId:string){
   const palette=['#2563eb','#0f766e','#7c3aed','#d97706','#dc2626','#0891b2','#65a30d','#c2410c'];
@@ -105,14 +110,6 @@ function CollapsibleSection({storageKey,title,subtitle,summary,defaultOpen=false
     try{sessionStorage.setItem(sessionCollapseKey(storageKey),open?'open':'closed')}catch{}
   },[storageKey,open]);
   return <section className={`collapsibleSection ${open?'open':'collapsed'} ${tone}`.trim()}><div className="collapsibleHeader"><button type="button" className="collapsibleToggle" onClick={()=>setOpen((value:boolean)=>!value)}><span className={`chevron ${open?'open':''}`}>▾</span><span><b>{title}</b>{subtitle&&<small>{subtitle}</small>}</span></button>{actions&&<div className="collapsibleActions">{actions}</div>}</div>{!open&&summary&&<div className="collapsibleSummary">{summary}</div>}{open&&<div className="collapsibleBody">{children}</div>}</section>
-}
-function maybeAutoBackup(data:AppData){
-  try{
-    const backups=readBackups();
-    const last=backups.find((b:any)=>b.reason==='auto');
-    const lastTime=last?new Date(last.createdAt).getTime():0;
-    if(Date.now()-lastTime>1000*60*30)createBackupSnapshot(data,'auto');
-  }catch{}
 }
 function makeAsm(t:AssemblyTemplate,projectId:string,shipDate:string,instanceNumber=1,buildGroupId='',buildGroupLabel='',parentAssemblyId='',batchId=''):ProjectAssembly{return {id:uid('asm'),projectId,templateId:t.id,partNumber:t.partNumber,description:t.description,type:t.type,instanceNumber,instanceLabel:'#'+instanceNumber,buildGroupId,buildGroupLabel,parentAssemblyId,batchId,qty:t.defaultQty||1,hoursEach:t.hoursEach||1,testRequired:!!t.testRequired,testHours:t.testHours||0,inspectionRequired:!!t.inspectionRequired,inspectionHours:t.inspectionHours||0,shippingRequired:!!t.shippingRequired,shippingHours:t.shippingHours||0,testReturnDateTime:'',inspectionAssignedTo:'',shippingAssignedTo:'',inspectionManualStartDate:'',shippingManualStartDate:'',inspectionComplete:false,shippingComplete:false,maxTopPercentWhenSubHeld:t.maxTopPercentWhenSubHeld||80,dependsOn:'',assignedTo:'',startAfter:'',status:'Not Started',percent:0,holdReason:'',shipDate,lateAllowed:false,overrideDependencies:false,manuallyScheduled:false,manualStartDate:'',locked:false,smartAssignProtected:false}}
 
@@ -201,12 +198,11 @@ export default function App(){
    saveLocal(versionedData);
    setSaveState('saving');
    const timer=setTimeout(()=>{
-    saveRemote(versionedData).then(()=>{setSaveError('');setSaveState('saved')}).catch(err=>{
+    saveRemote(versionedData).then(()=>{setSaveError('');setSaveState('saved');maybeAutoBackup(versionedData)}).catch(err=>{
      console.error('Scheduler database save failed:',err);
      setSaveState('error');
      setSaveError(err?.message||'Database save failed. Browser cache was updated, but the shared database may be out of date.');
     });
-    maybeAutoBackup(versionedData);
    },1200);
    return()=>clearTimeout(timer);
   }
@@ -249,7 +245,7 @@ export default function App(){
   }
  }
  const mainTabs=[{tab:'Dashboard',label:'Today'},{tab:'Weekly Board',label:'Board'},{tab:'Plan',label:'Plan'},{tab:'Projects',label:'Projects'},{tab:'Assembly Library',label:'Library'},{tab:'People',label:'People'},{tab:'Admin',label:'Admin'}];
- return <main className="shell"><div className="top"><div className="topLeft"><div className="brand" style={{display:'flex',alignItems:'center',gap:14}}><img src="/logo.png" alt="RPM/PSI" style={{height:46,width:'auto'}} onError={e=>{(e.target as HTMLImageElement).style.display='none'}}/><h1>Production Scheduler</h1></div><nav className="mainTabBar">{mainTabs.map((item:any)=><button key={item.tab} type="button" className={tab===item.tab?"active":""} onClick={()=>setTab(item.tab)}>{item.label}</button>)}</nav></div><div className="topRight"><div className="topSearch"><input className="globalSearchInput" value={globalSearch} onChange={e=>setGlobalSearch(e.target.value)} placeholder="Search project ID, P/N, assembly, employee..."/></div><div className="topButtons"><span className={"saveIndicator "+saveState}>{saveState==='saving'?'Saving…':saveState==='error'?'Save failed':saveState==='saved'?'Saved':''}</span><button className="btn" onClick={()=>setShowMobileAccess(true)}>Open Mobile Viewer</button><button className="btn" onClick={()=>setShowAIAgent(v=>!v)} style={showAIAgent?{background:'#2563eb',color:'#fff'}:{}}>{showAIAgent?'Close AI Agent':'🤖 AI Agent'}</button><button className="btn" onClick={()=>setDarkMode(v=>!v)}>{darkMode?'Light Mode':'Dark Mode'}</button></div></div></div>{saveError&&<div className="backupWarning"><b>Database save warning:</b> {saveError}</div>}{showMobileAccess&&<MobileAccessPanel onClose={()=>setShowMobileAccess(false)}/>} {globalSearch.trim()&&<GlobalSearchPanel data={data} query={globalSearch} setTab={setTab} clear={()=>setGlobalSearch('')}/>}{tab==='Dashboard'&&<Dashboard data={data} schedule={schedule} health={health} warnings={warnings} projectHealth={activeProjectHealth} projectHealthSummary={projectHealthSummary} onProjectFilter={openProjectsFilter} onWarningAction={handleDashboardWarningAction} onPriorityAction={handlePriorityAction}/>} {tab==='Projects'&&<Projects data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealth={projectHealth} projectHealthById={projectHealthById} panelIntent={projectPanelIntent} onFocusBoard={focusWeeklyBoard}/>} {tab==='Assembly Library'&&<AssemblyLibrary data={data} setData={setData}/>} {tab==='Weekly Board'&&<WeeklyBoard data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealthById={projectHealthById} boardIntent={weeklyBoardIntent} onOpenProject={openProjectPanel}/>} {tab==='People'&&<People data={data} setData={setData}/>} {tab==='Plan'&&<Plan data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealth={projectHealth} setTab={setTab}/>} {tab==='Admin'&&<Admin data={data} setData={setData} update={update} onExport={()=>download(backupName('manual'),JSON.stringify({...data,version:APP_VERSION},null,2))} onImport={importFile} onReset={reset}/>}{showAIAgent&&<AIAgent data={data} schedule={schedule} onClose={()=>setShowAIAgent(false)}/>}</main>
+ return <main className="shell"><div className="top"><div className="topLeft"><div className="brand" style={{display:'flex',alignItems:'center',gap:14}}><img src="/logo.png" alt="RPM/PSI" style={{height:46,width:'auto'}} onError={e=>{(e.target as HTMLImageElement).style.display='none'}}/><h1>Production Scheduler</h1></div><nav className="mainTabBar">{mainTabs.map((item:any)=><button key={item.tab} type="button" className={tab===item.tab?"active":""} onClick={()=>setTab(item.tab)}>{item.label}</button>)}</nav></div><div className="topRight"><div className="topSearch"><input className="globalSearchInput" value={globalSearch} onChange={e=>setGlobalSearch(e.target.value)} placeholder="Search project ID, P/N, assembly, employee..."/></div><div className="topButtons"><span className={"saveIndicator "+saveState}>{saveState==='saving'?'Saving…':saveState==='error'?'Save failed':saveState==='saved'?'Saved':''}</span><button className="btn" onClick={()=>setShowMobileAccess(true)}>Open Mobile Viewer</button><button className="btn" onClick={()=>setShowAIAgent(v=>!v)} style={showAIAgent?{background:'#2563eb',color:'#fff'}:{}}>{showAIAgent?'Close AI Agent':'🤖 AI Agent'}</button><button className="btn" onClick={()=>setDarkMode(v=>!v)}>{darkMode?'Light Mode':'Dark Mode'}</button></div></div></div>{saveError&&<div className="backupWarning"><b>Database save warning:</b> {saveError} <button className="mini" onClick={()=>window.location.reload()}>Reload now</button></div>}{showMobileAccess&&<MobileAccessPanel onClose={()=>setShowMobileAccess(false)}/>} {globalSearch.trim()&&<GlobalSearchPanel data={data} query={globalSearch} setTab={setTab} clear={()=>setGlobalSearch('')}/>}{tab==='Dashboard'&&<Dashboard data={data} schedule={schedule} health={health} warnings={warnings} projectHealth={activeProjectHealth} projectHealthSummary={projectHealthSummary} onProjectFilter={openProjectsFilter} onWarningAction={handleDashboardWarningAction} onPriorityAction={handlePriorityAction}/>} {tab==='Projects'&&<Projects data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealth={projectHealth} projectHealthById={projectHealthById} panelIntent={projectPanelIntent} onFocusBoard={focusWeeklyBoard}/>} {tab==='Assembly Library'&&<AssemblyLibrary data={data} setData={setData}/>} {tab==='Weekly Board'&&<WeeklyBoard data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealthById={projectHealthById} boardIntent={weeklyBoardIntent} onOpenProject={openProjectPanel}/>} {tab==='People'&&<People data={data} setData={setData}/>} {tab==='Plan'&&<Plan data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealth={projectHealth} setTab={setTab}/>} {tab==='Admin'&&<Admin data={data} setData={setData} update={update} onExport={()=>download(backupName('manual'),JSON.stringify({...data,version:APP_VERSION},null,2))} onImport={importFile} onReset={reset}/>}{showAIAgent&&<AIAgent data={data} schedule={schedule} onClose={()=>setShowAIAgent(false)}/>}</main>
 }
 function MobileAccessPanel({onClose}:any){
  const [mobileUrl,setMobileUrl]=useState('');
@@ -306,20 +302,35 @@ function MobileAccessPanel({onClose}:any){
 }
 function BackupCenter({data,setData}:any){
  const [backups,setBackups]=useState<any[]>([]);
+ const [busy,setBusy]=useState('');
+ const [loadError,setLoadError]=useState('');
  const [importProblems,setImportProblems]=useState<string[]>([]);
- function refresh(){setBackups(readBackups())}
- useEffect(()=>refresh(),[]);
- function createNow(){createBackupSnapshot(data,'manual');refresh();alert('Backup saved locally. Use Download if you want a file copy outside the browser.');}
- function restore(b:any){if(!confirm('Restore this backup? Current data will be replaced, but a safety backup will be created first.'))return;createBackupSnapshot(data,'before-restore');setData(migrate(b.data));setTimeout(refresh,50);}
- function remove(id:string){if(!confirm('Delete this backup from local backup history?'))return;writeBackups(backups.filter((b:any)=>b.id!==id));refresh();}
- function downloadOne(b:any){download(backupName(b.reason||'backup'),JSON.stringify(b.data,null,2));}
- function downloadAll(){download(`assembly-scheduler-backup-history-v${APP_VERSION}.json`,JSON.stringify({exportedAt:new Date().toISOString(),backups},null,2));}
- function importHistory(e:any){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const parsed=JSON.parse(String(r.result));if(Array.isArray(parsed.backups)){writeBackups([...parsed.backups,...readBackups()]);setImportProblems([]);refresh();alert('Backup history imported.')}else{const problems=validateBackup(parsed);setImportProblems(problems);if(problems.length&&!confirm('Backup warning:\n'+problems.join('\n')+'\n\nTry importing this as app data anyway?'))return;createBackupSnapshot(data,'before-import');setData(migrate(parsed));createBackupSnapshot(migrate(parsed),'imported');refresh();alert('App data imported.')}}catch{setImportProblems(['Could not read that file as JSON.']);alert('Could not import that backup file.')}};r.readAsText(f)}
+ async function refresh(){
+  try{const res=await fetch('/api/backups',{cache:'no-store'});const json=await res.json();if(json?.ok){setBackups(json.backups||[]);setLoadError('')}else setLoadError(json?.error||'Could not load backups.')}catch{setLoadError('Could not load backups.')}
+ }
+ useEffect(()=>{refresh()},[]);
+ async function createNow(){setBusy('create');try{await fetch('/api/backups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason:'manual'})});await refresh()}finally{setBusy('')}}
+ async function restore(b:any){
+  if(!confirm('Restore this backup? Current data will be replaced. A safety backup of the current data is created first.'))return;
+  setBusy('restore-'+b.id);
+  try{
+   const res=await fetch('/api/backups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restoreId:b.id})});
+   const json=await res.json();
+   if(json?.ok){const fresh=await loadFromDatabase();setData(fresh);await refresh();alert('Backup restored.')}
+   else alert(json?.error||'Restore failed.');
+  }finally{setBusy('')}
+ }
+ async function remove(id:number){if(!confirm('Delete this backup from the database?'))return;await fetch(`/api/backups?id=${id}`,{method:'DELETE'});refresh()}
+ async function downloadOne(b:any){const res=await fetch(`/api/backups?id=${b.id}`,{cache:'no-store'});const json=await res.json();if(json?.ok)download(backupName(b.reason||'backup'),JSON.stringify(json.data,null,2));else alert('Could not download that backup.')}
+ function importAppData(e:any){
+  const f=e.target.files?.[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const parsed=JSON.parse(String(r.result));const problems=validateBackup(parsed);setImportProblems(problems);if(problems.length&&!confirm('Backup warning:\n'+problems.join('\n')+'\n\nTry importing this as app data anyway?'))return;createBackupSnapshot(data,'before-import');setData(migrate(parsed));createBackupSnapshot(migrate(parsed),'imported');setTimeout(refresh,1200);alert('App data imported.')}catch{setImportProblems(['Could not read that file as JSON.']);alert('Could not import that backup file.')}};
+  r.readAsText(f);
+ }
  const latest=backups[0];
- return <div className="grid"><div className="card span12"><h2>Backups & Restore</h2><p className="muted">Backups are saved in this browser on this Mac. Download a backup file regularly if you want a copy outside the app folder/browser storage.</p><div className="actions"><button className="btn primary" onClick={createNow}>Create Local Backup</button><button className="btn" onClick={()=>download(backupName('manual'),JSON.stringify({...data,version:APP_VERSION},null,2))}>Download Current Data</button><button className="btn" disabled={!backups.length} onClick={downloadAll}>Download Backup History</button><label className="btn">Import Backup / History<input type="file" accept="application/json" onChange={importHistory} style={{display:'none'}}/></label></div>{latest&&<p className="small muted">Latest backup: {new Date(latest.createdAt).toLocaleString()} ({latest.reason})</p>}{importProblems.length>0&&<div className="backupWarning"><b>Import validation warnings:</b><ul>{importProblems.map((p:string)=><li key={p}>{p}</li>)}</ul></div>}</div><div className="card span12"><h2>Backup History</h2><div className="tablewrap"><table><thead><tr><th>Created</th><th>Type</th><th>Counts</th><th>App Version</th><th>Actions</th></tr></thead><tbody>{backups.length===0&&<tr><td colSpan={5}><p className="muted">No local backups yet.</p></td></tr>}{backups.map((b:any)=><tr key={b.id}><td>{new Date(b.createdAt).toLocaleString()}</td><td><span className={b.reason==='auto'?'pill good':'pill warn'}>{b.reason}</span></td><td className="small">Employees {b.itemCounts?.employees||0}<br/>Projects {b.itemCounts?.projects||0}<br/>Library {b.itemCounts?.library||0}<br/>Project Assemblies {b.itemCounts?.projectAssemblies||0}</td><td>v{b.appVersion||b.data?.version||'?'}</td><td><div className="actions"><button className="btn" onClick={()=>restore(b)}>Restore</button><button className="btn" onClick={()=>downloadOne(b)}>Download</button><button className="btn danger" onClick={()=>remove(b.id)}>Delete</button></div></td></tr>)}</tbody></table></div></div><div className="card span12"><h2>Version Safety Notes</h2><ul className="muted"><li>The app creates automatic local snapshots about every 30 minutes while you are working.</li><li>Manual backups are recommended before switching versions.</li><li>Restore creates a safety backup first, so you can undo a bad restore.</li><li>Imported files are checked for the core scheduler lists before loading.</li></ul></div></div>
+ return <div className="grid"><div className="card span12"><h2>Backups & Restore</h2><p className="muted">Backups are stored in the scheduler database, so they survive browser cache clears and are visible from any computer. Download a file copy for offline safekeeping.</p><div className="actions"><button className="btn primary" disabled={busy==='create'} onClick={createNow}>{busy==='create'?'Creating…':'Create Backup Now'}</button><button className="btn" onClick={()=>download(backupName('manual'),JSON.stringify({...data,version:APP_VERSION},null,2))}>Download Current Data</button><label className="btn">Import App Data<input type="file" accept="application/json" onChange={importAppData} style={{display:'none'}}/></label><button className="btn" onClick={refresh}>Refresh List</button></div>{latest&&<p className="small muted">Latest backup: {new Date(latest.createdAt).toLocaleString()} ({latest.reason})</p>}{loadError&&<div className="backupWarning"><b>Backup warning:</b> {loadError}</div>}{importProblems.length>0&&<div className="backupWarning"><b>Import validation warnings:</b><ul>{importProblems.map((p:string)=><li key={p}>{p}</li>)}</ul></div>}</div><div className="card span12"><h2>Backup History</h2><div className="tablewrap"><table><thead><tr><th>Created</th><th>Type</th><th>Counts</th><th>Actions</th></tr></thead><tbody>{backups.length===0&&<tr><td colSpan={4}><p className="muted">No backups yet. The app also creates automatic snapshots about every 30 minutes while you work.</p></td></tr>}{backups.map((b:any)=><tr key={b.id}><td>{new Date(b.createdAt).toLocaleString()}</td><td><span className={b.reason==='auto'?'pill good':'pill warn'}>{b.reason}</span></td><td className="small">Employees {b.counts?.employees||0}<br/>Projects {b.counts?.projects||0}<br/>Library {b.counts?.library||0}<br/>Project Assemblies {b.counts?.projectAssemblies||0}</td><td><div className="actions"><button className="btn" disabled={busy==='restore-'+b.id} onClick={()=>restore(b)}>{busy==='restore-'+b.id?'Restoring…':'Restore'}</button><button className="btn" onClick={()=>downloadOne(b)}>Download</button><button className="btn danger" onClick={()=>remove(b.id)}>Delete</button></div></td></tr>)}</tbody></table></div></div><div className="card span12"><h2>Version Safety Notes</h2><ul className="muted"><li>Automatic snapshots are taken about every 30 minutes while you are working.</li><li>Restore creates a safety backup first, so you can undo a bad restore.</li><li>Imported files are checked for the core scheduler lists before loading.</li><li>The most recent 40 snapshots are kept; older ones are trimmed automatically.</li></ul></div></div>
 }
-
-
 function GlobalSearchPanel({data,query,setTab,clear}:any){
  const q=String(query||'').toLowerCase().trim();
  const projects=(data.projects||[]).filter((p:any)=>`${p.projectId||''} ${p.name||''} ${p.customer||''}`.toLowerCase().includes(q)).slice(0,6);
