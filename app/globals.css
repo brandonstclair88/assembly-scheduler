@@ -2501,3 +2501,11 @@ html[data-theme="dark"] .autoAssignRowMain:hover{background:#172033!important;}
 .focusNotice{display:flex;align-items:center;gap:10px}
 :root[data-theme="dark"] .detailPhaseRow.late{background:#3b1f1f;border-color:#7f1d1d}
 :root[data-theme="dark"] .assemblyDetailPanel{box-shadow:0 18px 44px rgba(0,0,0,.55)}
+
+/* Phase C2: connected runs + focus flow lines */
+.task.runCont{padding-top:6px;padding-bottom:6px}
+.contLabel{display:block;font-size:12px;font-weight:800;margin-top:3px}
+.task.runNext::after{content:'▶';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--assembly-accent);opacity:.85;pointer-events:none}
+.task.runCont .taskProgress{margin-top:2px}
+.flowOverlay{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:55}
+@media print{.flowOverlay,.assemblyDetailPanel{display:none!important}}
