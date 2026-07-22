@@ -105,7 +105,7 @@ export function Projects({data,setData,schedule,warnings,projectHealth,projectHe
  function updateBatch(id:string,patch:any){setData((d:any)=>({...d,shipmentBatches:(d.shipmentBatches||[]).map((b:any)=>b.id===id?{...b,...patch}:b)}))}
  function deleteBatch(id:string){if(!confirm('Delete this batch? Assemblies will be unbatched, not deleted.'))return;setData((d:any)=>({...d,shipmentBatches:(d.shipmentBatches||[]).filter((b:any)=>b.id!==id),projectAssemblies:d.projectAssemblies.map((a:any)=>a.batchId===id?{...a,batchId:''}:a)}))}
  function applyBatchDate(batch:any){setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.map((a:any)=>a.projectId===project.id&&a.batchId===batch.id?{...a,shipDate:batch.shipDate,lateAllowed:!!batch.lateAllowed}:a)}))}
-export function changeAsm(id:string,patch:any){setData((d:any)=>applyAssemblyPatch(d,id,patch))}
+function changeAsm(id:string,patch:any){setData((d:any)=>applyAssemblyPatch(d,id,patch))}
  function deleteGroup(top:any){if(!confirm('Delete this top level assembly and its subs from this project?'))return;setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.filter((a:any)=>a.id!==top.id&&a.parentAssemblyId!==top.id&&a.buildGroupId!==top.buildGroupId),holds:d.holds.filter((h:any)=>!projectAssemblies.some((a:any)=>(a.id===top.id||a.parentAssemblyId===top.id||a.buildGroupId===top.buildGroupId)&&a.id===h.assemblyId))}))}
  function deleteAssembly(id:string){
   const row=projectAssemblies.find((a:any)=>a.id===id);

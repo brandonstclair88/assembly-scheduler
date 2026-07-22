@@ -688,7 +688,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
    URL.revokeObjectURL(a.href);
  }
  function printBoard(){document.body.classList.add('printingWeeklyBoard');setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('printingWeeklyBoard'),500)},50)}
-export function TaskCard({s}:any){
+function TaskCard({s}:any){
   const dragKey=`${s.scheduleId||s.id}::chunk::${s.segmentIndex??0}::hours::${Number(s.chunkHours)||0}`;
   const src=s.sourceAssemblyId||String(s.id).split('|')[0];
   const phase=s.phase||'Build';
@@ -730,7 +730,7 @@ export function TaskCard({s}:any){
     {s.chunkLabel==='Manual'&&<span className="splitBadge">manual</span>}{s.chunkLabel==='Partial'&&<span className="splitBadge">split</span>}{s.chunkLabel==='Live Hold'&&<span className="splitBadge">hold</span>}
   </>}</div>
 }
-export function FocusFlowOverlay(){
+function FocusFlowOverlay(){
   const [segs,setSegs]=useState<any[]>([]);
   useEffect(()=>{
     if(!focusedAssemblyId){setSegs([]);return;}
@@ -760,7 +760,7 @@ export function FocusFlowOverlay(){
   const color=assemblyAccentColor(focusedAssemblyId);
   return <svg className="flowOverlay" aria-hidden="true">{segs.map((g:any,i:number)=><g key={i}><path d={`M ${g.x1} ${g.y1} C ${(g.x1+g.x2)/2} ${g.y1}, ${(g.x1+g.x2)/2} ${g.y2}, ${g.x2} ${g.y2}`} stroke={color} strokeWidth={2.5} fill="none" opacity={0.9} strokeDasharray="7 5"/><circle cx={g.x2} cy={g.y2} r={3.5} fill={color} opacity={0.9}/></g>)}</svg>
 }
-export function AssemblyDetailPanel(){
+function AssemblyDetailPanel(){
   if(!detailTarget)return null;
   const asm=sourceAssembly(detailTarget.sourceId);
   if(!asm)return null;
