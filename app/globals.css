@@ -2482,3 +2482,22 @@ html[data-theme="dark"] .autoAssignRowMain:hover{background:#172033!important;}
 
 /* Projects sidebar hold filter chip */
 .holdFilterChip{width:100%;margin:0 0 10px;text-align:center}
+
+/* Assembly identity system (Phase C1) */
+.task{position:relative;overflow:hidden}
+.asmStripe{position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--assembly-accent,#94a3b8);border-radius:3px 0 0 3px;pointer-events:none}
+.task.focusedAssembly{outline:2px solid var(--assembly-accent);box-shadow:0 0 0 4px color-mix(in srgb, var(--assembly-accent) 22%, transparent),0 10px 26px rgba(15,23,42,.18)!important}
+.task.dimmedByFocus,.testMiniCard.dimmedByFocus{opacity:.22;filter:saturate(.4)}
+.testMiniCard.focusedAssembly{outline:2px solid var(--assembly-accent)}
+.asmDot{display:inline-block;width:10px;height:10px;border-radius:999px;background:var(--assembly-accent,#2563eb);margin-right:6px;vertical-align:baseline}
+.assemblyDetailPanel{position:fixed;right:18px;bottom:18px;width:400px;max-width:calc(100vw - 36px);max-height:72vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--assembly-accent,#2563eb);border-radius:14px;box-shadow:0 18px 44px rgba(15,23,42,.28);padding:14px;z-index:60}
+.assemblyDetailHeader{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}
+.assemblyDetailHeader b{display:block;font-size:15px;margin-bottom:2px}
+.assemblyDetailHeader .muted.small{display:block}
+.assemblyDetailPhases{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.detailPhaseRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;border:1px solid var(--line);border-radius:9px;padding:6px 8px}
+.detailPhaseRow.late{border-color:#f3b1b1;background:#fff5f4}
+.assemblyDetailControls{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:10px}
+.focusNotice{display:flex;align-items:center;gap:10px}
+:root[data-theme="dark"] .detailPhaseRow.late{background:#3b1f1f;border-color:#7f1d1d}
+:root[data-theme="dark"] .assemblyDetailPanel{box-shadow:0 18px 44px rgba(0,0,0,.55)}
