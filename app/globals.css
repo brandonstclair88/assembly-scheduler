@@ -2465,3 +2465,20 @@ html[data-theme="dark"] .autoAssignRowMain:hover{background:#172033!important;}
 .saveIndicator.error{color:#dc2626;font-weight:700}
 [data-theme="dark"] .saveIndicator{color:#94a3b8}
 [data-theme="dark"] .saveIndicator.error{color:#f87171}
+
+/* Main tab bar (7-tab navigation) */
+.mainTabBar{display:flex;flex-wrap:wrap;gap:4px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:4px}
+.mainTabBar button{border:0;background:transparent;color:var(--ink);border-radius:9px;padding:9px 16px;font-weight:800;font-size:14px;cursor:pointer;white-space:nowrap}
+.mainTabBar button:hover{background:rgba(47,111,237,.08)}
+.mainTabBar button.active{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .mainTabBar button:hover{background:rgba(96,165,250,.14)}
+
+/* Sub-tab bar inside Plan / People / Admin */
+.subTabPage{display:flex;flex-direction:column;gap:14px}
+.subTabBar{display:flex;flex-wrap:wrap;gap:4px;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:4px;align-self:flex-start}
+.subTabBar button{border:0;background:transparent;color:var(--muted);border-radius:7px;padding:7px 14px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap}
+.subTabBar button.active{background:#263849;color:#fff}
+:root[data-theme="dark"] .subTabBar button.active{background:#3b556e}
+
+/* Projects sidebar hold filter chip */
+.holdFilterChip{width:100%;margin:0 0 10px;text-align:center}
