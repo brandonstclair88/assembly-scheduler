@@ -6,7 +6,7 @@ import {ProjectHealthRecord} from '../../lib/projectHealth';
 import {capacityForDate,dailyHours} from '../../lib/scheduler';
 import {employeePrefersProject,previewSmartAssignSuggestions,smartAssignQualifiedEmployees} from '../../lib/smartAssign';
 import {AssemblyTemplate,ProjectAssembly} from '../../lib/types';
-import {BufferedPercentInput,CollapsibleSection,EmployeePicker,HealthBadge,HoldReasonInput,PROJECT_HEALTH_OPTIONS,ProjectTimelinePanel,ScheduleWarningsPanel,StableDateInput,batchCompletion,makeAsm,phaseBadgeLabel,projectCompletion,rolledCompletion,uid} from '../shared/common';
+import {BufferedPercentInput,CollapsibleSection,EmployeePicker,HealthBadge,HoldReasonInput,PROJECT_HEALTH_OPTIONS,ProjectTimelinePanel,ScheduleWarningsPanel,StableDateInput,batchCompletion,confirmDialog,makeAsm,phaseBadgeLabel,projectCompletion,rolledCompletion,toast,uid} from '../shared/common';
 
 export function Projects({data,setData,schedule,warnings,projectHealth,projectHealthById,panelIntent,onFocusBoard}:any){
  const [selected,setSelected]=useState(data.projects[0]?.id||'');
@@ -51,7 +51,7 @@ export function Projects({data,setData,schedule,warnings,projectHealth,projectHe
  const projectAutoAssignSuggestions=useMemo(()=>project?previewSmartAssignSuggestions(data,schedule,{assignBlanksOnly:true,improveExistingUnlockedAssignments:true,balanceThisWeek:true,prioritizeShipDates:true,reduceOverloads:true}).filter((suggestion:any)=>suggestion.projectId===project.id):[],[data,schedule,project?.id]);
  function updateProject(k:string,v:any){if(!project)return;setData((d:any)=>({...d,projects:d.projects.map((p:any)=>p.id===project.id?{...p,[k]:v}:p)}))}
  function addProject(){const row={...empty,id:uid('proj')};setData((d:any)=>({...d,projects:[...d.projects,row]}));setSelected(row.id)}
- function deleteProject(id:string){if(!confirm('Delete this project and its project assemblies?'))return;setData((d:any)=>({...d,projects:d.projects.filter((p:any)=>p.id!==id),projectAssemblies:d.projectAssemblies.filter((a:any)=>a.projectId!==id),holds:d.holds.filter((h:any)=>h.projectId!==id),shipmentBatches:(d.shipmentBatches||[]).filter((b:any)=>b.projectId!==id)}));setSelected(data.projects.find((p:any)=>p.id!==id)?.id||'')}
+ async function deleteProject(id:string){if(!await confirmDialog('Delete this project and its project assemblies?'))return;setData((d:any)=>({...d,projects:d.projects.filter((p:any)=>p.id!==id),projectAssemblies:d.projectAssemblies.filter((a:any)=>a.projectId!==id),holds:d.holds.filter((h:any)=>h.projectId!==id),shipmentBatches:(d.shipmentBatches||[]).filter((b:any)=>b.projectId!==id)}));setSelected(data.projects.find((p:any)=>p.id!==id)?.id||'')}
  function copyProject(){if(!project)return;const newProj={...project,id:uid('proj'),projectId:project.projectId+'-COPY',name:project.name+' Copy'};const oldToNew:any={};const groupMap:any={};const copies=projectAssemblies.map((a:any)=>{const id=uid('asm');oldToNew[a.id]=id;if(a.buildGroupId&&!groupMap[a.buildGroupId])groupMap[a.buildGroupId]=uid('grp');return {...a,id,projectId:newProj.id,buildGroupId:a.buildGroupId?groupMap[a.buildGroupId]:'',status:'Not Started',percent:0,holdReason:''}}).map((a:any)=>({...a,parentAssemblyId:oldToNew[a.parentAssemblyId]||a.parentAssemblyId,dependsOn:splitIds(a.dependsOn).map((id:string)=>oldToNew[id]||id).join(',')}));setData((d:any)=>({...d,projects:[...d.projects,newProj],projectAssemblies:[...d.projectAssemblies,...copies]}));setSelected(newProj.id)}
  function nextNumbers(tid:string,type:string){const used=projectAssemblies.filter((a:any)=>a.templateId===tid&&a.type===type).map((a:any)=>Number(a.instanceNumber)||0);let n=1;const out:number[]=[];for(let i=0;i<Math.max(1,Number(addQty)||1);i++){while(used.includes(n)||out.includes(n))n++;out.push(n)}return out}
  function findSubs(t:AssemblyTemplate){const ids=splitIds(t.defaultDependsOn);return ids.map((id:string)=>data.assemblyTemplates.find((x:any)=>x.id===id||x.partNumber===id)).filter(Boolean)}
@@ -103,15 +103,15 @@ export function Projects({data,setData,schedule,warnings,projectHealth,projectHe
  }
  function addBatch(){if(!project)return;const n=batches.length+1;const row={id:uid('batch'),projectId:project.id,name:'Shipment Batch '+n,shipDate:project.dueDate||'',lateAllowed:false,sequence:n,notes:''};setData((d:any)=>({...d,shipmentBatches:[...(d.shipmentBatches||[]),row]}))}
  function updateBatch(id:string,patch:any){setData((d:any)=>({...d,shipmentBatches:(d.shipmentBatches||[]).map((b:any)=>b.id===id?{...b,...patch}:b)}))}
- function deleteBatch(id:string){if(!confirm('Delete this batch? Assemblies will be unbatched, not deleted.'))return;setData((d:any)=>({...d,shipmentBatches:(d.shipmentBatches||[]).filter((b:any)=>b.id!==id),projectAssemblies:d.projectAssemblies.map((a:any)=>a.batchId===id?{...a,batchId:''}:a)}))}
+ async function deleteBatch(id:string){if(!await confirmDialog('Delete this batch? Assemblies will be unbatched, not deleted.'))return;setData((d:any)=>({...d,shipmentBatches:(d.shipmentBatches||[]).filter((b:any)=>b.id!==id),projectAssemblies:d.projectAssemblies.map((a:any)=>a.batchId===id?{...a,batchId:''}:a)}))}
  function applyBatchDate(batch:any){setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.map((a:any)=>a.projectId===project.id&&a.batchId===batch.id?{...a,shipDate:batch.shipDate,lateAllowed:!!batch.lateAllowed}:a)}))}
 function changeAsm(id:string,patch:any){setData((d:any)=>applyAssemblyPatch(d,id,patch))}
- function deleteGroup(top:any){if(!confirm('Delete this top level assembly and its subs from this project?'))return;setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.filter((a:any)=>a.id!==top.id&&a.parentAssemblyId!==top.id&&a.buildGroupId!==top.buildGroupId),holds:d.holds.filter((h:any)=>!projectAssemblies.some((a:any)=>(a.id===top.id||a.parentAssemblyId===top.id||a.buildGroupId===top.buildGroupId)&&a.id===h.assemblyId))}))}
- function deleteAssembly(id:string){
+ async function deleteGroup(top:any){if(!await confirmDialog('Delete this top level assembly and its subs from this project?'))return;setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.filter((a:any)=>a.id!==top.id&&a.parentAssemblyId!==top.id&&a.buildGroupId!==top.buildGroupId),holds:d.holds.filter((h:any)=>!projectAssemblies.some((a:any)=>(a.id===top.id||a.parentAssemblyId===top.id||a.buildGroupId===top.buildGroupId)&&a.id===h.assemblyId))}))}
+ async function deleteAssembly(id:string){
   const row=projectAssemblies.find((a:any)=>a.id===id);
   if(!row)return;
   if(row.type==='Top Level Assembly'){deleteGroup(row);return;}
-  if(!confirm(`Delete ${row.partNumber||'this sub assembly'} from this project?`))return;
+  if(!await confirmDialog(`Delete ${row.partNumber||'this sub assembly'} from this project?`))return;
   setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.filter((a:any)=>a.id!==id).map((a:any)=>({...a,dependsOn:splitIds(a.dependsOn).filter((depId:string)=>depId!==id).join(',')})),holds:d.holds.filter((h:any)=>h.assemblyId!==id)}))
  }
  function topOptions(top:any){return topLevels.filter((x:any)=>x.id!==top.id).map((x:any)=>({id:x.id,label:`${x.buildGroupLabel||x.partNumber+' '+(x.instanceLabel||'')} — ${x.description||''}`}))}

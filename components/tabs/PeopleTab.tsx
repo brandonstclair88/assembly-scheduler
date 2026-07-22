@@ -2,7 +2,7 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {dateOnly,fmtDate,normalizeSearchQuery,projectSearchText,splitIds} from '../../lib/format';
 import {dailyHours} from '../../lib/scheduler';
-import {uid} from '../shared/common';
+import {confirmDialog,toast,uid} from '../shared/common';
 
 export function People({data,setData}:any){
  const [view,setView]=useState('Roster');
@@ -39,7 +39,7 @@ export function Employees({data,setData}:any){
  useEffect(()=>{if(emp&&emp.id!==selectedId)setSelectedId(emp.id)},[emp?.id,selectedId]);
  function updateEmp(id:string,patch:any){setData((d:any)=>({...d,employees:d.employees.map((e:any)=>e.id===id?{...e,...patch}:e)}))}
  function addEmployee(){const row={...blank,id:uid('emp')};setData((d:any)=>({...d,employees:[...d.employees,row]}));setSelectedId(row.id)}
- function deleteEmployee(id:string){if(!confirm('Delete this employee? Existing assignments will remain by ID until changed.'))return;setData((d:any)=>({...d,employees:d.employees.filter((e:any)=>e.id!==id)}));setSelectedId(data.employees.find((e:any)=>e.id!==id)?.id||'')}
+ async function deleteEmployee(id:string){if(!await confirmDialog('Delete this employee? Existing assignments will remain by ID until changed.'))return;setData((d:any)=>({...d,employees:d.employees.filter((e:any)=>e.id!==id)}));setSelectedId(data.employees.find((e:any)=>e.id!==id)?.id||'')}
  function daySet(e:any){return new Set(splitIds(e.workDays||''))}
  function hoursMap(e:any){try{return JSON.parse(e.workHoursByDay||'{}')}catch{return {}}}
  function setDay(e:any,day:string,checked:boolean){const days=daySet(e);checked?days.add(day):days.delete(day);updateEmp(e.id,{workDays:[...days].sort().join(',')})}

@@ -6,9 +6,13 @@ import {applyAssemblyPatch} from '../../lib/mutations';
 import {download} from '../../lib/persistence';
 import {capacityForDate} from '../../lib/scheduler';
 import {applySmartAssignSuggestionsToData,previewSmartAssignSuggestions,smartAssignSuggestionMapByAssemblyPhase} from '../../lib/smartAssign';
-import {BufferedPercentInput,HealthBadge,ScheduleWarningsPanel,phaseBadgeLabel,phaseToneKey,projectAccentColor,rolledCompletion} from '../shared/common';
+import {BufferedPercentInput,HealthBadge,ScheduleWarningsPanel,assemblyAccentColor,confirmDialog,phaseBadgeLabel,phaseToneKey,projectAccentColor,rolledCompletion,toast} from '../shared/common';
 
+const boardUndoStack:any[]=[];
 export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,boardIntent,onOpenProject}:any){
+ const [undoCount,setUndoCount]=useState(boardUndoStack.length);
+ function pushUndoSnapshot(){boardUndoStack.push({projectAssemblies:JSON.parse(JSON.stringify(data.projectAssemblies)),holds:JSON.parse(JSON.stringify(data.holds||[]))});while(boardUndoStack.length>5)boardUndoStack.shift();setUndoCount(boardUndoStack.length);}
+ function undoLastApply(){const snap=boardUndoStack.pop();if(!snap)return;setData((d:any)=>({...d,projectAssemblies:snap.projectAssemblies,holds:snap.holds}));setUndoCount(boardUndoStack.length);toast('Reverted the last apply.','info');}
  const splitDateList=(raw:string)=>splitIds(String(raw||''));
  const absenceLabel=(emp:any,date:string)=>{const h=(data.holidays||[]).find((x:any)=>x.date===date);if(h)return `Holiday: ${h.name||'Company Holiday'}`;if(splitDateList(emp.timeOffDates||emp.pto||'').includes(date))return 'Scheduled Out';return '';};
  const [selectedMonth,setSelectedMonth]=useState(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`});
@@ -204,15 +208,15 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
    const asm=data.projectAssemblies.find((a:any)=>a.id===parsed.sourceId);
    if(!asm)return true;
    const top=asm.type==='Top Level Assembly'?asm:data.projectAssemblies.find((a:any)=>a.id===asm.parentAssemblyId)||data.projectAssemblies.find((a:any)=>a.buildGroupId&&a.buildGroupId===asm.buildGroupId&&a.type==='Top Level Assembly');
-   if(asm.locked||top?.locked){alert('This assembly is locked. Unlock it before moving scheduled work.');return false;}
-   if(employeeId&&capacityForDate(data,employeeId,date)<=0){const emp=data.employees.find((e:any)=>e.id===employeeId);alert(`${emp?.name||'That employee'} is not available on ${fmtDate(date)}. Remove the time off/holiday or choose another employee/date.`);return false;}
+   if(asm.locked||top?.locked){toast('This assembly is locked. Unlock it before moving scheduled work.','bad');return false;}
+   if(employeeId&&capacityForDate(data,employeeId,date)<=0){const emp=data.employees.find((e:any)=>e.id===employeeId);toast(`${emp?.name||'That employee'} is not available on ${fmtDate(date)}. Remove the time off/holiday or choose another employee/date.`,'bad');return false;}
    const freeze=(data.settings as any)?.freezeBeforeDate||'';
-   if(freeze&&date<=freeze){alert(`This date is in the frozen schedule window through ${fmtDate(freeze)}. Change the freeze date in Settings before moving work here.`);return false;}
+   if(freeze&&date<=freeze){toast(`This date is in the frozen schedule window through ${fmtDate(freeze)}. Change the freeze date in Settings before moving work here.`,'bad');return false;}
    if((parsed.phase||'Build')==='Inspection'){
      const release=earliestInspectionDateFor(asm);
      if(release&&date<release){
        const testH=Number(asm.testHours||0);
-       alert(`Inspection cannot start on ${fmtDate(date)}. This assembly is gated by test${testH?` (${testH} hrs)`:''} until ${fmtDate(release)}.`);
+       toast(`Inspection cannot start on ${fmtDate(date)}. This assembly is gated by test${testH?` (${testH} hrs)`:''} until ${fmtDate(release)}.`,'bad');
        return false;
      }
    }
@@ -220,11 +224,11 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
      const release=earliestInspectionDateFor(asm);
      const insp=schedule.find((x:any)=>(x.sourceAssemblyId||String(x.id).split('|')[0])===asm.id&&x.phase==='Inspection');
      const shipRelease=insp?dateMax(release,insp.scheduledEnd):release;
-     if(shipRelease&&date<shipRelease){alert(`Shipping cannot start before upstream test/inspection is available on ${fmtDate(shipRelease)}.`);return false;}
+     if(shipRelease&&date<shipRelease){toast(`Shipping cannot start before upstream test/inspection is available on ${fmtDate(shipRelease)}.`,'bad');return false;}
    }
    const ship=top?.shipDate||asm.shipDate;
    const late=!!(top?.lateAllowed||asm.lateAllowed);
-	   if(ship&&!late){const finish=projectedFinalCompletion(id,employeeId,date);if(finish>ship){alert(`This would make final shipping complete on ${fmtDate(finish)}, past the Ship By date ${fmtDate(ship)}. Check Late Allowed on the top level assembly first.`);return false;}}
+	   if(ship&&!late){const finish=projectedFinalCompletion(id,employeeId,date);if(finish>ship){toast(`This would make final shipping complete on ${fmtDate(finish)}, past the Ship By date ${fmtDate(ship)}. Check Late Allowed on the top level assembly first.`,'bad');return false;}}
    return true
  }
  function findParentTop(asm:any,rows:any[]){if(!asm||asm.type==='Top Level Assembly')return null;return rows.find((a:any)=>a.id===asm.parentAssemblyId)||rows.find((a:any)=>a.buildGroupId&&a.buildGroupId===asm.buildGroupId&&a.projectId===asm.projectId&&a.type==='Top Level Assembly')||null}
@@ -244,15 +248,16 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
    return rows;
  }
 	 function addBoardDraft(id:string,employeeId:string,date:string){
-	   if(boardMode==='Live')return;
-   if(!canDrop(id,employeeId,date))return;
+	   if(boardMode==='Live')return false;
+   if(!canDrop(id,employeeId,date))return false;
    const parsed=parseDragId(id);
    setBoardDrafts((drafts:any[])=>[
      ...drafts.filter((d:any)=>!(d.sourceId===parsed.sourceId&&d.phase===parsed.phase&&Number(d.segmentIndex??-1)===Number(parsed.segmentIndex??-1))),
      {sourceId:parsed.sourceId,phase:parsed.phase,segmentIndex:parsed.segmentIndex,employeeId,date,chunkHours:parsed.chunkHours}
    ]);
+   return true;
  }
-	 function drop(id:string,employeeId:string,date:string){addBoardDraft(id,employeeId,date)}
+	 function drop(id:string,employeeId:string,date:string){return addBoardDraft(id,employeeId,date)}
 	 function unassignedDrop(id:string,date:string){addBoardDraft(id,'',date)}
 	 function itemKey(x:any){return `${x.sourceAssemblyId||String(x.id).split('|')[0]}|${x.phase||'Build'}`}
 	 function shopCapacity(empId:string,date:string){return empId?capacityForDate(data,empId,date):capacityForDate(data,'',date)}
@@ -359,7 +364,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
      seg.date===date
    );
    if(duplicateSameEmployeeDay){
-     alert('This assembly already has a work block on that employee for that day. Put the block on a different employee or a different day.');
+     toast('This assembly already has a work block on that employee for that day. Put the block on a different employee or a different day.','bad');
      return;
    }
    addBoardDraft(id,employeeId,date);
@@ -367,6 +372,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
 	 function applyBoardDrafts(){
 	   if(boardMode==='Live')return;
    if(!boardDrafts.length)return;
+   pushUndoSnapshot();
    setData((d:any)=>{
      let rows=d.projectAssemblies;
      for(const draft of boardDrafts){
@@ -404,7 +410,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
   const chosenIds=Array.from(new Set((selectionIds||[]).filter(Boolean)));
   if(!chosenIds.length)return;
   const result=applySmartAssignSuggestionsToData(data,chosenIds,autoAssignSuggestions,schedule);
-  if(result.applied.length) setData(result.data);
+  if(result.applied.length){pushUndoSnapshot();setData(result.data);}
   const lockedSkipped=result.skipped.filter((item:any)=>/locked/i.test(String(item.applyReason||''))).length;
   const protectedSkipped=result.skipped.filter((item:any)=>/manual-protected/i.test(String(item.applyReason||''))).length;
   setRecentAutoAssignedKeys(result.appliedKeys);
@@ -451,7 +457,6 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
  function cardStatus(s:any){const src=sourceAssembly(s.sourceAssemblyId||String(s.id).split('|')[0])||s;if(src.holdReason||src.status==='On Hold')return 'Blocked';if(s.isLate)return 'Late';if((s.phase||'Build')==='Shipping'&&src.shippingComplete)return 'Shipped';if((s.phase||'Build')==='Build'&&Number(src.percent||0)>=100)return 'Build Complete';if(src.shipDate){const days=(new Date(src.shipDate+'T00:00:00').getTime()-new Date((new Date()).toISOString().slice(0,10)+'T00:00:00').getTime())/86400000;if(days<=5&&Number(src.percent||0)<90)return 'At Risk';}return 'Scheduled'}
  function chunkProjectId(chunk:any){return (sourceAssembly(chunk.sourceAssemblyId||String(chunk.id).split('|')[0])||chunk)?.projectId||chunk?.projectId||''}
  const chunks=rawChunks.filter((s:any)=>{const q=boardSearch.trim().toLowerCase();const src=sourceAssembly(s.sourceAssemblyId||String(s.id).split('|')[0])||s;const hay=`${s.projectName||''} ${src.partNumber||''} ${src.description||''} ${src.instanceLabel||''}`.toLowerCase();const status=cardStatus(s);const pct=phasePercentFor(s.sourceAssemblyId||String(s.id).split('|')[0],s.phase||'Build',s);const completed=status==='Shipped'||status==='Build Complete'||pct>=100;const projectId=chunkProjectId(s);return (!q||hay.includes(q))&&(statusFilter==='All'||status===statusFilter)&&(!hideComplete||!completed)&&!shouldHideProject(projectId);});
- function assemblyAccentColor(id:string){let h=0;const str=String(id||'');for(let i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;return `hsl(${h%360} 62% 42%)`}
  const chunkMeta=(()=>{
    const byKey:Record<string,any[]>={};
    for(const c of rawChunks){const k=`${c.sourceAssemblyId||String(c.id).split('|')[0]}|${c.phase||'Build'}`;(byKey[k]=byKey[k]||[]).push(c)}
@@ -665,7 +670,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
      return `<section class="pdfWeek"><div class="pdfWeekHeader"><h2>Week of ${fmtDate(week)}</h2><span>${fmtDate(week)} - ${fmtDate(weekEnd)}</span></div><div class="pdfGrid"><div class="pdfHeader empHead">Employee</div>${dayHeaders}${rows}<div class="pdfEmp"><b>Unassigned</b><span>Needs assignment</span></div>${unassigned}</div></section>`;
    };
    const html=`<!doctype html><html><head><title>Weekly Board - Next Year</title><style>@page{size:landscape;margin:.22in}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#172033;margin:0;font-size:8px}h1{font-size:16px;margin:0 0 10px}.pdfWeek{break-after:page;page-break-after:always;break-inside:avoid;margin-bottom:10px}.pdfWeek:last-child{break-after:auto;page-break-after:auto}.pdfWeekHeader{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#e9eef2;border:1px solid #aeb8c4;border-bottom:0}.pdfWeekHeader span{font-size:9px;color:#526071;font-weight:700}.pdfWeekHeader h2{font-size:13px;margin:0}.pdfGrid{display:grid;grid-template-columns:112px repeat(${days.length},1fr);border-left:1px solid #aeb8c4;border-top:1px solid #aeb8c4}.pdfHeader,.pdfEmp,.pdfCell{border-right:1px solid #aeb8c4;border-bottom:1px solid #aeb8c4;padding:4px;min-height:34px}.pdfHeader{background:#eef2f5;font-weight:800;text-align:center}.pdfHeader span,.pdfEmp span,.pdfTask span,.pdfTask small{display:block;color:#536173;margin-top:1px}.pdfEmp{background:#f7f9fb;font-weight:800}.pdfCell{min-height:92px;background:#fff;vertical-align:top}.pdfTask{border:1px solid #b8c2cc;border-left:4px solid #6f8798;border-radius:5px;margin:2px 0;padding:3px;background:#fff;break-inside:avoid;page-break-inside:avoid}.pdfTask.phase-build{border-left-color:#6f8798}.pdfTask.phase-inspection{border-left-color:#d97706}.pdfTask.phase-shipping{border-left-color:#0891b2}.pdfTask b{display:block;font-size:8.5px;line-height:1.2}</style></head><body><h1>Weekly Board Export - Next 52 Weeks</h1>${weeksOut.map(boardFor).join('')}</body></html>`;
-   const win=window.open('','_blank'); if(!win){alert('Popup blocked. Allow popups to export PDF.');return;} win.document.write(html); win.document.close(); setTimeout(()=>win.print(),500);
+   const win=window.open('','_blank'); if(!win){toast('Popup blocked. Allow popups to export PDF.','bad');return;} win.document.write(html); win.document.close(); setTimeout(()=>win.print(),500);
   }
  function exportWeeklyExcel(){
    const esc=(v:any)=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -761,9 +766,15 @@ function FocusFlowOverlay(){
   return <svg className="flowOverlay" aria-hidden="true">{segs.map((g:any,i:number)=><g key={i}><path d={`M ${g.x1} ${g.y1} C ${(g.x1+g.x2)/2} ${g.y1}, ${(g.x1+g.x2)/2} ${g.y2}, ${g.x2} ${g.y2}`} stroke={color} strokeWidth={2.5} fill="none" opacity={0.9} strokeDasharray="7 5"/><circle cx={g.x2} cy={g.y2} r={3.5} fill={color} opacity={0.9}/></g>)}</svg>
 }
 function AssemblyDetailPanel(){
+  const [moveEmp,setMoveEmp]=useState('');
+  const [moveDate,setMoveDate]=useState('');
   if(!detailTarget)return null;
   const asm=sourceAssembly(detailTarget.sourceId);
   if(!asm)return null;
+  const famTop=asm.type==='Top Level Assembly'?asm:((data.projectAssemblies||[]).find((a:any)=>a.id===asm.parentAssemblyId)||(data.projectAssemblies||[]).find((a:any)=>a.buildGroupId&&asm.buildGroupId&&a.buildGroupId===asm.buildGroupId&&a.type==='Top Level Assembly')||asm);
+  const familyIds=[famTop.id,...(data.projectAssemblies||[]).filter((a:any)=>a.id!==famTop.id&&(a.parentAssemblyId===famTop.id||(famTop.buildGroupId&&a.buildGroupId===famTop.buildGroupId&&a.projectId===famTop.projectId))).map((a:any)=>a.id)];
+  const famIdx=familyIds.indexOf(asm.id);
+  function goFamily(step:number){const id=familyIds[(famIdx+step+familyIds.length)%familyIds.length];setDetailTarget({sourceId:id,phase:'Build'});setFocusedAssemblyId(id);}
   const proj=(data.projects||[]).find((p:any)=>p.id===asm.projectId);
   const items=schedule.filter((x:any)=>(x.sourceAssemblyId||String(x.id).split('|')[0])===asm.id);
   const build=items.find((x:any)=>(x.phase||'Build')==='Build');
@@ -773,7 +784,7 @@ function AssemblyDetailPanel(){
   const totalHrs=Number(asm.qty||0)*Number(asm.hoursEach||0);
   const buildPct=Math.max(0,Math.min(100,Number(asm.percent||0)));
   return <div className="assemblyDetailPanel" style={{'--assembly-accent':assemblyAccentColor(asm.id)} as any}>
-    <div className="assemblyDetailHeader"><div><b><span className="asmDot"/>{asm.description||asm.partNumber}</b><span className="muted small">{asm.partNumber} {asm.instanceLabel||''} · {proj?.projectId||'Project'} · Overall {rolledCompletion(data,asm)}%</span></div><button className="btn" onClick={()=>{setDetailTarget(null);setFocusedAssemblyId('')}}>Close</button></div>
+    <div className="assemblyDetailHeader"><div><b><span className="asmDot"/>{asm.description||asm.partNumber}</b><span className="muted small">{asm.partNumber} {asm.instanceLabel||''} · {proj?.projectId||'Project'} · Overall {rolledCompletion(data,asm)}%</span></div><div className="actions">{familyIds.length>1&&<><button className="btn" title="Previous assembly in this build family" onClick={()=>goFamily(-1)}>◀</button><button className="btn" title="Next assembly in this build family" onClick={()=>goFamily(1)}>▶</button></>}<button className="btn" onClick={()=>{setDetailTarget(null);setFocusedAssemblyId('')}}>Close</button></div></div>
     <div className="assemblyDetailPhases">
       {build&&<div className={'detailPhaseRow'+(build.isLate?' late':'')}><span className="phaseBadge phase-build">BUILD</span><span>{fmtDate(build.scheduledStart)} → {fmtDate(build.scheduledEnd)}</span><span>{Number(build.totalHours||0).toFixed(1)} hrs</span><span>{build.assignedEmployeeNames||'Unassigned'}</span></div>}
       {(asm.testRequired||Number(asm.testHours||0)>0)&&<div className="detailPhaseRow"><span className="phaseBadge phase-test">TEST</span><span>{asm.testReturnDateTime?`Expected return ${fmtDateTime(asm.testReturnDateTime)}`:`${Number(asm.testHours||0).toFixed(1)} hr external gate`}</span></div>}
@@ -785,6 +796,7 @@ function AssemblyDetailPanel(){
       <div className="field"><label>Build % Complete ({(buildPct/100*totalHrs).toFixed(1)} / {totalHrs.toFixed(1)} hrs)</label><BufferedPercentInput className="largeInput" value={buildPct} onCommit={(value:any)=>updateCompletion(asm.id,'Build',value)}/></div>
       {asm.inspectionRequired&&<label className="checkLine"><input type="checkbox" checked={!!asm.inspectionComplete} onChange={e=>updateCompletion(asm.id,'Inspection',e.target.checked?100:0)}/> Inspection complete</label>}
       {asm.shippingRequired&&<label className="checkLine"><input type="checkbox" checked={!!asm.shippingComplete} onChange={e=>updateCompletion(asm.id,'Shipping',e.target.checked?100:0)}/> Shipping complete</label>}
+      <div className="assemblyMoveRow"><label>Move {detailTarget.phase==='Test'?'Build':detailTarget.phase} start (keyboard-friendly alternative to dragging)</label><div className="actions"><select value={moveEmp} onChange={e=>setMoveEmp(e.target.value)}><option value="">Unassigned</option>{activeEmployees.map((e:any)=><option key={e.id} value={e.id}>{e.name}</option>)}</select><input type="date" value={moveDate} onChange={e=>setMoveDate(e.target.value)}/><button className="btn" disabled={!moveDate} onClick={()=>{const phase=detailTarget.phase==='Test'?'Build':detailTarget.phase;const sched=items.find((x:any)=>(x.phase||'Build')===phase);if(!sched){toast('No scheduled item for this phase.','bad');return;}if(drop(`${sched.scheduleId||sched.id}::chunk::0::hours::0`,moveEmp,moveDate))toast('Draft move added. Click Apply Changes on the board to save it.','good');}}>Add draft move</button></div></div>
       <div className="actions"><button className="btn" onClick={()=>toggleLock(asm.id)}>{asm.locked?'Unlock Assignment':'Lock Assignment'}</button>{hasManualSegs&&<button className="btn" onClick={()=>clearSegments(asm.id)}>Reset split</button>}{onOpenProject&&<button className="btn" onClick={()=>onOpenProject(asm.projectId)}>Open project</button>}</div>
     </div>}
   </div>
@@ -924,6 +936,7 @@ function AssemblyDetailPanel(){
     <button className="btn" disabled={boardMode==='Live'} onClick={previewBalanceThisWeek}>Preview Smart Rebalance</button>
     <button className="btn primary autoAssignPrimaryButton" title="Preview Smart Assign suggestions for unassigned work and unlocked assignments. Nothing is saved until you apply the suggestions." disabled={boardMode==='Live'} onClick={()=>setShowAutoAssignPreview(true)}>Smart Assign <span className="buttonBadge">{unassignedSuggestionCount} Unassigned</span><span className="buttonBadge good">{actionableAutoAssign.length} Auto-Assignable</span>{unlockedImprovementCount>0&&<span className="buttonBadge">{unlockedImprovementCount} Improvable</span>}{overloadCount>0&&<span className="buttonBadge warn">{overloadCount} Overloaded</span>}{lockedTileCount>0&&<span className="buttonBadge">{lockedTileCount} Locked</span>}</button>
     <button className="btn primary" disabled={boardMode==='Live'||!boardDrafts.length} onClick={applyBoardDrafts}>Apply Changes {boardDrafts.length?`(${boardDrafts.length})`:``}</button>
+    <button className="btn" disabled={boardMode==='Live'||!undoCount} onClick={undoLastApply}>Undo Apply {undoCount?`(${undoCount})`:``}</button>
     <button className="btn" disabled={boardMode==='Live'||!boardDrafts.length} onClick={discardBoardDrafts}>Discard Changes</button>
    </div>
   </div>

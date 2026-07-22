@@ -135,14 +135,36 @@ export function ScheduleWarningsPanel({warnings,maxItems=8,title='Schedule Warni
 
 export function EmployeePicker({data,value,onChange,row,phase='Build'}:any){const selected=splitIds(value);const visible=data?.employees?.filter((e:any)=>selected.includes(e.id)||(e.active!==false&&canEmployeeForPhase(e,phase)))||[];return <div className="empPick compactEmpPick employeePickerNoScroll"><div className="empPickGrid noScrollEmpGrid">{visible.map((e:any)=>{const eligible=e.active!==false&&canEmployeeForPhase(e,phase);return <label key={e.id} title={e.name} className={selected.includes(e.id)?'selectedEmpChip':''}><input type="checkbox" checked={selected.includes(e.id)} onChange={ev=>{const next=ev.target.checked?[...selected,e.id]:selected.filter((id:string)=>id!==e.id);onChange(next.join(','))}}/> <span>{e.name}</span>{e.active===false&&<small className="capNote">inactive</small>}{e.active!==false&&!eligible&&<small className="capNote">saved only</small>}</label>})}</div><div className="empPickActions"><button type="button" className="mini" onClick={()=>onChange(suggestEmployees(data,row?.id,1,phase).map((e:any)=>e.id).join(','))}>suggest 1</button><button type="button" className="mini" onClick={()=>onChange(suggestEmployees(data,row?.id,2,phase).map((e:any)=>e.id).join(','))}>suggest 2</button><button type="button" className="mini" onClick={()=>onChange('')}>clear</button></div></div>}
 
-export function GlobalSearchPanel({data,query,setTab,clear}:any){
+export function GlobalSearchPanel({data,query,setTab,clear,onOpenProject}:any){
  const q=String(query||'').toLowerCase().trim();
  const projects=(data.projects||[]).filter((p:any)=>`${p.projectId||''} ${p.name||''} ${p.customer||''}`.toLowerCase().includes(q)).slice(0,6);
  const library=(data.assemblyTemplates||[]).filter((a:any)=>`${a.partNumber||''} ${a.description||''} ${a.type||''}`.toLowerCase().includes(q)).slice(0,6);
  const projectAssemblies=(data.projectAssemblies||[]).filter((a:any)=>`${a.partNumber||''} ${a.description||''} ${a.instanceLabel||''}`.toLowerCase().includes(q)).slice(0,8);
  const employees=(data.employees||[]).filter((e:any)=>`${e.name||''} ${e.email||''} ${e.skills||''}`.toLowerCase().includes(q)).slice(0,6);
  const projectById=(id:string)=>(data.projects||[]).find((p:any)=>p.id===id)?.projectId||'';
- return <div className="globalSearchPanel"><div className="searchPanelHeader"><b>Search Results</b><button className="mini" onClick={clear}>Close</button></div><div className="searchResultsGrid"><div><h4>Projects</h4>{projects.length?projects.map((p:any)=><button key={p.id} onClick={()=>{setTab('Projects');clear()}}><b>{p.projectId}</b><span>{p.customer||p.name||'Project'}</span></button>):<p className="muted">No projects</p>}</div><div><h4>Library</h4>{library.length?library.map((a:any)=><button key={a.id} onClick={()=>{setTab('Assembly Library');clear()}}><b>{a.partNumber}</b><span>{a.description}</span></button>):<p className="muted">No library items</p>}</div><div><h4>Scheduled Assemblies</h4>{projectAssemblies.length?projectAssemblies.map((a:any)=><button key={a.id} onClick={()=>{setTab('Projects');clear()}}><b>{projectById(a.projectId)} · {a.partNumber} {a.instanceLabel||''}</b><span>{a.description}</span></button>):<p className="muted">No scheduled assemblies</p>}</div><div><h4>Employees</h4>{employees.length?employees.map((e:any)=><button key={e.id} onClick={()=>{setTab('People');clear()}}><b>{e.name}</b><span>{e.skills||e.email}</span></button>):<p className="muted">No employees</p>}</div></div></div>
+ return <div className="globalSearchPanel"><div className="searchPanelHeader"><b>Search Results</b><button className="mini" onClick={clear}>Close</button></div><div className="searchResultsGrid"><div><h4>Projects</h4>{projects.length?projects.map((p:any)=><button key={p.id} onClick={()=>{onOpenProject?onOpenProject(p.id):setTab('Projects');clear()}}><b>{p.projectId}</b><span>{p.customer||p.name||'Project'}</span></button>):<p className="muted">No projects</p>}</div><div><h4>Library</h4>{library.length?library.map((a:any)=><button key={a.id} onClick={()=>{setTab('Assembly Library');clear()}}><b>{a.partNumber}</b><span>{a.description}</span></button>):<p className="muted">No library items</p>}</div><div><h4>Scheduled Assemblies</h4>{projectAssemblies.length?projectAssemblies.map((a:any)=><button key={a.id} onClick={()=>{onOpenProject?onOpenProject(a.projectId):setTab('Projects');clear()}}><b>{projectById(a.projectId)} · {a.partNumber} {a.instanceLabel||''}</b><span>{a.description}</span></button>):<p className="muted">No scheduled assemblies</p>}</div><div><h4>Employees</h4>{employees.length?employees.map((e:any)=><button key={e.id} onClick={()=>{setTab('People');clear()}}><b>{e.name}</b><span>{e.skills||e.email}</span></button>):<p className="muted">No employees</p>}</div></div></div>
 }
 
 export function Table({rows,cols}:any){return <div className="tablewrap"><table><thead><tr>{cols.map((c:string)=><th key={c}>{c}</th>)}</tr></thead><tbody>{rows.map((r:any,i:number)=><tr key={r.id||i}>{cols.map((c:string)=><td key={c}>{String(r[c]??'')}</td>)}</tr>)}</tbody></table></div>}
+
+// ─── In-app confirm dialog + toasts (replaces window.confirm / window.alert) ───
+let toastListener:((t:any)=>void)|null=null;
+let confirmListener:((req:any)=>void)|null=null;
+export function toast(message:string,tone:'info'|'good'|'bad'='info'){if(toastListener)toastListener({message,tone,id:'t'+Date.now()+Math.random()});}
+export function confirmDialog(message:string):Promise<boolean>{return new Promise(resolve=>{if(!confirmListener){resolve(typeof window!=='undefined'?window.confirm(message):false);return;}confirmListener({message,resolve});});}
+export function NotificationHost(){
+ const [toasts,setToasts]=useState<any[]>([]);
+ const [confirmReq,setConfirmReq]=useState<any>(null);
+ useEffect(()=>{
+  toastListener=(t:any)=>{setToasts((v:any[])=>[...v,t]);setTimeout(()=>setToasts((v:any[])=>v.filter((x:any)=>x.id!==t.id)),4500)};
+  confirmListener=(req:any)=>setConfirmReq(req);
+  return()=>{toastListener=null;confirmListener=null};
+ },[]);
+ function answer(v:boolean){confirmReq?.resolve(v);setConfirmReq(null)}
+ return <>
+  <div className="toastStack">{toasts.map((t:any)=><div key={t.id} className={'toast '+t.tone}>{t.message}</div>)}</div>
+  {confirmReq&&<div className="confirmOverlay" onClick={()=>answer(false)}><div className="confirmBox" onClick={(e:any)=>e.stopPropagation()}><p>{confirmReq.message}</p><div className="actions"><button className="btn primary" onClick={()=>answer(true)}>OK</button><button className="btn" onClick={()=>answer(false)}>Cancel</button></div></div></div>}
+ </>;
+}
+
+export function assemblyAccentColor(id:string){let h=0;const str=String(id||'');for(let i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;return `hsl(${h%360} 62% 42%)`}

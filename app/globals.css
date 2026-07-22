@@ -2430,3 +2430,38 @@ button.alertLine:hover{filter:brightness(.985)}
 .peopleWorkspace{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
 .peopleListPanel .librarySelectableList{margin-top:10px}
 @media(max-width:1000px){.peopleWorkspace{grid-template-columns:1fr}}
+
+/* Toasts + in-app confirm */
+.toastStack{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:90;pointer-events:none;max-width:min(520px,90vw)}
+.toast{background:#1f2937;color:#f8fafc;border-radius:12px;padding:10px 16px;font-size:13.5px;font-weight:600;box-shadow:0 10px 30px rgba(15,23,42,.35);white-space:pre-line;animation:toastIn .18s ease-out}
+.toast.good{background:#065f46}
+.toast.bad{background:#991b1b}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.confirmOverlay{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:95}
+.confirmBox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:440px;width:calc(100vw - 40px);box-shadow:0 24px 60px rgba(15,23,42,.4)}
+.confirmBox p{margin:0 0 14px;white-space:pre-line;line-height:1.45}
+
+/* Flow view + detail-panel move row + read-only tree subs */
+.flowRows{display:flex;flex-direction:column;gap:14px}
+.flowRow{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--card)}
+.flowRowHead{display:flex;gap:10px;align-items:baseline;margin-bottom:8px}
+.flowRowHead b{font-size:14px}
+.flowRowHead span{color:var(--muted);font-size:13px}
+.flowRowHead small{margin-left:auto;color:var(--muted);font-weight:700}
+.flowRowChips{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.flowChip{border:1px solid var(--line);border-left:5px solid var(--assembly-accent,#94a3b8);border-radius:10px;padding:6px 9px;background:var(--card);min-width:130px}
+.flowChip b{display:block;font-size:12.5px}
+.flowChip span{display:block;font-size:11.5px;color:var(--muted)}
+.flowChip small{display:block;font-size:11px;color:var(--muted)}
+.flowChip.late{border-color:#f3b1b1;background:#fff5f4}
+.flowChip.hold{background:#f3f4f6;opacity:.85}
+.flowChip.testChip{border-left-style:dashed}
+.flowArrow{color:var(--muted);font-weight:900}
+:root[data-theme="dark"] .flowChip.late{background:#3b1f1f;border-color:#7f1d1d}
+:root[data-theme="dark"] .flowChip.hold{background:#1f2937}
+.assemblyMoveRow{border-top:1px solid var(--line);padding-top:10px}
+.assemblyMoveRow label{margin-bottom:6px}
+.assemblyMoveRow select,.assemblyMoveRow input{width:auto;min-width:140px}
+.treeSubReadonly b{display:block;font-size:13px}
+.treeSubReadonly span{display:block;font-size:12px;color:var(--muted)}
+.treeSubReadonly small{color:var(--muted)}

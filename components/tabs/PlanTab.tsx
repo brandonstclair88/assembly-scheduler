@@ -1,18 +1,19 @@
 'use client';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {expandChunks,sortChunksByDate} from '../../lib/chunks';
-import {dateOnly,fmtDate} from '../../lib/format';
+import {dateOnly,fmtDate,fmtDateTime} from '../../lib/format';
 import {load} from '../../lib/persistence';
 import {healthTone} from '../../lib/projectHealth';
 import {capacityByEmployee,capacityForDate,weeklyCapacity} from '../../lib/scheduler';
-import {HealthBadge,ScheduleWarningsPanel,Table,rolledCompletion} from '../shared/common';
+import {HealthBadge,ScheduleWarningsPanel,Table,assemblyAccentColor,rolledCompletion} from '../shared/common';
 
 export function Plan({data,setData,schedule,warnings,projectHealth,setTab}:any){
  const [view,setView]=useState('Planner');
- const views=[['Planner','Planner'],['Calendar','Calendar'],['Timeline','Timeline'],['Capacity','Capacity'],['Table','Master Schedule']];
+ const views=[['Planner','Planner'],['Flow','Flow'],['Calendar','Calendar'],['Timeline','Timeline'],['Capacity','Capacity'],['Table','Master Schedule']];
  return <div className="subTabPage">
   <div className="subTabBar">{views.map(([id,label]:any)=><button key={id} type="button" className={view===id?'active':''} onClick={()=>setView(id)}>{label}</button>)}</div>
   {view==='Planner'&&<Planner data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealth={projectHealth} setTab={setTab}/>}
+  {view==='Flow'&&<FlowView data={data} schedule={schedule}/>}
   {view==='Calendar'&&<MonthlyCalendar data={data} schedule={schedule}/>}
   {view==='Timeline'&&<GanttTimeline data={data} schedule={schedule}/>}
   {view==='Capacity'&&<Capacity data={data}/>}
@@ -186,4 +187,45 @@ export function Capacity({data}:any){const rows=capacityByEmployee(data);const w
 
 export function Schedule({data,schedule}:any){
  return <div className="card"><h2>Master Schedule</h2><p className="muted">Read-only computed schedule. Edit assemblies from the Projects page or move work on the Weekly Board.</p><div className="tablewrap"><table><thead><tr>{['Week','Project','Phase','Part #','#','Description','Deps','Employees','Start','Finish / Ship','Hours','Test','Inspection','Shipping','%','Status','Late','Assembly Ship By'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{schedule.map((r:any)=><tr key={r.id} className={r.isLate?'late':''}><td>{fmtDate(r.week)}</td><td>{r.projectName}</td><td>{r.phase||'Build'}</td><td>{r.partNumber}</td><td>{r.instanceLabel||''}</td><td>{r.description}</td><td>{r.dependencyNames}</td><td>{r.assignedEmployeeNames}</td><td>{fmtDate(r.scheduledStart)}</td><td>{fmtDate(r.scheduledEnd)}</td><td>{r.totalHours} total / {r.hoursPerEmployee.toFixed(1)} ea</td><td>{r.testRequired?`${r.testHours||0} hrs`:''}</td><td>{r.inspectionRequired?`${r.inspectionHours||0} hrs`:''}</td><td>{r.shippingRequired?`${r.shippingHours||0} hrs`:''}</td><td>{r.phase==='Build'?`${r.percent||0}%`:(r.phase==='Inspection'?(r.inspectionComplete?'Done':'Open'):(r.shippingComplete?'Done':'Open'))}</td><td>{r.status}</td><td>{r.isLate?'Yes':''}</td><td>{fmtDate(r.shipDate)}</td></tr>)}</tbody></table></div></div>
+}
+
+export function FlowView({data,schedule}:any){
+ const [projectFilter,setProjectFilter]=useState('All');
+ const projects=(data.projects||[]).filter((p:any)=>!p.archived);
+ const itemFor=(id:string,phase:string)=>schedule.find((s:any)=>(s.sourceAssemblyId||String(s.id).split('|')[0])===id&&(s.phase||'Build')===phase);
+ const tops=(data.projectAssemblies||[]).filter((a:any)=>a.type==='Top Level Assembly'&&(projectFilter==='All'||a.projectId===projectFilter)).sort((a:any,b:any)=>(a.shipDate||'').localeCompare(b.shipDate||'')||(a.partNumber||'').localeCompare(b.partNumber||''));
+ function chip(a:any,phase:string){
+  const it=itemFor(a.id,phase);
+  if(phase!=='Build'&&!it)return null;
+  return <div key={a.id+phase} className={'flowChip'+(it?.isLate?' late':'')+((a.status==='On Hold'||a.holdReason)?' hold':'')} style={{'--assembly-accent':assemblyAccentColor(a.id)} as any}>
+   <b>{phase==='Build'?`${a.partNumber} ${a.instanceLabel||''}`:phase.toUpperCase()}</b>
+   {phase==='Build'&&<span>{a.description||''}</span>}
+   {it&&<small>{fmtDate(it.scheduledStart)} → {fmtDate(it.scheduledEnd)}</small>}
+   {it&&<small>{it.assignedEmployeeNames||'Unassigned'}</small>}
+  </div>;
+ }
+ return <div className="card">
+  <div className="boardHeader"><div><h2>Flow View</h2><p className="muted">Every build family as a left-to-right flow: subs feed the top level, then the test gate, inspection, and shipping. Colors match the Weekly Board tiles.</p></div><div className="field monthPick"><label>Project</label><select value={projectFilter} onChange={e=>setProjectFilter(e.target.value)}><option value="All">All projects</option>{projects.map((p:any)=><option key={p.id} value={p.id}>{p.projectId||p.name}</option>)}</select></div></div>
+  <div className="flowRows">
+   {tops.length===0&&<p className="muted">No top level assemblies match this filter.</p>}
+   {tops.map((top:any)=>{
+    const subs=(data.projectAssemblies||[]).filter((a:any)=>a.id!==top.id&&(a.parentAssemblyId===top.id||(top.buildGroupId&&a.buildGroupId===top.buildGroupId&&a.projectId===top.projectId)));
+    const proj=projects.find((p:any)=>p.id===top.projectId);
+    const hasTest=!!top.testRequired||Number(top.testHours||0)>0;
+    return <div className="flowRow" key={top.id}>
+     <div className="flowRowHead"><b>{proj?.projectId||'Project'}</b><span>{top.buildGroupLabel||top.partNumber}</span><small>Ship by {fmtDate(top.shipDate)||'not set'}</small></div>
+     <div className="flowRowChips">
+      {subs.map((s:any)=>chip(s,'Build'))}
+      {subs.length>0&&<span className="flowArrow">→</span>}
+      {chip(top,'Build')}
+      {hasTest&&<><span className="flowArrow">→</span><div className="flowChip testChip" style={{'--assembly-accent':assemblyAccentColor(top.id)} as any}><b>TEST</b><small>{top.testReturnDateTime?fmtDateTime(top.testReturnDateTime):`${Number(top.testHours||0).toFixed(1)} hr gate`}</small></div></>}
+      {itemFor(top.id,'Inspection')&&<span className="flowArrow">→</span>}
+      {chip(top,'Inspection')}
+      {itemFor(top.id,'Shipping')&&<span className="flowArrow">→</span>}
+      {chip(top,'Shipping')}
+     </div>
+    </div>;
+   })}
+  </div>
+ </div>;
 }
