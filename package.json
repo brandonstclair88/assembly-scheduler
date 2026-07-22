@@ -1,5 +1,5 @@
 {
-  "name": "assembly-scheduler-v91-sqlite",
+  "name": "assembly-scheduler",
   "engines": {
     "node": ">=18.18.0"
   },

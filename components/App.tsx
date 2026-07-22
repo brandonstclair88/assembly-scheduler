@@ -343,9 +343,6 @@ function GlobalSearchPanel({data,query,setTab,clear}:any){
 
 function Planner({data,setData,schedule,warnings,projectHealth,setTab}:any){
  const [query,setQuery]=useState('');
- const [selectedIssue,setSelectedIssue]=useState<any>(null);
- const [preview,setPreview]=useState<any>(null);
- const [undo,setUndo]=useState<any>(null);
  const [plannerView,setPlannerView]=useState<'capacity'|'risk'|'employee'|'shipments'|'dependencies'>('capacity');
  const [plannerHorizon,setPlannerHorizon]=useState<'2w'|'1m'|'3m'|'6m'|'1y'>('1m');
  const employees=(data.employees||[]).filter((e:any)=>e.active!==false);
@@ -399,51 +396,6 @@ function Planner({data,setData,schedule,warnings,projectHealth,setTab}:any){
  const weeklyCapacityRows=Object.values(weeklyRoleLoad).sort((a:any,b:any)=>String(a.week).localeCompare(String(b.week))).map((row:any)=>({...row,shipments:weekShipCounts[row.week]||0,buildPct:row.buildAvailable?row.buildScheduled/row.buildAvailable:0,inspectionPct:row.inspectionAvailable?row.inspectionScheduled/row.inspectionAvailable:0,shippingPct:row.shippingAvailable?row.shippingScheduled/row.shippingAvailable:0}));
  const roleSummary=[['Build','buildScheduled','buildAvailable'],['Inspection','inspectionScheduled','inspectionAvailable'],['Shipping','shippingScheduled','shippingAvailable']].map(([label,scheduledKey,availableKey])=>{const scheduled=weeklyCapacityRows.reduce((sum:number,row:any)=>sum+Number(row[scheduledKey]||0),0);const available=weeklyCapacityRows.reduce((sum:number,row:any)=>sum+Number(row[availableKey]||0),0);const pct=available?scheduled/available:0;return {label,scheduled,available,pct};});
  const employeeForecast=Object.values(employeeLoad).sort((a:any,b:any)=>Number(b.scheduled)-Number(a.scheduled));
- const issues:any[]=[];
- for(const s of schedule){
-   const a=asm(srcId(s)); if(!a)continue;
-   if(s.isLate)issues.push({type:'Late',severity:'red',assemblyId:a.id,phase:s.phase||'Build',date:s.scheduledEnd,title:`Late: ${taskLabel(a)}`,why:[`Scheduled to finish ${fmtDate(s.scheduledEnd)}.`,`Ship By is ${fmtDate(a.shipDate)||'not set'}.`,a.lateAllowed?'Late Allowed is checked.':'Late Allowed is not checked.'],suggestions:['Move earlier work into open capacity before the ship date.','Add another employee to the build/inspection/shipping task.','If this is acceptable, check Late Allowed.']});
- }
- for(const a of assemblies){
-   if(a.status==='On Hold'||a.holdReason)issues.push({type:'Blocked',severity:'gray',assemblyId:a.id,phase:'Build',date:a.shipDate,title:`Blocked: ${taskLabel(a)}`,why:[`Status/hold reason: ${a.holdReason||a.status}`],suggestions:['Clear the hold when the issue is resolved.','If a held sub blocks a top level, expect the top level completion cap to apply.']});
-   if(a.type==='Top Level Assembly'){
-     const topBuild=getItem(a.id,'Build');
-     const subs=assemblies.filter((x:any)=>x.parentAssemblyId===a.id||((x.buildGroupId&&x.buildGroupId===a.buildGroupId)&&x.projectId===a.projectId&&x.type==='Sub Assembly'));
-     for(const sub of subs){const subBuild=getItem(sub.id,'Build');if(topBuild&&subBuild&&subBuild.scheduledEnd>topBuild.scheduledStart){issues.push({type:'Dependency Conflict',severity:'yellow',assemblyId:a.id,phase:'Build',date:topBuild.scheduledStart,title:`Sub finishes after top starts: ${taskLabel(a)}`,why:[`${sub.partNumber} ${sub.instanceLabel||''} finishes ${fmtDate(subBuild.scheduledEnd)}.`,`Top level starts ${fmtDate(topBuild.scheduledStart)}.`],suggestions:['Move the sub assembly earlier.','Push the top level later.','Add another employee to the sub assembly if capacity exists.']});}}
-     const build=getItem(a.id,'Build'), inspection=getItem(a.id,'Inspection');
-     if(build&&inspection&&a.testRequired&&Number(a.testHours||0)>0){
-       const minReturn=a.testReturnDateTime?dateOnly(parse(a.testReturnDateTime)):addDays(build.scheduledEnd, Math.max(1,Math.ceil(Number(a.testHours||0)/10)));
-       if(inspection.scheduledStart<minReturn)issues.push({type:'Test Gate',severity:'yellow',assemblyId:a.id,phase:'Inspection',date:inspection.scheduledStart,title:`Inspection starts before test gate: ${taskLabel(a)}`,why:[`Build finishes ${fmtDate(build.scheduledEnd)}.`,`Test requires ${a.testHours} hours${a.testReturnDateTime?` and expected return is ${fmtDateTime(a.testReturnDateTime)}`:''}.`,`Inspection starts ${fmtDate(inspection.scheduledStart)}.`],suggestions:['Move inspection after the expected test return.','Enter/update Expected Test Return if test will take longer.']});
-     }
-   }
- }
- function openCapacityFor(empId:string,date:string,ignore:any=null){const used=chunks.filter((x:any)=>x.employeeChunkId===empId&&x.chunkDate===date&&!(ignore&&srcId(x)===srcId(ignore)&&x.segmentIndex===ignore.segmentIndex&&(x.phase||'Build')===(ignore.phase||'Build'))).reduce((n:number,x:any)=>n+(Number(x.chunkHours)||0),0);return capacityForDate(data,empId,date)-used;}
- function sameAssemblySameEmpDayExists(sourceId:string,segmentIndex:any,empId:string,date:string){return chunks.some((x:any)=>srcId(x)===sourceId&&x.segmentIndex!==segmentIndex&&(x.phase||'Build')==='Build'&&x.employeeChunkId===empId&&x.chunkDate===date);}
- function suggestOpenMoves(cell:any){
-   const out:any[]=[]; const emp=employees.find((e:any)=>e.id===cell.employeeId);
-   for(const c of cell.cards){
-     const sourceId=srcId(c); const phase=c.phase||'Build';
-     for(const e of employees){
-       for(let i=0;i<21;i++){
-         const date=addDays(cell.date,i);
-         if(phase==='Build'&&sameAssemblySameEmpDayExists(sourceId,c.segmentIndex,e.id,date))continue;
-         const open=openCapacityFor(e.id,date,c);
-         if(open>=Number(c.chunkHours||0)&&!(e.id===cell.employeeId&&date===cell.date)){out.push({label:`Move ${c.partNumber} ${c.instanceLabel||''} (${Number(c.chunkHours||0).toFixed(1)} hrs) from ${emp?.name||'employee'} ${cell.date} to ${e.name} ${date}.`,sourceId,phase,segmentIndex:c.segmentIndex,employeeId:e.id,date,hours:Number(c.chunkHours)||0});return out;}
-       }
-     }
-   }
-   if(!out.length)out.push({label:'No obvious open-capacity move found in the next 3 weeks. Consider splitting the task, enabling Friday OT, or assigning another employee.'});
-   return out;
- }
- Object.values(byCell).forEach((cell:any)=>{const cap=capacityForDate(data,cell.employeeId,cell.date);if(cell.hours>cap){const emp=employees.find((e:any)=>e.id===cell.employeeId);const opts=suggestOpenMoves(cell);issues.push({type:'Overloaded',severity:'red',date:cell.date,employeeId:cell.employeeId,title:`Overloaded: ${emp?.name||cell.employeeId} on ${cell.date}`,why:[`${cell.hours.toFixed(1)} hours assigned.`,`Capacity is ${cap.toFixed(1)} hours.`],suggestions:opts.map((x:any)=>x.label||x),actions:opts.filter((x:any)=>x.sourceId).slice(0,5)})}});
- function defaultSegmentsFor(sourceId:string,phase:string){return chunks.filter((c:any)=>srcId(c)===sourceId&&(c.phase||'Build')===phase).map((c:any,i:number)=>({id:c.manualSegmentId||`seg_${Date.now()}_${i}`,employeeId:c.employeeChunkId||'',date:c.chunkDate,hours:Number(c.chunkHours)||0,phase}));}
- function updateWithAction(d:any,action:any){return d.projectAssemblies.map((a:any)=>{if(a.id!==action.sourceId)return a;if(action.phase==='Inspection')return {...a,inspectionAssignedTo:action.employeeId,inspectionManualStartDate:action.date};if(action.phase==='Shipping')return {...a,shippingAssignedTo:action.employeeId,shippingManualStartDate:action.date};const existing=Array.isArray(a.manualWorkSegments)&&a.manualWorkSegments.length?a.manualWorkSegments:defaultSegmentsFor(action.sourceId,action.phase);const idx=Number.isFinite(Number(action.segmentIndex))?Number(action.segmentIndex):0;const segs=existing.map((seg:any,i:number)=>i===idx?{...seg,employeeId:action.employeeId,date:action.date}:seg);return {...a,assignedTo:action.employeeId||a.assignedTo,manualWorkSegments:segs,manuallyScheduled:true};});}
- function applyMove(action:any){if(!action?.sourceId)return;setUndo(JSON.parse(JSON.stringify(data)));setPreview(null);setData((d:any)=>({...d,projectAssemblies:updateWithAction(d,action)}));}
- function balanceThisWeek(){const actions:any[]=[];const end=addDays(today,7);const cells=Object.values(byCell).filter((cell:any)=>cell.date>=today&&cell.date<=end&&cell.hours>capacityForDate(data,cell.employeeId,cell.date));for(const cell of cells as any[]){const opts=suggestOpenMoves(cell).filter((x:any)=>x.sourceId);if(opts[0])actions.push(opts[0]);}setPreview({title:'Smart Assign Rebalance Preview',actions});}
- function applyPreview(){if(!preview?.actions?.length)return;setUndo(JSON.parse(JSON.stringify(data)));let next=JSON.parse(JSON.stringify(data));for(const action of preview.actions){next={...next,projectAssemblies:updateWithAction(next,action)}}setData(next);setPreview(null)}
- function undoLast(){if(!undo)return;setData(undo);setUndo(null);setPreview(null)}
- const filtered=issues.filter(i=>!query||(`${i.type} ${i.title} ${i.date} ${i.why?.join(' ')} ${i.suggestions?.join(' ')}`.toLowerCase().includes(query.toLowerCase())));
- const counts={red:issues.filter(i=>i.severity==='red').length,yellow:issues.filter(i=>i.severity==='yellow').length,gray:issues.filter(i=>i.severity==='gray').length};
  const warningsByProject=(warnings||[]).reduce((map:any,warning:any)=>{if(!warning.projectId)return map;map[warning.projectId]=(map[warning.projectId]||0)+1;return map;},{});
  function plannerRiskLabel(record:any){
    const warningCount=warningsByProject[record.projectId]||0;
@@ -472,14 +424,11 @@ function Planner({data,setData,schedule,warnings,projectHealth,setTab}:any){
          </div>
          <div className="field monthPick"><label>Planning Horizon</label><select value={plannerHorizon} onChange={e=>setPlannerHorizon(e.target.value as any)}><option value="2w">2 weeks</option><option value="1m">1 month</option><option value="3m">3 months</option><option value="6m">6 months</option><option value="1y">1 year</option></select></div>
          <div className="field monthPick"><label>Search</label><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Project ID / P/N / employee"/></div>
-         <button className="btn" onClick={balanceThisWeek}>Preview Smart Assign Rebalance</button>
-         <button className="btn" disabled={!undo} onClick={undoLast}>Undo Last Change</button>
          <button className="btn" onClick={()=>setTab('Weekly Board')}>Open Weekly Board</button>
        </div>
      </div>
-     <div className="plannerSummary"><span className="pill bad">{counts.red} high priority</span><span className="pill warn">{counts.yellow} warnings</span><span className="pill">{counts.gray} blocked</span><span className="pill">Horizon: {fmtDate(today)} to {fmtDate(rangeEnd)}</span></div>
+     <div className="plannerSummary"><span className="pill bad">{(warnings||[]).filter((w:any)=>w.level==='critical').length} critical</span><span className="pill warn">{(warnings||[]).filter((w:any)=>w.level==='capacity').length} capacity</span><span className="pill">{(warnings||[]).filter((w:any)=>w.level==='info').length} info</span><span className="pill">Horizon: {fmtDate(today)} to {fmtDate(rangeEnd)}</span></div>
    </div>
-   {preview&&<div className="card span12"><h2>{preview.title}</h2>{preview.actions?.length?<><p className="muted">Review these moves before applying.</p><ul>{preview.actions.map((a:any,i:number)=><li key={i}>{a.label}</li>)}</ul><div className="actions"><button className="btn primary" onClick={applyPreview}>Apply Previewed Moves</button><button className="btn" onClick={()=>setPreview(null)}>Cancel</button></div></>:<p className="muted">No safe open-capacity moves found for this week.</p>}</div>}
    {plannerView==='capacity'&&<>
      <div className="card span12"><h2>Capacity Forecast</h2><div className="projectHealthSummaryGrid">{roleSummary.map((row:any)=><div key={row.label} className={`projectHealthSummaryCard tone-${toneForPct(row.pct)}`}><b>{Math.round(row.pct*100)}%</b><span>{row.label} Capacity</span><small>{row.scheduled.toFixed(1)} scheduled / {row.available.toFixed(1)} available hrs</small></div>)}</div></div>
      <div className="card span12"><h2>Planner Heatmap</h2><div className="plannerHeatmap">{weeklyCapacityRows.map((row:any)=><div key={row.week} className={`heatCell tone-${toneForPct(Math.max(row.buildPct,row.inspectionPct,row.shippingPct))}`}><b>{fmtDate(row.week)}</b><span>Build {Math.round(row.buildPct*100)}%</span><span>Inspect {Math.round(row.inspectionPct*100)}%</span><span>Ship {Math.round(row.shippingPct*100)}%</span><small>{row.overloads} overloaded cell{row.overloads===1?'':'s'} • {row.shipments} shipments</small></div>)}</div></div>
@@ -497,8 +446,7 @@ function Planner({data,setData,schedule,warnings,projectHealth,setTab}:any){
      <div className="card span12"><h2>Ready to Ship</h2><div className="projectHealthPreviewList">{readyToShip.length===0&&<p className="muted">No projects are marked ready to ship in this horizon.</p>}{readyToShip.map((record:any)=><div key={record.projectId} className="projectHealthPreviewCard"><div><HealthBadge status={record.status}/><b>{record.projectCode}</b></div><span>{record.projectName}</span><small>{record.reason}</small></div>)}</div></div>
    </>}
    {plannerView==='dependencies'&&<>
-     <div className="card span5"><h2>Issues</h2><div className="issueList">{filtered.length===0&&<p className="muted">No conflicts found in this planning horizon.</p>}{filtered.map((i:any,idx:number)=><button key={idx} className={'issueRow '+i.severity} onClick={()=>setSelectedIssue(i)}><b>{i.type}</b><span>{i.title}</span><small>{fmtDate(i.date)||''}</small></button>)}</div></div>
-     <div className="card span7"><h2>Conflict Details</h2>{!selectedIssue?<p className="muted">Select an issue to see why it is happening and suggested moves.</p>:<div className="issueDetails"><h3>{selectedIssue.title}</h3><p><span className={'pill '+(selectedIssue.severity==='red'?'bad':selectedIssue.severity==='yellow'?'warn':'')}>{selectedIssue.type}</span></p><h4>Why</h4><ul>{(selectedIssue.why||[]).map((w:string)=><li key={w}>{w}</li>)}</ul><h4>Suggested options</h4><ul>{(selectedIssue.suggestions||[]).map((w:string)=><li key={w}>{w}</li>)}</ul>{selectedIssue.actions?.length>0&&<><h4>Safe actions</h4><div className="actions">{selectedIssue.actions.map((a:any,i:number)=><button key={i} className="btn primary" onClick={()=>applyMove(a)}>Apply Move {i+1}</button>)}</div></>}</div>}</div>
+     <div className="card span12"><ScheduleWarningsPanel warnings={warnings} maxItems={24} title="Dependency & Schedule Conflicts" subtitle="Computed by the shared warnings engine — the same list the Dashboard and Weekly Board show, so the views always agree." onAction={()=>setTab('Weekly Board')} getActionLabel={(w:any)=>w.projectId||w.date?'Open Weekly Board':''}/></div>
    </>}
  </div>
 }
