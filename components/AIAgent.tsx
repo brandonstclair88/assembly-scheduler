@@ -30,8 +30,8 @@ function buildSnapshot(data: AppData, schedule: ScheduledItem[], suggestions: Sm
     canBuild: e.canBuild !== false,
     canInspect: e.canInspect !== false,
     canShip: e.canShip !== false,
-    preferredProjects: (e.preferredProjectIds || '').split(/[\n,;\s]+/).filter(Boolean),
-    limitToPreferred: !!e.limitAutoAssignToTrainedProjects,
+    preferredProjects: (e.preferredProjectIds || e.trainedProjectIds || '').split(/[\n,;\s]+/).filter(Boolean),
+    limitToPreferred: !!e.preferPreferredProjects,
   }));
 
   // Project summary

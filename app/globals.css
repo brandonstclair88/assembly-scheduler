@@ -37,13 +37,7 @@ td textarea{min-width:220px;min-height:76px;resize:vertical}
 .assemblyPicker{display:grid;gap:12px}.assemblySearchResults{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:16px;background:#f8fafc;padding:10px}.assemblyResult{text-align:left;border:1px solid #dbe3ee;background:#fff;border-radius:14px;padding:12px;cursor:pointer;display:grid;gap:4px;color:#0f172a}.assemblyResult:hover{background:#eef6ff;border-color:#9db8ff}.selectedAssemblyResult{background:#dbeafe!important;border-color:#2563eb!important}.assemblyResult b{font-size:16px}.assemblyResult span{color:#475569}.assemblyResult small{color:#64748b}.selectedAssemblyBox{display:grid;grid-template-columns:1fr 130px auto auto;gap:12px;align-items:flex-end;border:1px solid #c9d8ff;background:#f8fbff;border-radius:16px;padding:12px}.selectedAssemblyBox b{display:block;font-size:16px}.qtyInput{max-width:130px}.noResults{padding:14px}@media(max-width:900px){.selectedAssemblyBox{grid-template-columns:1fr}.qtyInput{max-width:none}}
 
 /* v32 high-level monthly calendar */
-.monthCalendar{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));gap:8px;overflow:auto}.calHead{background:#eef4ff;border:1px solid var(--line);border-radius:12px;padding:9px;font-weight:800;text-align:center}.calDay{min-height:170px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;vertical-align:top}.calMuted{background:#f8fafc;color:#94a3b8}.calDate{font-weight:800;margin-bottom:6px}.calCard{background:#f8fbff;border:1px solid #c9d8ff;border-radius:12px;padding:8px;margin:6px 0;font-size:12px;line-height:1.25;color:#172033}.calCard b,.calCard span,.calCard small{display:block}.calCard small{color:#657085;margin-top:2px}.calLate{background:#fff0ee;border-color:#f3b1b1}.calSub{font-size:11px;color:#475569;margin-top:3px;padding-left:4px}.calMore{font-size:12px;font-weight:800;color:#315ea8;margin-top:6px}@media(max-width:1000px){.monthCalendar{grid-template-columns:repeat(7,minmax(130px,1fr));min-width:980px}}
-.completionEdit{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px}
-.completionEdit label{font-weight:700;color:#334155}
-.completionEdit input{width:64px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#0f172a;font-size:13px}
-
-.dragHandle{display:inline-block;background:#eef2ff;color:#1e3a8a;border:1px solid #c7d2fe;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:800;margin-bottom:6px;cursor:grab;user-select:none}.dragHandle:active{cursor:grabbing}.completionEdit input{cursor:text}.task input,.task button{cursor:auto}
-.completionEdit small{display:block;font-size:11px;color:#64748b;margin-top:2px;line-height:1.2}
+.monthCalendar{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));gap:8px;overflow:auto}.calHead{background:#eef4ff;border:1px solid var(--line);border-radius:12px;padding:9px;font-weight:800;text-align:center}.calDay{min-height:170px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;vertical-align:top}.calMuted{background:#f8fafc;color:#94a3b8}.calDate{font-weight:800;margin-bottom:6px}.calCard{background:#f8fbff;border:1px solid #c9d8ff;border-radius:12px;padding:8px;margin:6px 0;font-size:12px;line-height:1.25;color:#172033}.calCard b,.calCard span,.calCard small{display:block}.calCard small{color:#657085;margin-top:2px}.calLate{background:#fff0ee;border-color:#f3b1b1}.calSub{font-size:11px;color:#475569;margin-top:3px;padding-left:4px}.calMore{font-size:12px;font-weight:800;color:#315ea8;margin-top:6px}@media(max-width:1000px){.monthCalendar{grid-template-columns:repeat(7,minmax(130px,1fr));min-width:980px}}.task input,.task button{cursor:auto}
 .task.buildTileDone{background:#e0f2fe!important;border-color:#7dd3fc!important;box-shadow:0 6px 14px rgba(14,116,144,.14)}
 .task.buildTilePartial{background:linear-gradient(90deg,#e0f2fe 0%,#e0f2fe 35%,#ffffff 35%,#ffffff 100%);border-color:#bae6fd}
 
@@ -98,7 +92,7 @@ td textarea{min-width:220px;min-height:76px;resize:vertical}
 .projectMain .btn.danger{white-space:nowrap}
 
 /* v53 Project page redesign */
-.buildCardRedesign{padding:0;overflow:hidden;border:2px solid #d5def2;border-radius:22px;background:#ffffff;box-shadow:0 12px 32px rgba(31,47,84,.12);margin:24px 0}.buildCardRedesign.batched{border-color:#b8c9ff}.buildCardRedesign.sequenced{border-color:#f3ca72}.buildCardRedesign.complete{border-color:#9fd7b2}.buildCardRedesign.hold{border-color:#f0a1a1}.buildCardBanner{display:grid;grid-template-columns:44px 1fr auto auto;gap:14px;align-items:center;background:linear-gradient(135deg,#eef4ff,#f8fbff);border-bottom:1px solid #cfdaf0;padding:16px 18px}.collapseBtn{width:38px;height:38px;border-radius:12px;border:1px solid #aebfe0;background:#fff;font-size:20px;cursor:pointer}.buildIdentity h3{font-size:24px;margin:2px 0}.buildIdentity p{margin:0;color:#536179}.buildKicker{font-size:11px;letter-spacing:.12em;font-weight:800;color:#47628f}.buildBadges{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;max-width:360px}.strongPill{font-weight:900;background:#e5efff!important}.dangerPill{background:#ffe5e5!important;color:#8f1d1d!important}.buildHeaderActions{display:flex;gap:8px;align-items:center}.buildSummaryStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid #dfe6f2;background:#fbfdff}.buildSummaryStrip div{padding:12px 16px;border-right:1px solid #e1e7f3}.buildSummaryStrip div:last-child{border-right:0}.buildSummaryStrip label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#71809a;font-weight:800}.buildSummaryStrip b{display:block;margin-top:3px;font-size:14px;color:#1f2a44}.buildCardRedesign .sequenceHint{margin:16px 18px;background:#fff9e8;border-color:#ead58c}.buildCardRedesign .buildControls{padding:0 18px 18px}.redesignedSubs{margin:0;border-top:8px solid #f1f5fb;background:#f7f9fd;padding:18px}.subPanelTitle{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}.subPanelTitle h4{font-size:19px;margin:0}.subCards{display:grid;grid-template-columns:1fr;gap:12px}.subAssemblyCard{background:#fff;border:1px solid #d9e2f1;border-left:7px solid #6f8fc9;border-radius:18px;padding:14px;box-shadow:0 4px 12px rgba(20,32,56,.06)}.subAssemblyCard.holdSub{border-left-color:#d66;background:#fffafa}.subCardHeader{display:grid;grid-template-columns:74px 1fr auto;gap:12px;align-items:center;border-bottom:1px solid #edf1f7;padding-bottom:10px;margin-bottom:12px}.subNumber{font-size:12px;font-weight:900;color:#32517c;background:#eaf1ff;border-radius:999px;padding:7px 9px;text-align:center}.subCardHeader b{display:block;font-size:16px;margin-bottom:4px}.subCardHeader input{width:100%;font-size:15px}.subCardGrid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}.subCardGrid label{grid-column:span 3;font-size:12px;font-weight:800;color:#516077}.subCardGrid label input,.subCardGrid label select{display:block;width:100%;margin-top:4px}.subCardGrid .wideSub{grid-column:span 6}.subChecks{display:flex;gap:16px;margin-top:10px;color:#44526b}.emptySubCard{background:#fff;border:1px dashed #bbc7da;border-radius:14px;padding:16px}@media(max-width:1200px){.buildCardBanner{grid-template-columns:40px 1fr}.buildBadges,.buildHeaderActions{grid-column:2}.buildSummaryStrip{grid-template-columns:1fr 1fr}.subCardGrid label,.subCardGrid .wideSub{grid-column:span 12}}@media(max-width:760px){.buildSummaryStrip{grid-template-columns:1fr}.buildSummaryStrip div{border-right:0;border-bottom:1px solid #e1e7f3}.subCardHeader{grid-template-columns:1fr}.subNumber{text-align:left}}
+.buildCardRedesign{padding:0;overflow:hidden;border:2px solid #d5def2;border-radius:22px;background:#ffffff;box-shadow:0 12px 32px rgba(31,47,84,.12);margin:24px 0}.buildCardRedesign.batched{border-color:#b8c9ff}.buildCardRedesign.sequenced{border-color:#f3ca72}.buildCardRedesign.complete{border-color:#9fd7b2}.buildCardRedesign.hold{border-color:#f0a1a1}.buildCardBanner{display:grid;grid-template-columns:44px 1fr auto auto;gap:14px;align-items:center;background:linear-gradient(135deg,#eef4ff,#f8fbff);border-bottom:1px solid #cfdaf0;padding:16px 18px}.collapseBtn{width:38px;height:38px;border-radius:12px;border:1px solid #aebfe0;background:#fff;font-size:20px;cursor:pointer}.buildIdentity h3{font-size:24px;margin:2px 0}.buildIdentity p{margin:0;color:#536179}.buildKicker{font-size:11px;letter-spacing:.12em;font-weight:800;color:#47628f}.buildBadges{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;max-width:360px}.strongPill{font-weight:900;background:#e5efff!important}.dangerPill{background:#ffe5e5!important;color:#8f1d1d!important}.buildHeaderActions{display:flex;gap:8px;align-items:center}.buildSummaryStrip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid #dfe6f2;background:#fbfdff}.buildSummaryStrip div{padding:12px 16px;border-right:1px solid #e1e7f3}.buildSummaryStrip div:last-child{border-right:0}.buildSummaryStrip label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#71809a;font-weight:800}.buildSummaryStrip b{display:block;margin-top:3px;font-size:14px;color:#1f2a44}.buildCardRedesign .sequenceHint{margin:16px 18px;background:#fff9e8;border-color:#ead58c}.buildCardRedesign .buildControls{padding:0 18px 18px}.redesignedSubs{margin:0;border-top:8px solid #f1f5fb;background:#f7f9fd;padding:18px}.subPanelTitle{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}.subPanelTitle h4{font-size:19px;margin:0}.subCards{display:grid;grid-template-columns:1fr;gap:12px}.subAssemblyCard{background:#fff;border:1px solid #d9e2f1;border-left:7px solid #6f8fc9;border-radius:18px;padding:14px;box-shadow:0 4px 12px rgba(20,32,56,.06)}.subAssemblyCard.holdSub{border-left-color:#d66;background:#fffafa}.subCardHeader{display:grid;grid-template-columns:74px 1fr auto;gap:12px;align-items:center;border-bottom:1px solid #edf1f7;padding-bottom:10px;margin-bottom:12px}.subCardHeader b{display:block;font-size:16px;margin-bottom:4px}.subCardHeader input{width:100%;font-size:15px}.subCardGrid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}.subCardGrid label{grid-column:span 3;font-size:12px;font-weight:800;color:#516077}.subCardGrid label input,.subCardGrid label select{display:block;width:100%;margin-top:4px}.subCardGrid .wideSub{grid-column:span 6}.subChecks{display:flex;gap:16px;margin-top:10px;color:#44526b}.emptySubCard{background:#fff;border:1px dashed #bbc7da;border-radius:14px;padding:16px}@media(max-width:1200px){.buildCardBanner{grid-template-columns:40px 1fr}.buildBadges,.buildHeaderActions{grid-column:2}.buildSummaryStrip{grid-template-columns:1fr 1fr}.subCardGrid label,.subCardGrid .wideSub{grid-column:span 12}}@media(max-width:760px){.buildSummaryStrip{grid-template-columns:1fr}.buildSummaryStrip div{border-right:0;border-bottom:1px solid #e1e7f3}.subCardHeader{grid-template-columns:1fr}}
 
 /* v54 production-control polish */
 .globalSearchInput{min-width:320px;max-width:420px;border:1px solid var(--line);border-radius:14px;padding:11px 14px;font-size:15px;background:#fff;color:#172033}
@@ -241,8 +235,6 @@ td textarea{min-width:220px;min-height:76px;resize:vertical}
   body.printingWeeklyBoard button,
   body.printingWeeklyBoard input,
   body.printingWeeklyBoard select,
-  body.printingWeeklyBoard .completionEdit,
-  body.printingWeeklyBoard .dragHandle,
   body.printingWeeklyBoard .lockBtn,
   body.printingWeeklyBoard .otToggle{display:none!important;}
   body.printingWeeklyBoard .boardHeader{border:0!important;background:#fff!important;margin:0 0 8px 0!important;padding:0!important;}
@@ -526,7 +518,7 @@ body.__legacyDarkDisabled .nav button.active{
 .assignmentCell{background:#fbfcfd!important;border-style:solid!important;}
 .assignmentCell:hover{background:#f7fafc!important;border-color:#b7c2ce!important;}
 .task{border-left-color:#6f8798!important;box-shadow:0 3px 10px rgba(15,23,42,.08)!important;}
-.task .dragHandle{background:#eef2f5!important;border-color:#cbd5df!important;color:#334c5f!important;}
+
 .bar>span{background:var(--accentStrong)!important;}
 .capacitySuggestion{border-left-color:var(--accentStrong)!important;background:#f8fafc!important;color:#18212f!important;}
 body.__legacyDarkDisabled .boardHeader{background:#1f2937!important;}
@@ -536,7 +528,7 @@ body.__legacyDarkDisabled .employeeHeader,body.__legacyDarkDisabled .dayHeader{b
 body.__legacyDarkDisabled .assignmentCell{background:#1b2431!important;}
 body.__legacyDarkDisabled .assignmentCell:hover{background:#223044!important;}
 body.__legacyDarkDisabled .task{background:#273244!important;color:#f8fafc!important;box-shadow:none!important;}
-body.__legacyDarkDisabled .task .dragHandle{background:#344256!important;color:#eaf2f7!important;border-color:#5b6679!important;}
+
 body.__legacyDarkDisabled .capacitySuggestion{background:#1b2431!important;color:#f8fafc!important;}
 
 /* Cleaner print/export styling */
@@ -753,7 +745,7 @@ body.__legacyDarkDisabled .task select{
 .weeklyBoardCard{padding:16px!important;overflow:visible!important}.boardHeader{display:grid!important;grid-template-columns:minmax(260px,1fr) minmax(620px,1.8fr);align-items:start;gap:18px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}.boardHeader h2{margin:0 0 4px}.boardHeader p{margin:0;line-height:1.35}.enhancedBoardTools{display:grid!important;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;align-items:flex-end}.enhancedBoardTools .field{grid-column:auto!important;min-width:0}.enhancedBoardTools .monthPick{max-width:none!important}.enhancedBoardTools .checkLine{min-height:40px;align-self:flex-end}.enhancedBoardTools button{white-space:nowrap;min-height:40px}.capacitySuggestion{white-space:pre-wrap;max-height:180px;overflow:auto}
 
 /* weekly board: fit Mon-Fri cleanly instead of clipping to only early week columns */
-.weekBoard{width:100%!important;overflow:visible!important;margin:22px 0 28px!important}.strongerWeekBoard{border:1px solid #c8d1dc!important;border-radius:18px!important;background:#ffffff!important;padding:0!important;box-shadow:var(--shadow)!important;overflow:visible!important}.weekDividerHeader{position:sticky!important;top:62px!important;z-index:18!important;margin:0!important;padding:11px 14px!important;background:#eef2f5!important;color:#263849!important;border-bottom:1px solid #c8d1dc!important;border-radius:18px 18px 0 0!important}.strongerWeekBoard .employeeBoard,.employeeBoard{display:grid!important;grid-template-columns:150px repeat(var(--week-days,5),minmax(135px,1fr))!important;gap:0!important;min-width:0!important;width:100%!important;padding:0!important}.employeeHeader,.dayHeader,.employeeCell,.assignmentCell{border-radius:0!important;border:0!important;border-right:1px solid #d5dde7!important;border-bottom:1px solid #d5dde7!important;padding:8px!important;min-width:0!important}.employeeHeader,.dayHeader{background:#f3f6f9!important;color:#263849!important;position:sticky;top:109px;z-index:10}.employeeHeader{left:0;z-index:14}.employeeCell{background:#f8fafc!important;position:sticky;left:0;z-index:9}.assignmentCell{background:#fbfcfd!important;min-height:118px!important;overflow:visible!important}.assignmentCell:hover{background:#f6f9fb!important}.dayHeader b{font-size:13px}.dayHeader span,.employeeCell span{font-size:11px}.task{padding:7px!important;margin:6px 0!important;border-radius:10px!important;box-shadow:0 2px 8px rgba(15,23,42,.08)!important;overflow:hidden}.tileDescription{font-size:12.5px!important;line-height:1.18!important}.tileMeta,.task small{font-size:11px!important}.dragHandle{min-height:26px!important;padding:2px 6px!important}.completionEdit{min-height:28px!important;font-size:12px!important;padding:4px!important}
+.weekBoard{width:100%!important;overflow:visible!important;margin:22px 0 28px!important}.strongerWeekBoard{border:1px solid #c8d1dc!important;border-radius:18px!important;background:#ffffff!important;padding:0!important;box-shadow:var(--shadow)!important;overflow:visible!important}.weekDividerHeader{position:sticky!important;top:62px!important;z-index:18!important;margin:0!important;padding:11px 14px!important;background:#eef2f5!important;color:#263849!important;border-bottom:1px solid #c8d1dc!important;border-radius:18px 18px 0 0!important}.strongerWeekBoard .employeeBoard,.employeeBoard{display:grid!important;grid-template-columns:150px repeat(var(--week-days,5),minmax(135px,1fr))!important;gap:0!important;min-width:0!important;width:100%!important;padding:0!important}.employeeHeader,.dayHeader,.employeeCell,.assignmentCell{border-radius:0!important;border:0!important;border-right:1px solid #d5dde7!important;border-bottom:1px solid #d5dde7!important;padding:8px!important;min-width:0!important}.employeeHeader,.dayHeader{background:#f3f6f9!important;color:#263849!important;position:sticky;top:109px;z-index:10}.employeeHeader{left:0;z-index:14}.employeeCell{background:#f8fafc!important;position:sticky;left:0;z-index:9}.assignmentCell{background:#fbfcfd!important;min-height:118px!important;overflow:visible!important}.assignmentCell:hover{background:#f6f9fb!important}.dayHeader b{font-size:13px}.dayHeader span,.employeeCell span{font-size:11px}.task{padding:7px!important;margin:6px 0!important;border-radius:10px!important;box-shadow:0 2px 8px rgba(15,23,42,.08)!important;overflow:hidden}.tileDescription{font-size:12.5px!important;line-height:1.18!important}.tileMeta,.task small{font-size:11px!important}
 
 /* dates shown as month/day/year in text areas/cards */
 .weekDividerHeader::first-letter{text-transform:uppercase}
@@ -838,7 +830,6 @@ html[data-theme="dark"] select,
 html[data-theme="dark"] textarea,
 html[data-theme="dark"] .largeInput,
 html[data-theme="dark"] .globalSearchInput,
-html[data-theme="dark"] .completionEdit input,
 html[data-theme="dark"] .treeSubFields input,
 html[data-theme="dark"] .editorGrid input,
 html[data-theme="dark"] .editorGrid select,
@@ -1601,8 +1592,8 @@ html[data-theme="dark"] .highlightedBoardDate{outline-color:#60a5fa}
 .weeklyBoardCard.density-ultra .employeeCell span,.weeklyBoardCard.density-ultra .dayHeader span{font-size:11px}
 .compactTask{padding:8px}
 .ultraCompactTask{padding:6px}
-.ultraCompactTask .tileMeta,.ultraCompactTask .chunkHours,.ultraCompactTask .completionEdit small{font-size:11px}
-.ultraCompactTask .dragHandle{min-height:24px;font-size:11px}
+.ultraCompactTask .tileMeta,.ultraCompactTask .chunkHours{font-size:11px}
+
 
 html[data-theme="dark"] .dashKpis div,
 html[data-theme="dark"] .miniEmployee,
@@ -2097,73 +2088,7 @@ body{
 .top{margin-bottom:0!important;}
 .navStack{margin-bottom:4px!important;}
 
-/* --- Page dropdown nav --- */
-.pageNav{position:relative;display:inline-block;}
-.pageNavTrigger{
-  display:flex!important;
-  align-items:center!important;
-  gap:10px!important;
-  padding:10px 14px!important;
-  border-radius:12px!important;
-  border:1px solid var(--line)!important;
-  background:#fff!important;
-  font-weight:700!important;
-  cursor:pointer!important;
-  box-shadow:var(--panel-shadow)!important;
-  min-width:230px;
-}
-.pageNavCurrentLabel{
-  font-size:10px;
-  text-transform:uppercase;
-  letter-spacing:.05em;
-  color:var(--muted);
-  font-weight:800;
-}
-.pageNavCurrent{font-size:15px;color:var(--ink);flex:1;text-align:left;}
-.pageNavChevron{transition:transform .15s ease;color:var(--muted);font-size:12px;}
-.pageNavChevron.open{transform:rotate(180deg);}
-.pageNavTrigger:hover{border-color:var(--accent)!important;}
-.pageNavMenu{
-  position:absolute;
-  top:calc(100% + 6px);
-  left:0;
-  z-index:40;
-  min-width:280px;
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:14px;
-  box-shadow:0 12px 28px -8px rgba(15,23,42,.25);
-  padding:8px;
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-  max-height:70vh;
-  overflow:auto;
-}
-.pageNavGroup+.pageNavGroup{border-top:1px solid var(--line);margin-top:4px;padding-top:8px;}
-.pageNavGroupLabel{
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:.05em;
-  font-weight:800;
-  color:var(--muted);
-  padding:4px 10px 6px;
-}
-.pageNavItem{
-  display:block;
-  width:100%;
-  text-align:left;
-  border:none;
-  background:transparent;
-  padding:9px 10px;
-  border-radius:9px;
-  font-size:14px;
-  font-weight:600;
-  color:var(--ink);
-  cursor:pointer;
-}
-.pageNavItem:hover{background:var(--accentSoft,#eef2f6);}
-.pageNavItem.active{background:var(--accent);color:#fff;}
+
 
 /* --- Cards & panels: shared rhythm --- */
 .card,.dashPanel{
@@ -2222,22 +2147,7 @@ label{letter-spacing:.02em;}
 html[data-theme="dark"] body{
   background:linear-gradient(180deg,#0d1526 0,#0b1120 260px)!important;
 }
-html[data-theme="dark"] .pageNavTrigger{
-  background:#111827!important;
-  border-color:#334155!important;
-  color:#f1f5f9!important;
-  box-shadow:none!important;
-}
-html[data-theme="dark"] .pageNavCurrent{color:#f1f5f9!important;}
-html[data-theme="dark"] .pageNavMenu{
-  background:#111827!important;
-  border-color:#334155!important;
-  box-shadow:0 12px 28px -8px rgba(0,0,0,.6)!important;
-}
-html[data-theme="dark"] .pageNavGroup+.pageNavGroup{border-color:#334155!important;}
-html[data-theme="dark"] .pageNavItem{color:#e5e7eb!important;}
-html[data-theme="dark"] .pageNavItem:hover{background:#1b2536!important;}
-html[data-theme="dark"] .pageNavItem.active{background:#4b6478!important;color:#fff!important;}
+
 html[data-theme="dark"] .card>h2:first-child,
 html[data-theme="dark"] .card>h3:first-child,
 html[data-theme="dark"] .dashPanel>h2:first-child,
@@ -2255,9 +2165,6 @@ html[data-theme="dark"] .emptyState,html[data-theme="dark"] .noResults,html[data
 
 /* --- Responsive --- */
 @media(max-width:850px){
-  .pageNav{width:100%;}
-  .pageNavTrigger{width:100%;min-width:0;}
-  .pageNavMenu{width:100%;left:0;right:0;}
   .shell{padding:16px 14px 32px!important;}
 }
 
@@ -2289,7 +2196,6 @@ html[data-theme="dark"] .treeItem:hover,html[data-theme="dark"] .buildCard:hover
 }
 @media(max-width:600px){
   .topLeft{flex-direction:column;align-items:flex-start!important;gap:10px!important;}
-  .pageNav{width:100%;}
 }
 
 /* ==========================================================================

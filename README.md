@@ -1,8 +1,21 @@
-# Assembly Scheduler v91
+# Assembly Scheduler
 
-This version saves scheduler data to a Postgres database (via [Neon](https://neon.tech)),
-so it works on serverless hosts like Vercel — no local file storage, no persistent disk
-required.
+Production scheduler for mechanical assembly work: backward scheduling from ship
+dates through Build → Test → Inspect → Ship, per-employee daily capacity, drag-and-drop
+weekly board, and Smart Assign.
+
+Data is stored in Postgres (via [Neon](https://neon.tech)), so it works on serverless
+hosts like Vercel — no local file storage required.
+
+## Pages
+
+- **Today** — KPI strip, one prioritized Needs Attention feed, Today's Crew, Coming Up
+- **Board** — the Weekly Board: per-assembly colors, click-to-highlight with flow lines, drag-and-drop with draft mode, Smart Assign, Live Forecast
+- **Plan** — Planner (capacity/risk/load/shipments/conflicts), Calendar, Timeline, Capacity, read-only Master Schedule
+- **Projects** — project list with health filter and On Hold chip, assemblies, batches, holds
+- **Library** — reusable assembly templates and sub-assembly trees
+- **People** — roster and per-person detail (roles, preferred projects, weekly schedule) plus the Availability calendar
+- **Admin** — settings, database-backed backups and restore
 
 ## Local development
 
@@ -10,9 +23,6 @@ required.
 npm install
 npm run dev
 ```
-
-You'll need a `DATABASE_URL` before the app can read or save data (see below). Everything
-else works the same as before:
 
 ```text
 http://localhost:3000        desktop editor
@@ -30,49 +40,26 @@ ANTHROPIC_API_KEY=sk-ant-...
 SITE_PASSWORD=choose-a-strong-shared-password
 ```
 
-- **DATABASE_URL** — required. Connection string for your Postgres database. The table is
-  created automatically on first use. See "Deploying to Vercel" below for the easiest way
-  to get one.
-- **ANTHROPIC_API_KEY** — required for the 🤖 AI Agent panel. It calls Claude through the
-  server-side `app/api/ai-agent` route so the key never reaches the browser. Without it set,
-  the AI Agent shows a clear setup error instead of failing silently.
+- **DATABASE_URL** — required. Connection string for your Postgres database. Tables are
+  created automatically on first use.
+- **ANTHROPIC_API_KEY** — required for the 🤖 AI Agent panel (server-side proxy; the key
+  never reaches the browser).
 - **SITE_PASSWORD** — recommended once this is reachable from outside your own machine.
-  `middleware.ts` adds a shared-password gate (HTTP Basic Auth) covering every page and API
-  route. If left unset, the app stays open (fine for local-only development). The browser
-  will prompt for a username (any value works, e.g. `scheduler`) and this password.
+  `middleware.ts` adds a shared-password gate (HTTP Basic Auth) covering every page and
+  API route.
 
 ## Deploying to Vercel (GitHub-connected)
 
-1. **Push this project to a GitHub repo.** From this folder:
-   ```bash
-   git init
-   git add .
-   git commit -m "Assembly Scheduler v91"
-   ```
-   Then create a repo on GitHub (via github.com, or `gh repo create` if you have the GitHub
-   CLI) and push to it — GitHub will show you the exact `git remote add` / `git push`
-   commands for your new repo.
+1. Push to GitHub.
+2. Import the repo at [vercel.com/new](https://vercel.com/new) — Next.js is auto-detected.
+3. Add a Postgres database: project → Storage → Neon. This sets `DATABASE_URL`
+   automatically (use the pooled connection string).
+4. Add `ANTHROPIC_API_KEY` and `SITE_PASSWORD` in Project Settings → Environment Variables.
+5. Vercel redeploys automatically on every push to main.
 
-2. **Import the repo in Vercel.** Go to [vercel.com/new](https://vercel.com/new), sign in
-   with GitHub, and import the repo. Vercel auto-detects Next.js — no build config needed.
+## Backups
 
-3. **Add a Postgres database.** In your new Vercel project, go to Storage → Create Database
-   (or Marketplace) → Neon → Postgres. Connecting it to your project automatically sets
-   `DATABASE_URL` or `DATABASE_URL_UNPOOLED` in your project's environment variables — no
-   copy-pasting connection strings required. (Note: `DATABASE_URL_UNPOOLED` is the direct
-   connection; if only that's set, also add `DATABASE_URL` pointing to the pooled connection
-   Neon shows in its dashboard, since serverless functions should use the pooled one.)
-
-4. **Add the other environment variables.** In Project Settings → Environment Variables, add
-   `ANTHROPIC_API_KEY` and `SITE_PASSWORD`.
-
-5. **Deploy.** Vercel redeploys automatically on every push to your main branch from here on.
-
-## What's included
-
-- Weekly Board sticky headers, empty-row collapse, and ultra compact density
-- Today's Priorities on desktop and mobile
-- Desktop mobile QR access and stronger sub-assembly search
-- Dark-mode readability polish across the dashboard, projects, availability, and board
-- 🤖 AI Agent panel for Smart Assign analysis (server-proxied Claude calls)
-- Shared-password gate for public deployments
+Snapshots are stored in the database (`app_backups` table): automatic every ~30 minutes
+while working, manual from Admin → Reports/Backup, most recent 40 kept. Restore always
+creates a safety backup first. Saves are conflict-guarded — a stale browser tab is asked
+to reload rather than being allowed to overwrite newer data.
