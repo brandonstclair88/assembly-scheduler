@@ -9,6 +9,9 @@ import {applySmartAssignSuggestionsToData,previewSmartAssignSuggestions,smartAss
 import {BufferedPercentInput,HealthBadge,ScheduleWarningsPanel,assemblyAccentColor,confirmDialog,phaseBadgeLabel,phaseToneKey,projectAccentColor,rolledCompletion,toast} from '../shared/common';
 
 const boardUndoStack:any[]=[];
+// Called when data is wholesale-replaced (backup restore, import, reset) so stale
+// board snapshots can't partially revert the new data.
+export function clearBoardUndoStack(){boardUndoStack.length=0;}
 export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,boardIntent,onOpenProject}:any){
  const [undoCount,setUndoCount]=useState(boardUndoStack.length);
  function pushUndoSnapshot(){boardUndoStack.push({projectAssemblies:JSON.parse(JSON.stringify(data.projectAssemblies)),holds:JSON.parse(JSON.stringify(data.holds||[]))});while(boardUndoStack.length>5)boardUndoStack.shift();setUndoCount(boardUndoStack.length);}

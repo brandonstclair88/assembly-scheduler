@@ -1,8 +1,9 @@
 'use client';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {APP_VERSION,migrate} from '../../lib/migrate';
-import {backupName,createBackupSnapshot,download,load,loadFromDatabase,validateBackup} from '../../lib/persistence';
+import {backupName,createBackupSnapshot,download,loadFromDatabase,validateBackup} from '../../lib/persistence';
 import {confirmDialog,toast} from '../shared/common';
+import {clearBoardUndoStack} from './WeeklyBoardTab';
 
 export function Admin({data,setData,update,onExport,onImport,onReset}:any){
  const [view,setView]=useState('Settings');
@@ -31,7 +32,7 @@ export function BackupCenter({data,setData}:any){
   try{
    const res=await fetch('/api/backups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({restoreId:b.id})});
    const json=await res.json();
-   if(json?.ok){const fresh=await loadFromDatabase();setData(fresh);await refresh();toast('Backup restored.','good')}
+   if(json?.ok){const fresh=await loadFromDatabase();clearBoardUndoStack();setData(fresh);await refresh();toast('Backup restored.','good')}
    else toast(json?.error||'Restore failed.','bad');
   }finally{setBusy('')}
  }
@@ -40,7 +41,7 @@ export function BackupCenter({data,setData}:any){
  function importAppData(e:any){
   const f=e.target.files?.[0];if(!f)return;
   const r=new FileReader();
-  r.onload=async()=>{try{const parsed=JSON.parse(String(r.result));const problems=validateBackup(parsed);setImportProblems(problems);if(problems.length&&!await confirmDialog('Backup warning:\n'+problems.join('\n')+'\n\nTry importing this as app data anyway?'))return;createBackupSnapshot(data,'before-import');setData(migrate(parsed));createBackupSnapshot(migrate(parsed),'imported');setTimeout(refresh,1200);toast('App data imported.','good')}catch{setImportProblems(['Could not read that file as JSON.']);toast('Could not import that backup file.','bad')}};
+  r.onload=async()=>{try{const parsed=JSON.parse(String(r.result));const problems=validateBackup(parsed);setImportProblems(problems);if(problems.length&&!await confirmDialog('Backup warning:\n'+problems.join('\n')+'\n\nTry importing this as app data anyway?'))return;createBackupSnapshot(data,'before-import');clearBoardUndoStack();setData(migrate(parsed));createBackupSnapshot(migrate(parsed),'imported');setTimeout(refresh,1200);toast('App data imported.','good')}catch{setImportProblems(['Could not read that file as JSON.']);toast('Could not import that backup file.','bad')}};
   r.readAsText(f);
  }
  const latest=backups[0];

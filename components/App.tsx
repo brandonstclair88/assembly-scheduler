@@ -16,6 +16,7 @@ import {Projects} from './tabs/ProjectsTab';
 import {AssemblyLibrary} from './tabs/LibraryTab';
 import {People} from './tabs/PeopleTab';
 import {Plan} from './tabs/PlanTab';
+import {clearBoardUndoStack} from './tabs/WeeklyBoardTab';
 import {Admin} from './tabs/AdminTab';
 
 export default function App(){
@@ -73,8 +74,8 @@ export default function App(){
  const projectHealthSummary=useMemo(()=>summarizeProjectHealth(activeProjectHealth),[activeProjectHealth]);
 
  function update<K extends keyof AppData>(key:K,value:AppData[K]){setData(d=>({...d,[key]:value}))}
- async function reset(){if(await confirmDialog('Reset all local data back to sample data?')){localStorage.removeItem(STORAGE_KEY);setData(defaultData);toast('Data reset to sample data.','info')}}
- function importFile(e:any){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{const parsed=JSON.parse(String(r.result));const problems=validateBackup(parsed);if(problems.length&&!await confirmDialog('Backup warning:\n'+problems.join('\n')+'\n\nTry importing anyway?'))return;setData(migrate(parsed));createBackupSnapshot(migrate(parsed),'imported');toast('Import complete.','good')}catch{toast('Could not import that file.','bad')}};r.readAsText(f)}
+ async function reset(){if(await confirmDialog('Reset all local data back to sample data?')){localStorage.removeItem(STORAGE_KEY);clearBoardUndoStack();setData(defaultData);toast('Data reset to sample data.','info')}}
+ function importFile(e:any){const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{const parsed=JSON.parse(String(r.result));const problems=validateBackup(parsed);if(problems.length&&!await confirmDialog('Backup warning:\n'+problems.join('\n')+'\n\nTry importing anyway?'))return;clearBoardUndoStack();setData(migrate(parsed));createBackupSnapshot(migrate(parsed),'imported');toast('Import complete.','good')}catch{toast('Could not import that file.','bad')}};r.readAsText(f)}
  function openProjectPanel(projectId:string,healthFilter='All'){setProjectPanelIntent({token:Date.now(),projectId,healthFilter});setTab('Projects')}
  function openProjectsFilter(healthFilter:string){setProjectPanelIntent({token:Date.now(),projectId:'',healthFilter});setTab('Projects')}
  function focusWeeklyBoard(projectId:string,date:string){setWeeklyBoardIntent({token:Date.now(),projectId,date});setTab('Weekly Board')}

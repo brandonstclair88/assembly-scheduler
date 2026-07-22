@@ -2,7 +2,6 @@
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {expandChunks,sortChunksByDate} from '../../lib/chunks';
 import {dateOnly,fmtDate,fmtDateTime} from '../../lib/format';
-import {load} from '../../lib/persistence';
 import {healthTone} from '../../lib/projectHealth';
 import {capacityByEmployee,capacityForDate,weeklyCapacity} from '../../lib/scheduler';
 import {HealthBadge,ScheduleWarningsPanel,Table,assemblyAccentColor,rolledCompletion} from '../shared/common';

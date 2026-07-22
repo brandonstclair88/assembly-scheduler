@@ -9,9 +9,15 @@ export function middleware(request: NextRequest) {
   const password = process.env.SITE_PASSWORD;
   if (!password) return NextResponse.next();
 
-  const auth = request.headers.get('authorization');
-  const expected = 'Basic ' + Buffer.from(`scheduler:${password}`).toString('base64');
-  if (auth === expected) return NextResponse.next();
+  // Accept any username; only the password matters.
+  const auth = request.headers.get('authorization') || '';
+  if (auth.startsWith('Basic ')) {
+    try {
+      const decoded = Buffer.from(auth.slice(6), 'base64').toString();
+      const sep = decoded.indexOf(':');
+      if (sep >= 0 && decoded.slice(sep + 1) === password) return NextResponse.next();
+    } catch {}
+  }
 
   return new NextResponse('Authentication required.', {
     status: 401,
