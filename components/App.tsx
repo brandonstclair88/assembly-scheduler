@@ -6,41 +6,16 @@ import {defaultData,STORAGE_KEY} from '../lib/defaultData';
 import {buildSchedule,capacityByEmployee,weeklyCapacity,scheduleHealth,suggestEmployees,capacityForDate,dailyHours} from '../lib/scheduler';
 import {canEmployeeForPhase} from '../lib/employeeRoles';
 import {calculateScheduleWarnings} from '../lib/scheduleWarnings';
-import {expandChunks,sortChunksByDate} from '../lib/chunks';
+import {expandChunks,sortChunksByDate,externalWaitEnd} from '../lib/chunks';
+import {APP_VERSION,migrate} from '../lib/migrate';
+import {splitIds,normalizeSearchQuery,projectSearchText,matchesAssemblySearch,dateOnly,fmtDate,fmtDateTime} from '../lib/format';
+import {clampPercentInput,syncAssemblyPercentStatus,applyAssemblyPatch} from '../lib/mutations';
 import {calculateProjectHealth,healthTone,summarizeProjectHealth,ProjectHealthRecord} from '../lib/projectHealth';
 import {calculateTodayPriorities,TodayPriority} from '../lib/todayPriorities';
 import {smartAssignQualifiedEmployees,previewSmartAssignSuggestions,smartAssignSuggestionMapByAssemblyPhase,employeePrefersProject,employeePrefersPreferredProjects,applySmartAssignSuggestionsToData} from '../lib/smartAssign';
 
-const APP_VERSION=91;
 let remoteSaveQueue:Promise<void>=Promise.resolve();
 const uid=(p:string)=>p+'-'+Math.random().toString(36).slice(2,9);
-function splitIds(s:string){return (s||'').split(/[\n,;\s]+/).map(x=>x.trim()).filter(Boolean)}
-function normalizeSearchQuery(value:any){return String(value||'').toLowerCase().replace(/\s+/g,' ').trim()}
-function assemblySearchText(item:any){return normalizeSearchQuery(`${item?.partNumber||''} ${item?.description||''} ${item?.notes||''} ${item?.type||item?.category||''}`)}
-function projectSearchText(item:any){return normalizeSearchQuery(`${item?.projectId||''} ${item?.name||''} ${item?.customer||''}`)}
-function matchesAssemblySearch(item:any,query:string){const q=normalizeSearchQuery(query);if(!q)return true;const hay=assemblySearchText(item);return q.split(' ').every(token=>hay.includes(token))}
-function dateOnly(d:Date){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function fmtDate(value:any){if(!value)return '';const raw=String(value);const datePart=raw.includes('T')?raw.split('T')[0]:raw;const m=datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return raw;return `${Number(m[2])}/${Number(m[3])}/${m[1]}`}
-function fmtDateTime(value:any){if(!value)return '';const raw=String(value);const [d,t='']=raw.split('T');const hhmm=t.slice(0,5);return hhmm?`${fmtDate(d)} ${hhmm}`:fmtDate(d)}
-function migrate(raw:any):AppData{
-  const d={...defaultData,...raw};
-  if(!d.assemblyTemplates)d.assemblyTemplates=[];
-  if(!d.holidays)d.holidays=[];
-  if(!d.shipmentBatches)d.shipmentBatches=[];
-  if(!d.projectAssemblies)d.projectAssemblies=d.assemblies||defaultData.projectAssemblies;
-  if(!d.assemblyTemplates.length&&d.projectAssemblies?.length){
-    const seen=new Set();
-    d.assemblyTemplates=d.projectAssemblies.filter((a:any)=>{if(seen.has(a.partNumber))return false;seen.add(a.partNumber);return true}).map((a:any)=>({id:uid('tpl'),partNumber:a.partNumber,description:a.description,type:a.type,defaultQty:a.qty||1,hoursEach:a.hoursEach||1,testRequired:a.testRequired||false,testHours:a.testHours||0,inspectionRequired:a.inspectionRequired||false,inspectionHours:a.inspectionHours||0,shippingRequired:a.shippingRequired||false,shippingHours:a.shippingHours||0,defaultDependsOn:a.dependsOn||'',notes:'Created from older project assembly.'}))
-  }
-  delete d.assemblies;
-  d.assemblyTemplates=(d.assemblyTemplates||[]).map((t:any)=>({testRequired:false,testHours:0,inspectionRequired:false,inspectionHours:0,shippingRequired:false,shippingHours:0,testReturnDateTime:'',inspectionAssignedTo:'',shippingAssignedTo:'',inspectionManualStartDate:'',shippingManualStartDate:'',inspectionComplete:false,shippingComplete:false,maxTopPercentWhenSubHeld:80,defaultDependsOn:'',archived:false,...t,type:t.type==='Tool Level Assembly'?'Top Level Assembly':t.type}));
-  // Canonical fields win; legacy pairs (pto, trainedProjectIds, limitAutoAssignToTrainedProjects)
-  // are kept mirrored so old readers/backups keep working.
-  d.employees=(d.employees||[]).map((e:any)=>{const timeOff=e.timeOffDates||e.pto||'';const preferred=e.preferredProjectIds||e.trainedProjectIds||'';const prefer=typeof e.preferPreferredProjects==='boolean'?e.preferPreferredProjects:!!e.limitAutoAssignToTrainedProjects;return {fridayOvertimeDates:'',workDays:'',workHoursByDay:'',...e,canBuild:e.canBuild!==false,canInspect:e.canInspect!==false,canShip:e.canShip!==false,timeOffDates:timeOff,pto:timeOff,preferredProjectIds:preferred,trainedProjectIds:preferred,preferPreferredProjects:prefer,limitAutoAssignToTrainedProjects:prefer};});
-  d.projects=(d.projects||[]).map((p:any)=>({projectType:p.projectType||'New Build',sequencingEnabled:p.sequencingEnabled!==false,...p}));
-  d.projectAssemblies=(d.projectAssemblies||[]).map((a:any)=>({testRequired:false,testHours:0,inspectionRequired:false,inspectionHours:0,shippingRequired:false,shippingHours:0,testReturnDateTime:'',inspectionAssignedTo:'',shippingAssignedTo:'',inspectionManualStartDate:'',shippingManualStartDate:'',inspectionComplete:false,shippingComplete:false,maxTopPercentWhenSubHeld:80,instanceNumber:a.instanceNumber||1,instanceLabel:a.instanceLabel||'#1',shipDate:a.shipDate||a.manualStart||'',lateAllowed:!!a.lateAllowed,manuallyScheduled:!!a.manuallyScheduled,manualStartDate:a.manualStartDate||'',buildGroupId:a.buildGroupId||'',buildGroupLabel:a.buildGroupLabel||'',parentAssemblyId:a.parentAssemblyId||'',locked:!!a.locked,smartAssignProtected:!!a.smartAssignProtected,...a,type:a.type==='Tool Level Assembly'?'Top Level Assembly':a.type,manualStart:undefined}));
-  return {...d,version:APP_VERSION,settings:{...defaultData.settings,...d.settings}};
-}
 function load():AppData{try{const raw=localStorage.getItem(STORAGE_KEY);if(raw)return migrate(JSON.parse(raw));}catch{}return defaultData}
 let remoteUpdatedAt='';
 async function loadFromDatabase():Promise<AppData>{
@@ -139,23 +114,6 @@ function projectCompletion(data:any,projectId:string){
  const rows=(data.projectAssemblies||[]).filter((a:any)=>a.projectId===projectId&&(a.type==='Top Level Assembly'||(a.type==='Sub Assembly'&&!a.parentAssemblyId&&!a.buildGroupId)));
  if(!rows.length)return 0;
  return Math.round(rows.reduce((s:number,a:any)=>s+rolledCompletion(data,a),0)/rows.length)
-}
-function clampPercentInput(value:any){
- const trimmed=String(value??'').trim();
- if(trimmed==='')return null;
- const num=Number(trimmed);
- if(!Number.isFinite(num))return 0;
- return Math.max(0,Math.min(100,num));
-}
-function syncAssemblyPercentStatus(current:any,patch:any){
- if(!('percent' in patch))return patch;
- const nextPercent=clampPercentInput(patch.percent);
- const percentValue=nextPercent===null?0:nextPercent;
- const nextPatch:any={...patch,percent:percentValue};
- if(percentValue>=100)nextPatch.status='Complete';
- else if(percentValue>0&&percentValue<100)nextPatch.status='In Progress';
- else if(percentValue===0&&patch.status==='Complete')nextPatch.status=current?.status==='Complete'?'Not Started':current?.status;
- return nextPatch;
 }
 function batchCompletion(data:any,batchId:string){const tops=(data.projectAssemblies||[]).filter((a:any)=>a.batchId===batchId&&a.type==='Top Level Assembly');if(!tops.length)return 0;return Math.round(tops.reduce((s:number,a:any)=>s+rolledCompletion(data,a),0)/tops.length)}
 const PROJECT_HEALTH_OPTIONS=['All','On Track','At Risk','Late','Missing Assignment','Over Capacity','Waiting on Test','Waiting on Inspection','Ready to Ship'];
@@ -645,21 +603,7 @@ function Projects({data,setData,schedule,warnings,projectHealth,projectHealthByI
  function updateBatch(id:string,patch:any){setData((d:any)=>({...d,shipmentBatches:(d.shipmentBatches||[]).map((b:any)=>b.id===id?{...b,...patch}:b)}))}
  function deleteBatch(id:string){if(!confirm('Delete this batch? Assemblies will be unbatched, not deleted.'))return;setData((d:any)=>({...d,shipmentBatches:(d.shipmentBatches||[]).filter((b:any)=>b.id!==id),projectAssemblies:d.projectAssemblies.map((a:any)=>a.batchId===id?{...a,batchId:''}:a)}))}
  function applyBatchDate(batch:any){setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.map((a:any)=>a.projectId===project.id&&a.batchId===batch.id?{...a,shipDate:batch.shipDate,lateAllowed:!!batch.lateAllowed}:a)}))}
-function changeAsm(id:string,patch:any){setData((d:any)=>{
-  const current=d.projectAssemblies.find((a:any)=>a.id===id);
-  const nextPatch=syncAssemblyPercentStatus(current,patch);
-  let updated=d.projectAssemblies.map((a:any)=>a.id===id?{...a,...nextPatch,instanceLabel:nextPatch.instanceNumber?'#'+nextPatch.instanceNumber:(nextPatch.instanceLabel??a.instanceLabel)}:a);
-  const changed=updated.find((a:any)=>a.id===id);
-  if(changed?.type==='Top Level Assembly' && ('shipDate' in nextPatch || 'lateAllowed' in nextPatch || 'batchId' in nextPatch)){
-    updated=updated.map((a:any)=>a.buildGroupId&&a.buildGroupId===changed.buildGroupId&&a.id!==id?{...a,...(('shipDate' in nextPatch)?{shipDate:nextPatch.shipDate}:{}),...(('lateAllowed' in nextPatch)?{lateAllowed:nextPatch.lateAllowed}: {}),...(('batchId' in nextPatch)?{batchId:nextPatch.batchId}: {})}:a);
-  }
-  const nextAsm=updated.find((a:any)=>a.id===id);
-  let holds=d.holds||[];
-  const wantsHold=nextAsm&&(nextAsm.status==='On Hold'||String(nextAsm.holdReason||'').trim());
-  if(nextAsm&&wantsHold){const existing=holds.find((h:any)=>h.assemblyId===id&&h.status!=='Closed');const reason=nextAsm.holdReason||'On hold';if(existing){holds=holds.map((h:any)=>h.id===existing.id?{...h,projectId:nextAsm.projectId,reason,status:'Open'}:h)}else holds=[...holds,{id:uid('hold'),projectId:nextAsm.projectId,assemblyId:id,reason,owner:'',status:'Open',notes:''}];}
-  else if(current&&(nextPatch.status&&nextPatch.status!=='On Hold')){holds=holds.map((h:any)=>h.assemblyId===id&&h.status!=='Closed'?{...h,status:'Closed'}:h)}
-  return {...d,projectAssemblies:updated,holds};
- })}
+function changeAsm(id:string,patch:any){setData((d:any)=>applyAssemblyPatch(d,id,patch))}
  function deleteGroup(top:any){if(!confirm('Delete this top level assembly and its subs from this project?'))return;setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.filter((a:any)=>a.id!==top.id&&a.parentAssemblyId!==top.id&&a.buildGroupId!==top.buildGroupId),holds:d.holds.filter((h:any)=>!projectAssemblies.some((a:any)=>(a.id===top.id||a.parentAssemblyId===top.id||a.buildGroupId===top.buildGroupId)&&a.id===h.assemblyId))}))}
  function deleteAssembly(id:string){
   const row=projectAssemblies.find((a:any)=>a.id===id);
@@ -1195,23 +1139,7 @@ function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,boardInte
 	   }
 	   return end;
 	 }
- function addShopWaitDays(startDate:string,hours:number){
-   if((Number(hours)||0)<=0)return startDate;
-   let remaining=Number(hours)||0;
-   let d=new Date(startDate+'T00:00:00');
-   d.setDate(d.getDate()+1);
-   let guard=0;
-   let last=dateOnly(d);
-   while(remaining>0&&guard++<240){
-     const ds=dateOnly(d);
-     // Test is an external gate, but use the same Mon-Thu/holiday shop calendar.
-     const isWeekend=[0,5,6].includes(d.getDay());
-     const isHoliday=(data.holidays||[]).some((h:any)=>h.date===ds);
-     if(!isWeekend&&!isHoliday){remaining-=dailyHours(data);last=ds;}
-     d.setDate(d.getDate()+1);
-   }
-   return last;
- }
+ function addShopWaitDays(startDate:string,hours:number){return externalWaitEnd(data,startDate,hours)}
  function latestBuildChunkDate(asmId:string){
    const dates=chunks
      .filter((c:any)=>(c.sourceAssemblyId||String(c.id).split('|')[0])===asmId && (c.phase||'Build')==='Build')
@@ -1315,16 +1243,7 @@ function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,boardInte
 	   }
 	   return {end:last,moved};
 	 }
-	 function scheduleWait(start:string,hours:number){
-	   let remaining=Math.max(0,Number(hours)||0);let cursor=nextDate(start);let last=start;let guard=0;
-	   while(remaining>0.01&&guard++<365){
-	     const d=new Date(cursor+'T00:00:00');const ds=dateOnly(d);
-	     const weekend=[0,5,6].includes(d.getDay());const holiday=(data.holidays||[]).some((h:any)=>h.date===ds);
-	     if(!weekend&&!holiday){remaining-=dailyHours(data);last=ds}
-	     cursor=nextDate(cursor);
-	   }
-	   return last;
-	 }
+	 function scheduleWait(start:string,hours:number){return externalWaitEnd(data,start,hours)}
 	 function releaseAfterBuild(asm:any,buildEnd:string){
 	   const hasTest=!!asm?.testRequired||Number(asm?.testHours||0)>0;
 	   if(!hasTest)return buildEnd;
@@ -1585,14 +1504,9 @@ function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,boardInte
    autoScrollDuringDrag(e);
  }
 	 function updateCompletion(sourceId:string,phase:string,value:any){
-	   if(boardMode==='Live')return;
+   if(boardMode==='Live')return;
    const pct=Math.max(0,Math.min(100,Number(value)||0));
-   setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.map((a:any)=>{
-     if(a.id!==sourceId)return a;
-     if(phase==='Inspection')return {...a,inspectionComplete:pct>=100};
-     if(phase==='Shipping')return {...a,shippingComplete:pct>=100};
-     return {...a,...syncAssemblyPercentStatus(a,{percent:pct})};
-   })}))
+   setData((d:any)=>applyAssemblyPatch(d,sourceId,phase==='Inspection'?{inspectionComplete:pct>=100}:phase==='Shipping'?{shippingComplete:pct>=100}:{percent:pct}));
  }
  function sourceAssembly(sourceId:string){return (data.projectAssemblies||[]).find((a:any)=>a.id===sourceId)}
  function phasePercentFor(sourceId:string,phase:string,fallback:any){

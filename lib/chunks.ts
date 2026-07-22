@@ -1,5 +1,5 @@
 import {AppData,ScheduledItem} from './types';
-import {capacityForDate} from './scheduler';
+import {capacityForDate,dailyHours} from './scheduler';
 
 // Single source of truth for expanding scheduled items (one row per assembly-phase)
 // into per-employee, per-day work chunks. Previously this algorithm was duplicated
@@ -49,4 +49,21 @@ export function expandChunks(data:AppData,schedule:ScheduledItem[],opts:ExpandOp
 
 export function sortChunksByDate(chunks:any[]){
   return chunks.sort((a:any,b:any)=>String(a.chunkDate).localeCompare(String(b.chunkDate))||String(a.projectName||'').localeCompare(String(b.projectName||'')));
+}
+
+// External wait (e.g. test gate): walks shop-open days (Mon-Thu + holidays excluded)
+// consuming one settings-defined workday of hours per day. Shared by the Weekly
+// Board's test-gate math so the walk can't drift from the scheduler's calendar.
+export function externalWaitEnd(data:AppData,start:string,hours:number){
+  let remaining=Math.max(0,Number(hours)||0);
+  if(remaining<=0)return start;
+  let cursor=nextDate(start);let last=start;let guard=0;
+  while(remaining>0.01&&guard++<365){
+    const d=new Date(cursor+'T00:00:00');
+    const weekend=[0,5,6].includes(d.getDay());
+    const holiday=(data.holidays||[]).some((h:any)=>h.date===cursor);
+    if(!weekend&&!holiday){remaining-=dailyHours(data);last=cursor;}
+    cursor=nextDate(cursor);
+  }
+  return last;
 }

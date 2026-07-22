@@ -2,6 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { AppData } from '../lib/types';
+import { APP_VERSION, migrate } from '../lib/migrate';
+import { splitIds, dateOnly, fmtDate, fmtDateTime } from '../lib/format';
 import { defaultData, STORAGE_KEY } from '../lib/defaultData';
 import { buildSchedule, capacityForDate, dailyHours, scheduleHealth } from '../lib/scheduler';
 import { expandChunks, sortChunksByDate } from '../lib/chunks';
@@ -10,35 +12,7 @@ import { calculateProjectHealth, healthTone } from '../lib/projectHealth';
 import { calculateTodayPriorities } from '../lib/todayPriorities';
 import { previewSmartAssignSuggestions, smartAssignSuggestionMapByAssemblyPhase } from '../lib/smartAssign';
 
-const APP_VERSION = 91;
 type MobileTab = 'today' | 'week' | 'projects' | 'detail' | 'people';
-
-const uid = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
-
-function splitIds(value: string) {
-  return (value || '').split(/[\n,;\s]+/).map(x => x.trim()).filter(Boolean);
-}
-
-function dateOnly(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-
-function fmtDate(value: any) {
-  if (!value) return '';
-  const raw = String(value);
-  const datePart = raw.includes('T') ? raw.split('T')[0] : raw;
-  const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!match) return raw;
-  return `${Number(match[2])}/${Number(match[3])}/${match[1]}`;
-}
-
-function fmtDateTime(value: any) {
-  if (!value) return '';
-  const raw = String(value);
-  const [datePart, timePart = ''] = raw.split('T');
-  const hhmm = timePart.slice(0, 5);
-  return hhmm ? `${fmtDate(datePart)} ${hhmm}` : fmtDate(datePart);
-}
 
 function nextDate(value: string) {
   const date = new Date(`${value}T00:00:00`);
@@ -79,110 +53,6 @@ function projectCompletion(data: AppData, projectId: string) {
   if (!rows.length) return 0;
   const total = rows.reduce((sum, row) => sum + Number(row.percent || 0), 0);
   return Math.round(total / rows.length);
-}
-
-function migrate(raw: any): AppData {
-  const data = { ...defaultData, ...raw };
-  if (!data.assemblyTemplates) data.assemblyTemplates = [];
-  if (!data.holidays) data.holidays = [];
-  if (!data.shipmentBatches) data.shipmentBatches = [];
-  if (!data.projectAssemblies) data.projectAssemblies = data.assemblies || defaultData.projectAssemblies;
-  if (!data.assemblyTemplates.length && data.projectAssemblies?.length) {
-    const seen = new Set();
-    data.assemblyTemplates = data.projectAssemblies
-      .filter((assembly: any) => {
-        if (seen.has(assembly.partNumber)) return false;
-        seen.add(assembly.partNumber);
-        return true;
-      })
-      .map((assembly: any) => ({
-        id: uid('tpl'),
-        partNumber: assembly.partNumber,
-        description: assembly.description,
-        type: assembly.type,
-        defaultQty: assembly.qty || 1,
-        hoursEach: assembly.hoursEach || 1,
-        testRequired: assembly.testRequired || false,
-        testHours: assembly.testHours || 0,
-        inspectionRequired: assembly.inspectionRequired || false,
-        inspectionHours: assembly.inspectionHours || 0,
-        shippingRequired: assembly.shippingRequired || false,
-        shippingHours: assembly.shippingHours || 0,
-        defaultDependsOn: assembly.dependsOn || '',
-        notes: 'Created from older project assembly.',
-      }));
-  }
-  delete data.assemblies;
-  data.assemblyTemplates = (data.assemblyTemplates || []).map((template: any) => ({
-    testRequired: false,
-    testHours: 0,
-    inspectionRequired: false,
-    inspectionHours: 0,
-    shippingRequired: false,
-    shippingHours: 0,
-    testReturnDateTime: '',
-    inspectionAssignedTo: '',
-    shippingAssignedTo: '',
-    inspectionManualStartDate: '',
-    shippingManualStartDate: '',
-    inspectionComplete: false,
-    shippingComplete: false,
-    maxTopPercentWhenSubHeld: 80,
-    defaultDependsOn: '',
-    archived: false,
-    ...template,
-    type: template.type === 'Tool Level Assembly' ? 'Top Level Assembly' : template.type,
-  }));
-  data.employees = (data.employees || []).map((employee: any) => ({
-    timeOffDates: employee.timeOffDates || employee.pto || '',
-    fridayOvertimeDates: employee.fridayOvertimeDates || '',
-    workDays: employee.workDays || '',
-    workHoursByDay: employee.workHoursByDay || '',
-    canBuild: employee.canBuild !== false,
-    canInspect: employee.canInspect !== false,
-    canShip: employee.canShip !== false,
-    trainedProjectIds: employee.trainedProjectIds || '',
-    limitAutoAssignToTrainedProjects: !!employee.limitAutoAssignToTrainedProjects,
-    preferredProjectIds: employee.preferredProjectIds || employee.trainedProjectIds || '',
-    preferPreferredProjects: typeof employee.preferPreferredProjects === 'boolean' ? employee.preferPreferredProjects : !!employee.limitAutoAssignToTrainedProjects,
-    ...employee,
-  }));
-  data.projects = (data.projects || []).map((project: any) => ({
-    projectType: project.projectType || 'New Build',
-    sequencingEnabled: project.sequencingEnabled !== false,
-    ...project,
-  }));
-  data.projectAssemblies = (data.projectAssemblies || []).map((assembly: any) => ({
-    testRequired: false,
-    testHours: 0,
-    inspectionRequired: false,
-    inspectionHours: 0,
-    shippingRequired: false,
-    shippingHours: 0,
-    testReturnDateTime: '',
-    inspectionAssignedTo: '',
-    shippingAssignedTo: '',
-    inspectionManualStartDate: '',
-    shippingManualStartDate: '',
-    inspectionComplete: false,
-    shippingComplete: false,
-    maxTopPercentWhenSubHeld: 80,
-    instanceNumber: assembly.instanceNumber || 1,
-    instanceLabel: assembly.instanceLabel || '#1',
-    shipDate: assembly.shipDate || assembly.manualStart || '',
-    lateAllowed: !!assembly.lateAllowed,
-    manuallyScheduled: !!assembly.manuallyScheduled,
-    manualStartDate: assembly.manualStartDate || '',
-    buildGroupId: assembly.buildGroupId || '',
-    buildGroupLabel: assembly.buildGroupLabel || '',
-    parentAssemblyId: assembly.parentAssemblyId || '',
-    locked: !!assembly.locked,
-    smartAssignProtected: !!assembly.smartAssignProtected,
-    ...assembly,
-    type: assembly.type === 'Tool Level Assembly' ? 'Top Level Assembly' : assembly.type,
-    manualStart: undefined,
-  }));
-  return { ...data, version: APP_VERSION, settings: { ...defaultData.settings, ...data.settings } };
 }
 
 function loadLocal() {
