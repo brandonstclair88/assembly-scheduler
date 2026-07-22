@@ -2459,3 +2459,9 @@ html[data-theme="dark"] .autoAssignRowMain:hover{background:#172033!important;}
   .topSearch{max-width:none;}
   .topButtons{flex-wrap:wrap;}
 }
+
+/* Save state indicator (debounced database saves) */
+.saveIndicator{font-size:12px;color:#64748b;align-self:center;margin-right:6px;white-space:nowrap}
+.saveIndicator.error{color:#dc2626;font-weight:700}
+[data-theme="dark"] .saveIndicator{color:#94a3b8}
+[data-theme="dark"] .saveIndicator.error{color:#f87171}

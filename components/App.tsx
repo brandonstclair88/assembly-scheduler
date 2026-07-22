@@ -47,8 +47,10 @@ async function loadFromDatabase():Promise<AppData>{
   }catch{}
   return load();
 }
-function save(d:AppData){
+function saveLocal(d:AppData){
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}catch{}
+}
+function saveRemote(d:AppData){
   remoteSaveQueue=remoteSaveQueue.catch(()=>undefined).then(async()=>{
     const res=await fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
     if(!res.ok){
@@ -206,6 +208,7 @@ export default function App(){
  const [globalSearch,setGlobalSearch]=useState('');
  const [darkMode,setDarkMode]=useState(false);
  const [saveError,setSaveError]=useState('');
+ const [saveState,setSaveState]=useState<'idle'|'saving'|'saved'|'error'>('idle');
  const [projectPanelIntent,setProjectPanelIntent]=useState<any>(null);
  const [weeklyBoardIntent,setWeeklyBoardIntent]=useState<any>(null);
  const [showMobileAccess,setShowMobileAccess]=useState(false);
@@ -225,13 +228,24 @@ export default function App(){
  useEffect(()=>{
   if(typeof window!=='undefined'&&loaded){
    const versionedData={...data,version:APP_VERSION};
-   save(versionedData).then(()=>setSaveError('')).catch(err=>{
-    console.error('Scheduler database save failed:',err);
-    setSaveError(err?.message||'Database save failed. Browser cache was updated, but the SQLite file may be out of date.');
-   });
-   maybeAutoBackup(versionedData);
+   saveLocal(versionedData);
+   setSaveState('saving');
+   const timer=setTimeout(()=>{
+    saveRemote(versionedData).then(()=>{setSaveError('');setSaveState('saved')}).catch(err=>{
+     console.error('Scheduler database save failed:',err);
+     setSaveState('error');
+     setSaveError(err?.message||'Database save failed. Browser cache was updated, but the shared database may be out of date.');
+    });
+    maybeAutoBackup(versionedData);
+   },1200);
+   return()=>clearTimeout(timer);
   }
  },[data,loaded]);
+ useEffect(()=>{
+  function onBeforeUnload(e:BeforeUnloadEvent){if(saveState==='saving'){e.preventDefault();e.returnValue='';}}
+  window.addEventListener('beforeunload',onBeforeUnload);
+  return()=>window.removeEventListener('beforeunload',onBeforeUnload);
+ },[saveState]);
 
  const schedule=useMemo(()=>buildSchedule(data),[data]);
  const health=useMemo(()=>scheduleHealth(data),[data]);
@@ -266,7 +280,7 @@ export default function App(){
  }
  const primaryNav=[{tab:'Dashboard',label:'Dashboard'},{tab:'Weekly Board',label:'Weekly Board'},{tab:'Monthly Calendar',label:'Monthly Calendar'},{tab:'Projects',label:'Projects'},{tab:'Assembly Library',label:'Assembly Library'},{tab:'Employees',label:'Employees'},{tab:'Availability',label:'Availability'},{tab:'Backups',label:'Reports / Backup'},{tab:'Settings',label:'Settings'}];
  const secondaryNav=[{tab:'Planner',label:'Planner'},{tab:'Master Schedule',label:'Master Schedule'},{tab:'Timeline',label:'Timeline'},{tab:'Holds',label:'Holds'},{tab:'Capacity',label:'Capacity'}];
- return <main className="shell"><div className="top"><div className="topLeft"><div className="brand" style={{display:'flex',alignItems:'center',gap:14}}><img src="/logo.png" alt="RPM/PSI" style={{height:46,width:'auto'}} onError={e=>{(e.target as HTMLImageElement).style.display='none'}}/><h1>Production Scheduler</h1></div><PageNavDropdown tab={tab} setTab={setTab} primaryNav={primaryNav} secondaryNav={secondaryNav}/></div><div className="topRight"><div className="topSearch"><input className="globalSearchInput" value={globalSearch} onChange={e=>setGlobalSearch(e.target.value)} placeholder="Search project ID, P/N, assembly, employee..."/></div><div className="topButtons"><button className="btn" onClick={()=>setShowMobileAccess(true)}>Open Mobile Viewer</button><button className="btn" onClick={()=>setShowAIAgent(v=>!v)} style={showAIAgent?{background:'#2563eb',color:'#fff'}:{}}>{showAIAgent?'Close AI Agent':'🤖 AI Agent'}</button><button className="btn" onClick={()=>setDarkMode(v=>!v)}>{darkMode?'Light Mode':'Dark Mode'}</button></div></div></div>{saveError&&<div className="backupWarning"><b>Database save warning:</b> {saveError}</div>}{showMobileAccess&&<MobileAccessPanel onClose={()=>setShowMobileAccess(false)}/>} {globalSearch.trim()&&<GlobalSearchPanel data={data} query={globalSearch} setTab={setTab} clear={()=>setGlobalSearch('')}/>}{tab==='Dashboard'&&<Dashboard data={data} schedule={schedule} health={health} warnings={warnings} projectHealth={activeProjectHealth} projectHealthSummary={projectHealthSummary} onProjectFilter={openProjectsFilter} onWarningAction={handleDashboardWarningAction} onPriorityAction={handlePriorityAction}/>} {tab==='Planner'&&<Planner data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealth={projectHealth} setTab={setTab}/>} {tab==='Projects'&&<Projects data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealth={projectHealth} projectHealthById={projectHealthById} panelIntent={projectPanelIntent} onFocusBoard={focusWeeklyBoard}/>} {tab==='Assembly Library'&&<AssemblyLibrary data={data} setData={setData}/>} {tab==='Master Schedule'&&<Schedule data={data} setData={setData} schedule={schedule}/>} {tab==='Weekly Board'&&<WeeklyBoard data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealthById={projectHealthById} boardIntent={weeklyBoardIntent} onOpenProject={openProjectPanel}/>} {tab==='Monthly Calendar'&&<MonthlyCalendar data={data} schedule={schedule}/>} {tab==='Timeline'&&<GanttTimeline data={data} schedule={schedule}/>} {tab==='Employees'&&<Employees data={data} setData={setData}/>} {tab==='Availability'&&<Availability data={data} setData={setData}/>} {tab==='Holds'&&<Holds data={data} setData={setData}/>} {tab==='Capacity'&&<Capacity data={data}/>} {tab==='Backups'&&<BackupCenter data={data} setData={setData}/>} {tab==='Settings'&&<Settings data={data} update={update} onExport={()=>download(backupName('manual'),JSON.stringify({...data,version:APP_VERSION},null,2))} onImport={importFile} onReset={reset}/>}{showAIAgent&&<AIAgent data={data} schedule={schedule} onClose={()=>setShowAIAgent(false)}/>}</main>
+ return <main className="shell"><div className="top"><div className="topLeft"><div className="brand" style={{display:'flex',alignItems:'center',gap:14}}><img src="/logo.png" alt="RPM/PSI" style={{height:46,width:'auto'}} onError={e=>{(e.target as HTMLImageElement).style.display='none'}}/><h1>Production Scheduler</h1></div><PageNavDropdown tab={tab} setTab={setTab} primaryNav={primaryNav} secondaryNav={secondaryNav}/></div><div className="topRight"><div className="topSearch"><input className="globalSearchInput" value={globalSearch} onChange={e=>setGlobalSearch(e.target.value)} placeholder="Search project ID, P/N, assembly, employee..."/></div><div className="topButtons"><span className={"saveIndicator "+saveState}>{saveState==='saving'?'Saving…':saveState==='error'?'Save failed':saveState==='saved'?'Saved':''}</span><button className="btn" onClick={()=>setShowMobileAccess(true)}>Open Mobile Viewer</button><button className="btn" onClick={()=>setShowAIAgent(v=>!v)} style={showAIAgent?{background:'#2563eb',color:'#fff'}:{}}>{showAIAgent?'Close AI Agent':'🤖 AI Agent'}</button><button className="btn" onClick={()=>setDarkMode(v=>!v)}>{darkMode?'Light Mode':'Dark Mode'}</button></div></div></div>{saveError&&<div className="backupWarning"><b>Database save warning:</b> {saveError}</div>}{showMobileAccess&&<MobileAccessPanel onClose={()=>setShowMobileAccess(false)}/>} {globalSearch.trim()&&<GlobalSearchPanel data={data} query={globalSearch} setTab={setTab} clear={()=>setGlobalSearch('')}/>}{tab==='Dashboard'&&<Dashboard data={data} schedule={schedule} health={health} warnings={warnings} projectHealth={activeProjectHealth} projectHealthSummary={projectHealthSummary} onProjectFilter={openProjectsFilter} onWarningAction={handleDashboardWarningAction} onPriorityAction={handlePriorityAction}/>} {tab==='Planner'&&<Planner data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealth={projectHealth} setTab={setTab}/>} {tab==='Projects'&&<Projects data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealth={projectHealth} projectHealthById={projectHealthById} panelIntent={projectPanelIntent} onFocusBoard={focusWeeklyBoard}/>} {tab==='Assembly Library'&&<AssemblyLibrary data={data} setData={setData}/>} {tab==='Master Schedule'&&<Schedule data={data} setData={setData} schedule={schedule}/>} {tab==='Weekly Board'&&<WeeklyBoard data={data} setData={setData} schedule={schedule} warnings={warnings} projectHealthById={projectHealthById} boardIntent={weeklyBoardIntent} onOpenProject={openProjectPanel}/>} {tab==='Monthly Calendar'&&<MonthlyCalendar data={data} schedule={schedule}/>} {tab==='Timeline'&&<GanttTimeline data={data} schedule={schedule}/>} {tab==='Employees'&&<Employees data={data} setData={setData}/>} {tab==='Availability'&&<Availability data={data} setData={setData}/>} {tab==='Holds'&&<Holds data={data} setData={setData}/>} {tab==='Capacity'&&<Capacity data={data}/>} {tab==='Backups'&&<BackupCenter data={data} setData={setData}/>} {tab==='Settings'&&<Settings data={data} update={update} onExport={()=>download(backupName('manual'),JSON.stringify({...data,version:APP_VERSION},null,2))} onImport={importFile} onReset={reset}/>}{showAIAgent&&<AIAgent data={data} schedule={schedule} onClose={()=>setShowAIAgent(false)}/>}</main>
 }
 function MobileAccessPanel({onClose}:any){
  const [mobileUrl,setMobileUrl]=useState('');
@@ -599,7 +613,6 @@ function Dashboard({data,schedule,health,warnings,projectHealth,projectHealthSum
       </div>
  </div>}
 
-function K({title,v}:any){return <div className="card span3"><div className="muted">{title}</div><div className="kpi">{v}</div></div>}
 
 function Projects({data,setData,schedule,warnings,projectHealth,projectHealthById,panelIntent,onFocusBoard}:any){
  const [selected,setSelected]=useState(data.projects[0]?.id||'');
@@ -881,40 +894,6 @@ function changeAsm(id:string,patch:any){setData((d:any)=>{
    </div>}
  </div>
 }
-function ProjectAssemblyTable({rows,data,batches,onChange,onDelete}:any){
- const groups:any[]=[];const seen=new Set<string>();
- function hasHeldSubs(top:any){return rows.some((s:any)=>s.type==='Sub Assembly'&&((s.buildGroupId&&s.buildGroupId===(top.buildGroupId||top.id))||s.parentAssemblyId===top.id)&&(s.status==='On Hold'||String(s.holdReason||'').trim()))}
- function completionCap(top:any){return hasHeldSubs(top)?Number(top.maxTopPercentWhenSubHeld||80):100}
- function safeChange(r:any,patch:any){if('percent' in patch&&r.type==='Top Level Assembly'){patch={...patch,percent:Math.min(Number(patch.percent)||0,completionCap(r))}}onChange(r.id,patch)}
- const loose:any[]=[];
- rows.forEach((r:any)=>{if(r.type==='Top Level Assembly'){const gid=r.buildGroupId||r.id;if(!seen.has(gid)){seen.add(gid);groups.push({id:gid,label:r.buildGroupLabel||`${r.partNumber||'Top Level'} ${r.instanceLabel||''}`,top:r,subs:rows.filter((s:any)=>s.type==='Sub Assembly'&&((s.buildGroupId&&s.buildGroupId===gid)||s.parentAssemblyId===r.id))})}}else if(!r.buildGroupId&&!r.parentAssemblyId){loose.push(r)}});
- function sequenceOptions(r:any){
-  return rows.filter((x:any)=>x.id!==r.id && x.type===r.type).map((x:any)=>({id:x.id,label:`${x.buildGroupLabel?x.buildGroupLabel+' — ':''}${x.partNumber} ${x.instanceLabel||''} — ${x.description||''}`}));
- }
- function standaloneSub(r:any){return r.type==='Sub Assembly'&&!r.parentAssemblyId&&!r.buildGroupId}
- const renderRow=(r:any,indent=false)=>{
-  const looseSub=standaloneSub(r);
-  return <tr key={r.id} className={indent?'subAssemblyRow':''}><td>{indent?<span className="indent">↳</span>:null}<input value={r.partNumber||''} onChange={e=>safeChange(r,{partNumber:e.target.value})}/></td><td><input className="tiny" type="number" value={r.instanceNumber||1} onChange={e=>safeChange(r,{instanceNumber:Number(e.target.value),instanceLabel:'#'+Number(e.target.value)})}/></td><td><input value={r.description||''} onChange={e=>safeChange(r,{description:e.target.value})}/></td><td><select value={r.type} onChange={e=>safeChange(r,{type:e.target.value,dependsOn:''})}><option>Top Level Assembly</option><option>Sub Assembly</option></select></td><td><input className="tiny" type="number" value={r.qty||0} onChange={e=>safeChange(r,{qty:Number(e.target.value)})}/></td><td><input className="tiny" type="number" value={r.hoursEach||0} onChange={e=>safeChange(r,{hoursEach:Number(e.target.value)})}/></td><td><input type="checkbox" checked={!!r.testRequired} onChange={e=>safeChange(r,{testRequired:e.target.checked})}/><input className="tiny" type="number" value={r.testHours||0} onChange={e=>safeChange(r,{testHours:Number(e.target.value)})}/></td><td><input type="checkbox" checked={!!r.inspectionRequired} onChange={e=>safeChange(r,{inspectionRequired:e.target.checked})}/><input className="tiny" type="number" value={r.inspectionHours||0} onChange={e=>safeChange(r,{inspectionHours:Number(e.target.value)})}/></td><td><input type="checkbox" checked={!!r.shippingRequired} onChange={e=>safeChange(r,{shippingRequired:e.target.checked})}/><input className="tiny" type="number" value={r.shippingHours||0} onChange={e=>safeChange(r,{shippingHours:Number(e.target.value)})}/></td><td><select multiple value={splitIds(r.dependsOn)} onChange={e=>safeChange(r,{dependsOn:Array.from(e.target.selectedOptions).map((o:any)=>o.value).join(',')})}>{sequenceOptions(r).map((x:any)=><option key={x.id} value={x.id}>{x.label}</option>)}</select><div className="capNote">{r.type==='Top Level Assembly'?'Top levels can be sequenced after other top levels.':'Subs can be sequenced after other subs.'}</div></td><td><EmployeePicker data={data} value={r.assignedTo||''} onChange={(v:any)=>safeChange(r,{assignedTo:v})} row={r}/></td><td>{r.type==='Top Level Assembly'?<BatchPicker r={r} batches={batches||[]} onChange={safeChange}/>:<span className="muted">{looseSub?'Standalone / no batch':(batches?.find((b:any)=>b.id===r.batchId)?.name||'Uses top level')}</span>}</td><td>{r.type==='Top Level Assembly'||looseSub?<StableDateInput type="date" value={r.shipDate||''} onCommit={(value:any)=>safeChange(r,{shipDate:value})}/>:<span className="muted">{r.shipDate||'Uses top level'}</span>}</td><td><input type="checkbox" checked={!!r.lateAllowed} onChange={e=>safeChange(r,{lateAllowed:e.target.checked})}/></td><td><input type="checkbox" checked={!!r.overrideDependencies} onChange={e=>safeChange(r,{overrideDependencies:e.target.checked})}/></td><td><select value={r.status} onChange={e=>safeChange(r,{status:e.target.value,holdReason:e.target.value==='On Hold'?(r.holdReason||'On hold'):r.holdReason})}><option>Not Started</option><option>In Progress</option><option>Complete</option><option>On Hold</option></select></td><td><BufferedPercentInput className="tiny" max={r.type==='Top Level Assembly'?completionCap(r):100} value={r.type==='Top Level Assembly'?Math.min(r.percent||0,completionCap(r)):(r.percent||0)} onCommit={(value:any)=>safeChange(r,{percent:value})}/>{r.type==='Top Level Assembly'&&hasHeldSubs(r)&&<div className="capNote">capped at {completionCap(r)}%</div>}</td><td>{r.type==='Top Level Assembly'?<input className="tiny" type="number" value={r.maxTopPercentWhenSubHeld||80} onChange={e=>safeChange(r,{maxTopPercentWhenSubHeld:Number(e.target.value)})}/>:<span className="muted">—</span>}</td><td><HoldReasonInput row={r} onCommit={(patch:any)=>safeChange(r,patch)}/></td><td className="small">{r.id}</td><td><button className="btn danger" onClick={()=>onDelete(r.id)}>Delete</button></td></tr>;
- }
- return <div className="tablewrap"><table><thead><tr>{['Part #','#','Description','Type','Qty','Build Hrs Ea','Test','Inspect','Ship','Sequence After','Employees','Batch','Assembly Ship By','Late Allowed','Ignore Sequence','Status','%','Top % If Sub Held','Hold Reason','ID',''].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.length===0&&<tr><td colSpan={21} className="muted">No assemblies on this project yet. Add one from the library above.</td></tr>}{groups.map(g=><React.Fragment key={g.id}><tr className="groupHeader"><td colSpan={21}><b>{g.label}</b><span className="muted"> — top level plus {g.subs.length} sub assembly{g.subs.length===1?'':'ies'}</span></td></tr>{renderRow(g.top,false)}{g.subs.map((s:any)=>renderRow(s,true))}</React.Fragment>)}{loose.length>0&&<tr className="groupHeader"><td colSpan={21}><b>Ungrouped Sub Assemblies</b><span className="muted"> — standalone subs added directly to this project</span></td></tr>}{loose.map((r:any)=>renderRow(r,true))}</tbody></table></div>}
-
-function BatchPicker({r,batches,onChange}:any){
- function setBatch(batchId:string){
-  const b=batches.find((x:any)=>x.id===batchId);
-  if(!batchId){onChange(r,{batchId:''});return;}
-  onChange(r,{batchId,shipDate:b?.shipDate||r.shipDate,lateAllowed:!!b?.lateAllowed});
- }
- return <div className="batchPicker"><select value={r.batchId||''} onChange={e=>setBatch(e.target.value)}><option value="">Unbatched / independent</option>{batches.map((b:any)=><option key={b.id} value={b.id}>{b.name} — {b.shipDate||'no date'}</option>)}</select>{r.batchId&&<button className="mini" onClick={()=>setBatch('')}>Unbatch</button>}</div>
-}
-function LibraryItemRow({r,subs,changeById,del,archive,activeUsage}:any){
- function subPicker(parent:any){return <select multiple value={splitIds(parent.defaultDependsOn)} onChange={e=>changeById(parent.id,'defaultDependsOn',Array.from(e.target.selectedOptions).map((o:any)=>o.value).join(','))}>{subs.map((x:any)=><option key={x.id} value={x.id}>{x.partNumber} — {x.description}</option>)}</select>}
- const usedCount=activeUsage?activeUsage(r.id).length:0;
- return <tr className={r.archived?'archivedRow':''}><td><input value={r.partNumber} onChange={e=>changeById(r.id,'partNumber',e.target.value)}/></td><td><input value={r.description} onChange={e=>changeById(r.id,'description',e.target.value)}/></td><td><select value={r.type} onChange={e=>changeById(r.id,'type',e.target.value)}><option>Top Level Assembly</option><option>Sub Assembly</option></select></td><td><input className="tiny" type="number" value={r.defaultQty||1} onChange={e=>changeById(r.id,'defaultQty',Number(e.target.value))}/></td><td><input className="tiny" type="number" value={r.hoursEach||0} onChange={e=>changeById(r.id,'hoursEach',Number(e.target.value))}/></td><td><input type="checkbox" checked={!!r.testRequired} onChange={e=>changeById(r.id,'testRequired',e.target.checked)}/><input className="tiny" type="number" value={r.testHours||0} onChange={e=>changeById(r.id,'testHours',Number(e.target.value))}/></td><td><input type="checkbox" checked={!!r.inspectionRequired} onChange={e=>changeById(r.id,'inspectionRequired',e.target.checked)}/><input className="tiny" type="number" value={r.inspectionHours||0} onChange={e=>changeById(r.id,'inspectionHours',Number(e.target.value))}/></td><td><input type="checkbox" checked={!!r.shippingRequired} onChange={e=>changeById(r.id,'shippingRequired',e.target.checked)}/><input className="tiny" type="number" value={r.shippingHours||0} onChange={e=>changeById(r.id,'shippingHours',Number(e.target.value))}/></td><td>{r.type==='Top Level Assembly'?subPicker(r):<span className="muted">Assigned from a top level assembly</span>}</td><td>{r.type==='Top Level Assembly'?<input className="tiny" type="number" value={r.maxTopPercentWhenSubHeld||80} onChange={e=>changeById(r.id,'maxTopPercentWhenSubHeld',Number(e.target.value))}/>:<span className="muted">—</span>}</td><td><span className={r.archived?'pill warn':'pill'}>{r.archived?'Archived':'Active'}</span></td><td><input value={r.notes||''} onChange={e=>changeById(r.id,'notes',e.target.value)}/></td><td className="small">{r.id}{usedCount>0&&<div className="muted">Used on {usedCount} active item{usedCount===1?'':'s'}</div>}</td><td><button className="btn" onClick={()=>archive(r.id)}>{r.archived?'Unarchive':'Archive'}</button><button className="btn danger" onClick={()=>del(r.id)}>Delete</button></td></tr>
-}
-
-
-
-
 function AssemblyLibrary({data,setData}:any){
  const blank=(type='Sub Assembly')=>({id:uid('tpl'),partNumber:'',description:'',type,defaultQty:1,hoursEach:1,testRequired:false,testHours:0,inspectionRequired:false,inspectionHours:0,shippingRequired:false,shippingHours:0,testReturnDateTime:'',inspectionAssignedTo:'',shippingAssignedTo:'',inspectionManualStartDate:'',shippingManualStartDate:'',inspectionComplete:false,shippingComplete:false,maxTopPercentWhenSubHeld:80,defaultDependsOn:'',notes:'',archived:false});
  const rows=data.assemblyTemplates||[];
@@ -1021,8 +1000,6 @@ function Holds({data,setData}:any){
  const rows=(data.holds||[]).filter((h:any)=>h.status!=='Closed');
  return <div className="card span12"><h2>Holds</h2><p className="muted">Put an assembly on hold from the Project tab by setting its status to On Hold or entering a hold reason. Open holds appear here automatically.</p><div className="tablewrap"><table><thead><tr>{['Project','Assembly','Reason','Owner','Status','Notes','Actions'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.length===0&&<tr><td colSpan={7} className="muted">No open holds.</td></tr>}{rows.map((h:any)=><tr key={h.id}><td>{projectName(h.projectId)}</td><td>{asmName(h.assemblyId)}</td><td><input value={h.reason||''} onChange={e=>updateHold(h.id,{reason:e.target.value})}/></td><td><input value={h.owner||''} onChange={e=>updateHold(h.id,{owner:e.target.value})}/></td><td><select value={h.status||'Open'} onChange={e=>updateHold(h.id,{status:e.target.value})}><option>Open</option><option>Waiting on Parts</option><option>Waiting on Engineering</option><option>Waiting on Customer</option><option>Closed</option></select></td><td><input value={h.notes||''} onChange={e=>updateHold(h.id,{notes:e.target.value})}/></td><td><button className="btn" onClick={()=>closeHold(h)}>Clear Hold</button></td></tr>)}</tbody></table></div></div>
 } 
-function Crud({title,rows,empty,setRows,fields}:any){return <div className="card span12"><h2>{title}</h2><CrudInner rows={rows} empty={empty} setRows={setRows} fields={fields}/></div>}
-function CrudInner({rows,empty,setRows,fields}:any){const [form,setForm]=useState(empty);function add(){setRows([...rows,form]);setForm({...empty,id:uid(empty.id.split('-')[0]||'row')})}function changeRow(i:number,k:string,v:any){const copy=[...rows];copy[i]={...copy[i],[k]:v};setRows(copy)}function input(value:any,onChange:any,f:any){if(f[2]==='checkbox')return <input type="checkbox" checked={!!value} onChange={e=>onChange(e.target.checked)}/>;return <input type={f[2]||'text'} value={value??''} onChange={e=>onChange(e.target.value)}/>}return <><div className="form">{fields.map((f:any)=><div className="field" key={f[0]}><label>{f[1]}</label>{input(form[f[0]],(v:any)=>setForm({...form,[f[0]]:v}),f)}</div>)}<div className="field"><button className="btn primary" onClick={add}>Add Manual Row</button></div></div><div className="tablewrap"><table><thead><tr>{fields.map((f:any)=><th key={f[0]}>{f[1]}</th>)}<th>ID</th><th></th></tr></thead><tbody>{rows.map((r:any,i:number)=><tr key={r.id}>{fields.map((f:any)=><td key={f[0]}>{input(r[f[0]],(v:any)=>changeRow(i,f[0],v),f)}</td>)}<td className="small">{r.id}</td><td><button className="btn danger" onClick={()=>setRows(rows.filter((_:any,idx:number)=>idx!==i))}>Delete</button></td></tr>)}</tbody></table></div></>}
 
 function StableDateInput({value,onCommit,type='date',className=''}:any){
   const [local,setLocal]=useState(value||'');
@@ -1245,7 +1222,7 @@ function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,boardInte
      // Test is an external gate, but use the same Mon-Thu/holiday shop calendar.
      const isWeekend=[0,5,6].includes(d.getDay());
      const isHoliday=(data.holidays||[]).some((h:any)=>h.date===ds);
-     if(!isWeekend&&!isHoliday){remaining-=10;last=ds;}
+     if(!isWeekend&&!isHoliday){remaining-=dailyHours(data);last=ds;}
      d.setDate(d.getDate()+1);
    }
    return last;
@@ -1358,7 +1335,7 @@ function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,boardInte
 	   while(remaining>0.01&&guard++<365){
 	     const d=new Date(cursor+'T00:00:00');const ds=dateOnly(d);
 	     const weekend=[0,5,6].includes(d.getDay());const holiday=(data.holidays||[]).some((h:any)=>h.date===ds);
-	     if(!weekend&&!holiday){remaining-=10;last=ds}
+	     if(!weekend&&!holiday){remaining-=dailyHours(data);last=ds}
 	     cursor=nextDate(cursor);
 	   }
 	   return last;
