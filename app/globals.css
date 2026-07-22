@@ -2509,3 +2509,13 @@ html[data-theme="dark"] .autoAssignRowMain:hover{background:#172033!important;}
 .task.runCont .taskProgress{margin-top:2px}
 .flowOverlay{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:55}
 @media print{.flowOverlay,.assemblyDetailPanel{display:none!important}}
+
+/* Dashboard consolidation */
+.attentionPanel{grid-row:span 2;max-height:672px}
+.dashboardCompact .todayOps{grid-row:auto;max-height:330px}
+button.alertLine{width:100%;text-align:left;cursor:pointer;font-family:inherit}
+button.alertLine:hover{filter:brightness(.985)}
+.comingUp h4{margin:10px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#64748b}
+.comingUp h4:first-of-type{margin-top:0}
+:root[data-theme="dark"] .comingUp h4{color:#94a3b8}
+@media(max-width:1150px){.attentionPanel{grid-row:auto;max-height:none}}
