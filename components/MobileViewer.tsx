@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AppData } from '../lib/types';
 import { defaultData, STORAGE_KEY } from '../lib/defaultData';
 import { buildSchedule, capacityForDate, dailyHours, scheduleHealth } from '../lib/scheduler';
+import { expandChunks, sortChunksByDate } from '../lib/chunks';
 import { calculateScheduleWarnings } from '../lib/scheduleWarnings';
 import { calculateProjectHealth, healthTone } from '../lib/projectHealth';
 import { calculateTodayPriorities } from '../lib/todayPriorities';
@@ -312,64 +313,7 @@ export default function MobileViewer() {
   }
 
   function expandChunksForRange(startDate: string, endDate: string) {
-    const chunks: any[] = [];
-    for (const item of schedule) {
-      const source = sourceAssembly(item);
-      const manualSegments = item.phase === 'Build' && Array.isArray(source?.manualWorkSegments)
-        ? source.manualWorkSegments.filter((segment: any) => (segment.phase || 'Build') === 'Build' && Number(segment.hours) > 0)
-        : [];
-      if (manualSegments.length) {
-        manualSegments.forEach((segment: any, index: number) => {
-          if (segment.date >= startDate && segment.date <= endDate) {
-            chunks.push({
-              ...item,
-              employeeChunkId: segment.employeeId || '',
-              chunkDate: segment.date,
-              chunkHours: Number(segment.hours) || 0,
-              segmentIndex: index,
-            });
-          }
-        });
-        continue;
-      }
-      const assignees = splitIds(item.assignedTo);
-      if (!assignees.length) {
-        let date = item.scheduledStart;
-        let remaining = Number(item.hoursPerEmployee) || Number(item.totalHours) || 0;
-        let guard = 0;
-        while (remaining > 0 && guard < 120) {
-          const capacity = capacityForDate(data, '', date);
-          if (capacity > 0) {
-            const hours = Math.min(remaining, capacity);
-            if (date >= startDate && date <= endDate) {
-              chunks.push({ ...item, employeeChunkId: '', chunkDate: date, chunkHours: hours });
-            }
-            remaining -= hours;
-          }
-          date = nextDate(date);
-          guard += 1;
-        }
-      } else {
-        for (const employeeId of assignees) {
-          let date = item.scheduledStart;
-          let remaining = Number(item.hoursPerEmployee) || 0;
-          let guard = 0;
-          while (remaining > 0 && guard < 120) {
-            const capacity = capacityForDate(data, employeeId, date);
-            if (capacity > 0) {
-              const hours = Math.min(remaining, capacity);
-              if (date >= startDate && date <= endDate) {
-                chunks.push({ ...item, employeeChunkId: employeeId, chunkDate: date, chunkHours: hours });
-              }
-              remaining -= hours;
-            }
-            date = nextDate(date);
-            guard += 1;
-          }
-        }
-      }
-    }
-    return chunks.sort((a, b) => a.chunkDate.localeCompare(b.chunkDate) || String(a.projectName).localeCompare(String(b.projectName)));
+    return sortChunksByDate(expandChunks(data, schedule, { startDate, endDate }));
   }
 
   const todayChunks = useMemo(() => expandChunksForRange(today, today), [data, schedule, today]);

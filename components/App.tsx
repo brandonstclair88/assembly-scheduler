@@ -6,6 +6,7 @@ import {defaultData,STORAGE_KEY} from '../lib/defaultData';
 import {buildSchedule,capacityByEmployee,weeklyCapacity,scheduleHealth,suggestEmployees,capacityForDate,dailyHours} from '../lib/scheduler';
 import {canEmployeeForPhase} from '../lib/employeeRoles';
 import {calculateScheduleWarnings} from '../lib/scheduleWarnings';
+import {expandChunks,sortChunksByDate} from '../lib/chunks';
 import {calculateProjectHealth,healthTone,summarizeProjectHealth,ProjectHealthRecord} from '../lib/projectHealth';
 import {calculateTodayPriorities,TodayPriority} from '../lib/todayPriorities';
 import {smartAssignQualifiedEmployees,previewSmartAssignSuggestions,smartAssignSuggestionMapByAssemblyPhase,employeePrefersProject,employeePrefersPreferredProjects,applySmartAssignSuggestionsToData} from '../lib/smartAssign';
@@ -379,28 +380,7 @@ function Planner({data,setData,schedule,warnings,projectHealth,setTab}:any){
  function projectLabel(pid:string){const p:any=projects[pid]||{};return p.projectId||p.name||pid}
  function taskLabel(a:any){return a?`${projectLabel(a.projectId)} · ${a.partNumber} ${a.instanceLabel||''} · ${a.description}`:'Unknown item'}
  function getItem(aid:string,phase='Build'){return schedule.find((s:any)=>srcId(s)===aid&&(s.phase||'Build')===phase)}
- function buildChunks(startDate:string,endDate:string){
-   const chunks:any[]=[];
-   for(const s of schedule){
-     const source=asm(srcId(s));
-     const manualSegments=(s.phase==='Build'&&Array.isArray(source?.manualWorkSegments))?source.manualWorkSegments.filter((seg:any)=>(seg.phase||'Build')==='Build'&&Number(seg.hours)>0):[];
-     if(manualSegments.length){manualSegments.forEach((seg:any,idx:number)=>{if(seg.date>=startDate&&seg.date<=endDate)chunks.push({...s,employeeChunkId:seg.employeeId||'',chunkDate:seg.date,chunkHours:Number(seg.hours)||0,segmentIndex:idx,manualSegmentId:seg.id})});continue;}
-     const ids=splitIds(s.assignedTo);
-     for(const empId of (ids.length?ids:[''])){
-       let date=s.scheduledStart;let remaining=Number(s.hoursPerEmployee)||Number(s.totalHours)||0;let guard=0;let idx=0;
-       while(remaining>0&&guard<240){
-         const cap=empId?capacityForDate(data,empId,date):capacityForDate(data,'',date);
-         if(cap>0){
-           const hrs=Math.min(remaining,cap);
-           if(date>=startDate&&date<=endDate)chunks.push({...s,employeeChunkId:empId,chunkDate:date,chunkHours:hrs,segmentIndex:idx++});
-           remaining-=hrs;
-         }
-         date=addDays(date,1);guard++;
-       }
-     }
-   }
-   return chunks.sort((a:any,b:any)=>String(a.chunkDate).localeCompare(String(b.chunkDate))||String(a.projectName||'').localeCompare(String(b.projectName||'')));
- }
+ function buildChunks(startDate:string,endDate:string){return sortChunksByDate(expandChunks(data,schedule,{startDate,endDate}))}
  const today=dateOnly(new Date());
  const rangeEnd=addDays(today,horizonDaysMap[plannerHorizon]);
  const chunks=buildChunks(today,rangeEnd);
@@ -555,18 +535,7 @@ function Dashboard({data,schedule,health,warnings,projectHealth,projectHealthSum
  function splitAssigned(s:string){return splitIds(s)}
  function sourceAssembly(sourceId:string){return (data.projectAssemblies||[]).find((a:any)=>a.id===sourceId)}
  function projectFor(id:string){return (data.projects||[]).find((p:any)=>p.id===id)||{projectId:'Project'}}
- function expandChunksForRange(startDate:string,endDate:string){
-   const chunks:any[]=[];
-   for(const s of schedule){
-     const src=sourceAssembly(s.sourceAssemblyId||String(s.id).split('|')[0]);
-     const manualSegments=(s.phase==='Build'&&Array.isArray(src?.manualWorkSegments))?src.manualWorkSegments.filter((seg:any)=>(seg.phase||'Build')==='Build'&&Number(seg.hours)>0):[];
-     if(manualSegments.length){manualSegments.forEach((seg:any,idx:number)=>{if(seg.date>=startDate&&seg.date<=endDate)chunks.push({...s,employeeChunkId:seg.employeeId||'',chunkDate:seg.date,chunkHours:Number(seg.hours)||0,segmentIndex:idx})});continue;}
-     const ids=splitAssigned(s.assignedTo);
-     if(!ids.length){let date=s.scheduledStart;let remaining=Number(s.hoursPerEmployee)||Number(s.totalHours)||0;let guard=0;while(remaining>0&&guard<120){const cap=capacityForDate(data,'',date);if(cap>0){const hrs=Math.min(remaining,cap);if(date>=startDate&&date<=endDate)chunks.push({...s,employeeChunkId:'',chunkDate:date,chunkHours:hrs});remaining-=hrs;}date=nextDate(date);guard++;}}
-     else{for(const empId of ids){let date=s.scheduledStart;let remaining=Number(s.hoursPerEmployee)||0;let guard=0;while(remaining>0&&guard<120){const cap=capacityForDate(data,empId,date);if(cap>0){const hrs=Math.min(remaining,cap);if(date>=startDate&&date<=endDate)chunks.push({...s,employeeChunkId:empId,chunkDate:date,chunkHours:hrs});remaining-=hrs;}date=nextDate(date);guard++;}}}
-   }
-   return chunks;
- }
+ function expandChunksForRange(startDate:string,endDate:string){return expandChunks(data,schedule,{startDate,endDate})}
  const weekEnd=addDays(dashboardDate,6);
  const selectedDayChunks=expandChunksForRange(dashboardDate,dashboardDate);
  const weekChunks=expandChunksForRange(dashboardDate,weekEnd);
@@ -1399,27 +1368,7 @@ function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,boardInte
 	   }
 	   return out.map((c:any)=>({...c,forecastMoved:c.forecastMoved||((currentByKey[itemKey(c)]||[]).some((x:any)=>x.employeeChunkId===c.employeeChunkId&&x.chunkDate!==c.chunkDate)),isLate:!!(c.shipDate&&c.chunkDate>c.shipDate&&!c.lateAllowed)}));
 	 }
-	 function buildChunks(){
-   const chunks:any[]=[];
-   for(const s of schedule){
-     const source=data.projectAssemblies.find((a:any)=>a.id===(s.sourceAssemblyId||String(s.id).split('|')[0]));
-     const manualSegments=(s.phase==='Build'&&Array.isArray(source?.manualWorkSegments))?source.manualWorkSegments.filter((seg:any)=>(seg.phase||'Build')==='Build'&&Number(seg.hours)>0):[];
-     if(manualSegments.length){
-       manualSegments.forEach((seg:any,idx:number)=>chunks.push({...s,employeeChunkId:seg.employeeId||'',chunkDate:seg.date,chunkHours:Number(seg.hours)||0,chunkLabel:'Manual',segmentIndex:idx,manualSegmentId:seg.id}));
-       continue;
-     }
-     const ids=splitAssigned(s.assignedTo);
-     if(!ids.length){
-       let date=s.scheduledStart;let remaining=Number(s.hoursPerEmployee)||Number(s.totalHours)||0;let guard=0;let idx=0;
-       while(remaining>0&&guard<120){const cap=capacityForDate(data,'',date);if(cap>0){const hrs=Math.min(remaining,cap);chunks.push({...s,segmentIndex:idx++,employeeChunkId:'',chunkDate:date,chunkHours:hrs,chunkLabel:remaining>hrs?'Partial':'Final'});remaining-=hrs;}date=nextDate(date);guard++;}
-     }else{
-       for(const empId of ids){let date=s.scheduledStart;let remaining=Number(s.hoursPerEmployee)||0;let guard=0;let idx=0;
-        while(remaining>0&&guard<120){const cap=capacityForDate(data,empId,date);if(cap>0){const hrs=Math.min(remaining,cap);chunks.push({...s,employeeChunkId:empId,chunkDate:date,chunkHours:hrs,chunkLabel:remaining>hrs?'Partial':'Final',segmentIndex:idx++});remaining-=hrs;}date=nextDate(date);guard++;}
-       }
-     }
-   }
-   return chunks;
- }
+	 function buildChunks(){return expandChunks(data,schedule,{maxDays:240})}
  function defaultSegmentsFor(sourceId:string,phase:string){
    return chunks.filter((c:any)=>(c.sourceAssemblyId||String(c.id).split('|')[0])===sourceId&&(c.phase||'Build')===phase)
      .map((c:any,i:number)=>({id:c.manualSegmentId||`seg_${Date.now()}_${i}`,employeeId:c.employeeChunkId||'',date:c.chunkDate,hours:Number(c.chunkHours)||0,phase}));
