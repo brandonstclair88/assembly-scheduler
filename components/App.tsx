@@ -964,14 +964,56 @@ function ProjectTrainingPicker({projects,employee,onChange}:any){
 function Employees({data,setData}:any){
  const blank={id:uid('emp'),name:'',email:'',skills:'',active:true,pto:'',timeOffDates:'',fridayOvertimeDates:'',workDays:'',workHoursByDay:'',canBuild:true,canInspect:true,canShip:true,trainedProjectIds:'',limitAutoAssignToTrainedProjects:false,preferredProjectIds:'',preferPreferredProjects:false};
  const weekdays=[['1','Mon'],['2','Tue'],['3','Wed'],['4','Thu'],['5','Fri']];
+ const [selectedId,setSelectedId]=useState(data.employees[0]?.id||'');
+ const emp=data.employees.find((e:any)=>e.id===selectedId)||data.employees[0];
+ useEffect(()=>{if(emp&&emp.id!==selectedId)setSelectedId(emp.id)},[emp?.id,selectedId]);
  function updateEmp(id:string,patch:any){setData((d:any)=>({...d,employees:d.employees.map((e:any)=>e.id===id?{...e,...patch}:e)}))}
- function addEmployee(){setData((d:any)=>({...d,employees:[...d.employees,{...blank,id:uid('emp')}]}))}
- function deleteEmployee(id:string){if(!confirm('Delete this employee? Existing assignments will remain by ID until changed.'))return;setData((d:any)=>({...d,employees:d.employees.filter((e:any)=>e.id!==id)}))}
+ function addEmployee(){const row={...blank,id:uid('emp')};setData((d:any)=>({...d,employees:[...d.employees,row]}));setSelectedId(row.id)}
+ function deleteEmployee(id:string){if(!confirm('Delete this employee? Existing assignments will remain by ID until changed.'))return;setData((d:any)=>({...d,employees:d.employees.filter((e:any)=>e.id!==id)}));setSelectedId(data.employees.find((e:any)=>e.id!==id)?.id||'')}
  function daySet(e:any){return new Set(splitIds(e.workDays||''))}
  function hoursMap(e:any){try{return JSON.parse(e.workHoursByDay||'{}')}catch{return {}}}
  function setDay(e:any,day:string,checked:boolean){const days=daySet(e);checked?days.add(day):days.delete(day);updateEmp(e.id,{workDays:[...days].sort().join(',')})}
  function setHours(e:any,day:string,value:any){const map=hoursMap(e);map[day]=Math.max(0,Number(value)||0);updateEmp(e.id,{workHoursByDay:JSON.stringify(map)})}
- return <div className="card span12"><h2>Employees</h2><p className="muted">Set who is active, what kind of work each employee can do, optional recurring weekly availability for part-time employees, and which projects they prefer during Smart Assign. Leave weekly days blank for the normal company schedule.</p><div className="actions"><button className="btn primary" onClick={addEmployee}>Add Employee</button></div><div className="tablewrap employeeSettingsTable"><table><thead><tr><th>Name</th><th>Email</th><th>Skills</th><th>Active</th><th>Can Build</th><th>Can Inspect</th><th>Can Ship</th><th>Preferred Projects</th><th>Weekly Work Days / Hours</th><th></th></tr></thead><tbody>{data.employees.map((e:any)=>{const preferredCount=splitIds(e.preferredProjectIds||e.trainedProjectIds||'').length;return <tr key={e.id}><td><input value={e.name||''} onChange={ev=>updateEmp(e.id,{name:ev.target.value})}/><div className="muted small">Preferred Projects: {preferredCount} • Preferred Project Match: {e.preferPreferredProjects?'Boost this list':'Open to all projects'}</div></td><td><input value={e.email||''} onChange={ev=>updateEmp(e.id,{email:ev.target.value})}/></td><td><input value={e.skills||''} onChange={ev=>updateEmp(e.id,{skills:ev.target.value})}/></td><td><input type="checkbox" checked={!!e.active} onChange={ev=>updateEmp(e.id,{active:ev.target.checked})}/></td><td><input type="checkbox" checked={e.canBuild!==false} onChange={ev=>updateEmp(e.id,{canBuild:ev.target.checked})}/></td><td><input type="checkbox" checked={e.canInspect!==false} onChange={ev=>updateEmp(e.id,{canInspect:ev.target.checked})}/></td><td><input type="checkbox" checked={e.canShip!==false} onChange={ev=>updateEmp(e.id,{canShip:ev.target.checked})}/></td><td><ProjectTrainingPicker projects={data.projects||[]} employee={e} onChange={(patch:any)=>updateEmp(e.id,patch)}/></td><td><div className="partTimeControls"><button type="button" className="mini normalScheduleBtn" onClick={()=>updateEmp(e.id,{workDays:'',workHoursByDay:''})}>Use normal schedule</button><div className="partTimeGrid compactPartTimeGrid">{weekdays.map(([day,label])=>{const selected=daySet(e).has(day);const map=hoursMap(e);return <label key={day} className={selected?'partDay selectedPartDay':'partDay'}><span className="partDayTop"><input type="checkbox" checked={selected} onChange={ev=>setDay(e,day,ev.target.checked)}/><b>{label}</b></span><span className="partHourLine"><input type="number" min="0" step="0.25" disabled={!selected} value={map[day]??dailyHours(data)} onChange={ev=>setHours(e,day,ev.target.value)}/><small>hrs</small></span></label>})}</div></div></td><td><button className="btn danger" onClick={()=>deleteEmployee(e.id)}>Delete</button></td></tr>})}</tbody></table></div></div>
+ return <div className="peopleWorkspace">
+  <div className="card peopleListPanel">
+   <h2>People</h2>
+   <p className="muted">Pick a person to edit their profile, roles, preferred projects, and weekly schedule.</p>
+   <div className="actions"><button className="btn primary" onClick={addEmployee}>Add Employee</button></div>
+   <div className="librarySelectableList">
+    {data.employees.length===0&&<p className="muted">No employees yet.</p>}
+    {data.employees.map((e:any)=>{
+     const roles=[e.canBuild!==false?'Build':'',e.canInspect!==false?'Inspect':'',e.canShip!==false?'Ship':''].filter(Boolean).join(' · ');
+     const preferredCount=splitIds(e.preferredProjectIds||e.trainedProjectIds||'').length;
+     return <button key={e.id} className={emp?.id===e.id?'librarySelect activeLibrarySelect':'librarySelect'} onClick={()=>setSelectedId(e.id)}>
+      <div><b>{e.name||'New Employee'}</b>{e.active===false&&<span className="pill warn">Inactive</span>}</div>
+      <span>{e.skills||'No skills listed'}</span>
+      <small>{roles||'No roles'}{preferredCount?` • ${preferredCount} preferred project${preferredCount===1?'':'s'}`:''}</small>
+     </button>})}
+   </div>
+  </div>
+  <div className="card peopleDetailPanel">{emp?<>
+   <div className="editorTitle"><div><h2>{emp.name||'New Employee'}</h2><p className="muted">{emp.email||'No email'}{emp.active===false?' • Inactive':''}</p></div><div className="actions"><button className="btn danger" onClick={()=>deleteEmployee(emp.id)}>Delete Employee</button></div></div>
+   <div className="editorSections">
+    <section><h3>Profile</h3><div className="editorGrid">
+     <div className="field"><label>Name</label><input className="largeInput" value={emp.name||''} onChange={ev=>updateEmp(emp.id,{name:ev.target.value})}/></div>
+     <div className="field"><label>Email</label><input className="largeInput" value={emp.email||''} onChange={ev=>updateEmp(emp.id,{email:ev.target.value})}/></div>
+     <div className="field wide"><label>Skills</label><input className="largeInput" value={emp.skills||''} onChange={ev=>updateEmp(emp.id,{skills:ev.target.value})}/></div>
+     <div className="field"><label>Status</label><label className="checkLine"><input type="checkbox" checked={!!emp.active} onChange={ev=>updateEmp(emp.id,{active:ev.target.checked})}/> Active</label></div>
+    </div></section>
+    <section><h3>Roles</h3><p className="muted">What kind of scheduled work this person can be assigned.</p><div className="actions">
+     <label className="checkLine"><input type="checkbox" checked={emp.canBuild!==false} onChange={ev=>updateEmp(emp.id,{canBuild:ev.target.checked})}/> Can Build</label>
+     <label className="checkLine"><input type="checkbox" checked={emp.canInspect!==false} onChange={ev=>updateEmp(emp.id,{canInspect:ev.target.checked})}/> Can Inspect</label>
+     <label className="checkLine"><input type="checkbox" checked={emp.canShip!==false} onChange={ev=>updateEmp(emp.id,{canShip:ev.target.checked})}/> Can Ship</label>
+    </div></section>
+    <section><h3>Preferred Projects</h3><p className="muted">Smart Assign favors these projects for this person.</p><ProjectTrainingPicker projects={data.projects||[]} employee={emp} onChange={(patch:any)=>updateEmp(emp.id,patch)}/></section>
+    <section><h3>Weekly Schedule</h3><p className="muted">Leave days unchecked for the normal company schedule (Mon–Thu, plus Friday OT when enabled).</p><div className="partTimeControls">
+     <button type="button" className="mini normalScheduleBtn" onClick={()=>updateEmp(emp.id,{workDays:'',workHoursByDay:''})}>Use normal schedule</button>
+     <div className="partTimeGrid compactPartTimeGrid">{weekdays.map(([day,label])=>{const selected=daySet(emp).has(day);const map=hoursMap(emp);return <label key={day} className={selected?'partDay selectedPartDay':'partDay'}><span className="partDayTop"><input type="checkbox" checked={selected} onChange={ev=>setDay(emp,day,ev.target.checked)}/><b>{label}</b></span><span className="partHourLine"><input type="number" min="0" step="0.25" disabled={!selected} value={map[day]??dailyHours(data)} onChange={ev=>setHours(emp,day,ev.target.value)}/><small>hrs</small></span></label>})}</div>
+    </div></section>
+    <section><h3>Time Off & Friday Overtime</h3><p className="muted">Specific days off and Friday OT dates are managed on the Availability tab, where you can click days on a calendar.</p></section>
+   </div>
+  </>:<p className="muted">Add an employee to get started.</p>}</div>
+ </div>
 }
 function Availability({data,setData}:any){
  const emptyHoliday={id:uid('hol'),date:'',name:'',paid:true,notes:''};

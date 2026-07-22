@@ -2519,3 +2519,8 @@ button.alertLine:hover{filter:brightness(.985)}
 .comingUp h4:first-of-type{margin-top:0}
 :root[data-theme="dark"] .comingUp h4{color:#94a3b8}
 @media(max-width:1150px){.attentionPanel{grid-row:auto;max-height:none}}
+
+/* People page: roster -> detail */
+.peopleWorkspace{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+.peopleListPanel .librarySelectableList{margin-top:10px}
+@media(max-width:1000px){.peopleWorkspace{grid-template-columns:1fr}}
