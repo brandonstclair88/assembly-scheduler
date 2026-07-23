@@ -31,6 +31,7 @@ export function migrate(raw:any):AppData{
   if(!d.assemblyTemplates)d.assemblyTemplates=[];
   if(!d.holidays)d.holidays=[];
   if(!d.shipmentBatches)d.shipmentBatches=[];
+  if(typeof d.testFridayDates!=='string')d.testFridayDates='';
   if(!d.projectAssemblies)d.projectAssemblies=d.assemblies||defaultData.projectAssemblies;
   if(!d.assemblyTemplates.length&&d.projectAssemblies?.length){
     const seen=new Set();

@@ -11,6 +11,12 @@ function dateList(s:string){return new Set(splitIds(s))}
 function isCompanyHoliday(data:AppData,date:string){return !!(data.holidays||[]).some(h=>h.date===date)}
 function employeeUnavailable(data:AppData,empId:string,date:string){const e=data.employees.find(x=>x.id===empId);return !!e && dateList((e as any).timeOffDates||e.pto||'').has(date)}
 function employeeFridayOt(data:AppData,empId:string,date:string){const e=data.employees.find(x=>x.id===empId);return !!e && dateList((e as any).fridayOvertimeDates||'').has(date)}
+// The external test gate uses the shop calendar (Mon–Thu), and only counts a
+// Friday when that specific date has been enabled shop-wide as a test overtime day.
+function testWorksFriday(data:AppData,date:string){return dateList((data as any).testFridayDates||'').has(date)}
+function isTestWorkday(data:AppData,d:Date){const ds=dateOnly(d);if(isCompanyHoliday(data,ds))return false;const day=d.getDay();if(day>=1&&day<=4)return true;if(day===5)return testWorksFriday(data,ds);return false}
+function nextTestWorkday(d:Date,data:AppData){const x=new Date(d);let g=0;while(!isTestWorkday(data,x)&&g++<1000)x.setDate(x.getDate()+1);return x}
+function prevTestWorkday(d:Date,data:AppData){const x=new Date(d);let g=0;while(!isTestWorkday(data,x)&&g++<1000)x.setDate(x.getDate()-1);return x}
 function employeeWorkDaySet(e:any){return dateList(e?.workDays||'')}
 function employeeHoursMap(e:any){try{return JSON.parse(e?.workHoursByDay||'{}')}catch{return {}}}
 function hasCustomWeeklySchedule(e:any){return employeeWorkDaySet(e).size>0}
@@ -26,9 +32,14 @@ export function capacityForDate(data:AppData,empId:string,date:string){
   if(!emp||emp.active===false||employeeUnavailable(data,empId,date))return 0;
   if(hasCustomWeeklySchedule(emp)){
     const days=employeeWorkDaySet(emp);
-    if(!days.has(String(day)))return 0;
-    const hours=employeeHoursMap(emp)[String(day)];
-    return Number(hours)>0?Number(hours):dailyHours(data);
+    if(days.has(String(day))){
+      const hours=employeeHoursMap(emp)[String(day)];
+      return Number(hours)>0?Number(hours):dailyHours(data);
+    }
+    // Friday overtime still applies even when the employee has a custom weekly
+    // schedule that normally excludes Friday.
+    if(day===5&&employeeFridayOt(data,empId,date))return dailyHours(data);
+    return 0;
   }
   if(day>=1&&day<=4)return dailyHours(data);
   if(day===5&&employeeFridayOt(data,empId,date))return dailyHours(data);
@@ -38,21 +49,23 @@ function addWorkHours(start:string,hours:number,data:AppData,empIds:string[]=[])
 function addExternalWaitHours(afterFinish:string,hours:number,data:AppData){
   if((Number(hours)||0)<=0)return afterFinish;
   let d=new Date(+parseDate(afterFinish)+MS_DAY);
-  d=nextWorkdayFor(d,data,[]);
+  d=nextTestWorkday(d,data);
   let remaining=Number(hours)||0;
   while(remaining>dailyHours(data)){
     remaining-=dailyHours(data);
     d=new Date(+d+MS_DAY);
-    d=nextWorkdayFor(d,data,[]);
+    d=nextTestWorkday(d,data);
   }
   return dateOnly(d);
 }
 function subtractWorkHours(finish:string,hours:number,data:AppData,empIds:string[]=[]){let d=prevWorkdayFor(parseDate(finish),data,empIds);let remaining=hours;while(remaining>dailyHours(data)){remaining-=dailyHours(data);d=new Date(+d-MS_DAY);d=prevWorkdayFor(d,data,empIds)}return dateOnly(d)}
 function previousWorkdayBefore(date:string,data:AppData,empIds:string[]=[]){const d=new Date(+parseDate(date)-MS_DAY);return dateOnly(prevWorkdayFor(d,data,empIds))}
+function subtractTestWaitHours(finish:string,hours:number,data:AppData){let d=prevTestWorkday(parseDate(finish),data);let remaining=hours;while(remaining>dailyHours(data)){remaining-=dailyHours(data);d=new Date(+d-MS_DAY);d=prevTestWorkday(d,data)}return dateOnly(d)}
+function previousTestWorkdayBefore(date:string,data:AppData){const d=new Date(+parseDate(date)-MS_DAY);return dateOnly(prevTestWorkday(d,data))}
 function latestBuildBeforeExternalGate(downstreamStart:string,hours:number,data:AppData){
   if((Number(hours)||0)<=0)return downstreamStart;
-  const gateStart=previousWorkdayBefore(subtractWorkHours(downstreamStart,hours,data,[]),data,[]);
-  return previousWorkdayBefore(gateStart,data,[]);
+  const gateStart=previousTestWorkdayBefore(subtractTestWaitHours(downstreamStart,hours,data),data);
+  return previousTestWorkdayBefore(gateStart,data);
 }
 // Test is an external wait/gate. Estimate it using the same shop work calendar,
 // but do not assign it to an employee or consume employee capacity.

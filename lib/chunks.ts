@@ -57,12 +57,14 @@ export function sortChunksByDate(chunks:any[]){
 export function externalWaitEnd(data:AppData,start:string,hours:number){
   let remaining=Math.max(0,Number(hours)||0);
   if(remaining<=0)return start;
+  const testFriSet=new Set(String((data as any).testFridayDates||'').split(/[\s,;]+/).filter(Boolean));
   let cursor=nextDate(start);let last=start;let guard=0;
   while(remaining>0.01&&guard++<365){
     const d=new Date(cursor+'T00:00:00');
-    const weekend=[0,5,6].includes(d.getDay());
+    const day=d.getDay();
+    const off=day===0||day===6||(day===5&&!testFriSet.has(cursor));
     const holiday=(data.holidays||[]).some((h:any)=>h.date===cursor);
-    if(!weekend&&!holiday){remaining-=dailyHours(data);last=cursor;}
+    if(!off&&!holiday){remaining-=dailyHours(data);last=cursor;}
     cursor=nextDate(cursor);
   }
   return last;
