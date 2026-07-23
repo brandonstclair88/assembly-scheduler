@@ -23,7 +23,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
  const [boardSearch,setBoardSearch]=useState('');
  const [statusFilter,setStatusFilter]=useState('All');
  const [employeeFilter,setEmployeeFilter]=useState('All');
- const [hideComplete,setHideComplete]=useState(false);
+ const [hideComplete,setHideComplete]=useState(true);
 	 const [capacitySuggestion,setCapacitySuggestion]=useState('');
 	 const [boardDrafts,setBoardDrafts]=useState<any[]>([]);
 	 const [boardMode,setBoardMode]=useState<'Current'|'Live'>('Current');
@@ -479,7 +479,10 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
 	 const rawChunks=boardMode==='Live'?calculateLiveForecast(buildChunks()):currentChunks;
  function cardStatus(s:any){const src=sourceAssembly(s.sourceAssemblyId||String(s.id).split('|')[0])||s;if(src.holdReason||src.status==='On Hold')return 'Blocked';if(s.isLate)return 'Late';if((s.phase||'Build')==='Shipping'&&src.shippingComplete)return 'Shipped';if((s.phase||'Build')==='Build'&&Number(src.percent||0)>=100)return 'Build Complete';if(src.shipDate){const days=(new Date(src.shipDate+'T00:00:00').getTime()-new Date((new Date()).toISOString().slice(0,10)+'T00:00:00').getTime())/86400000;if(days<=5&&Number(src.percent||0)<90)return 'At Risk';}return 'Scheduled'}
  function chunkProjectId(chunk:any){return (sourceAssembly(chunk.sourceAssemblyId||String(chunk.id).split('|')[0])||chunk)?.projectId||chunk?.projectId||''}
- const chunks=rawChunks.filter((s:any)=>{const q=boardSearch.trim().toLowerCase();const src=sourceAssembly(s.sourceAssemblyId||String(s.id).split('|')[0])||s;const hay=`${s.projectName||''} ${src.partNumber||''} ${src.description||''} ${src.instanceLabel||''}`.toLowerCase();const status=cardStatus(s);const pct=phasePercentFor(s.sourceAssemblyId||String(s.id).split('|')[0],s.phase||'Build',s);const completed=status==='Shipped'||status==='Build Complete'||pct>=100;const projectId=chunkProjectId(s);return (!q||hay.includes(q))&&(statusFilter==='All'||status===statusFilter)&&(!hideComplete||!completed)&&!shouldHideProject(projectId);});
+ function isCompletedTile(s:any){const status=cardStatus(s);const pct=phasePercentFor(s.sourceAssemblyId||String(s.id).split('|')[0],s.phase||'Build',s);return status==='Shipped'||status==='Build Complete'||pct>=100;}
+ const chunksBeforeComplete=rawChunks.filter((s:any)=>{const q=boardSearch.trim().toLowerCase();const src=sourceAssembly(s.sourceAssemblyId||String(s.id).split('|')[0])||s;const hay=`${s.projectName||''} ${src.partNumber||''} ${src.description||''} ${src.instanceLabel||''}`.toLowerCase();const status=cardStatus(s);const projectId=chunkProjectId(s);return (!q||hay.includes(q))&&(statusFilter==='All'||status===statusFilter)&&!shouldHideProject(projectId);});
+ const hiddenCompletedCount=chunksBeforeComplete.filter(isCompletedTile).length;
+ const chunks=hideComplete?chunksBeforeComplete.filter((s:any)=>!isCompletedTile(s)):chunksBeforeComplete;
  const chunkMeta=(()=>{
    const byKey:Record<string,any[]>={};
    for(const c of rawChunks){const k=`${c.sourceAssemblyId||String(c.id).split('|')[0]}|${c.phase||'Build'}`;(byKey[k]=byKey[k]||[]).push(c)}
@@ -1011,7 +1014,7 @@ function AssemblyDetailPanel(){
     <div className="field monthPick"><label>Search</label><input value={boardSearch} onChange={e=>setBoardSearch(e.target.value)} placeholder="Project / P/N"/></div>
     <div className="field monthPick"><label>Employee</label><select value={employeeFilter} onChange={e=>setEmployeeFilter(e.target.value)}><option value="All">All employees</option>{activeEmployees.map((e:any)=><option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
     <div className="field monthPick"><label>Status</label><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}>{['All','Scheduled','Build Complete','At Risk','Blocked','Late','Shipped'].map(x=><option key={x}>{x}</option>)}</select></div>
-    <label className="checkLine boardCheck"><input type="checkbox" checked={hideComplete} onChange={e=>setHideComplete(e.target.checked)}/> Hide completed</label>
+    <label className="checkLine boardCheck"><input type="checkbox" checked={!hideComplete} onChange={e=>setHideComplete(!e.target.checked)}/> Show completed{hideComplete&&hiddenCompletedCount>0?` (${hiddenCompletedCount} hidden)`:''}</label>
     <label className="checkLine boardCheck"><input type="checkbox" checked={collapseEmptyRows} onChange={e=>setCollapseEmptyRows(e.target.checked)}/> Collapse empty rows</label>
    </div>
   </div>
