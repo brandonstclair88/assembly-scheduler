@@ -739,7 +739,6 @@ function TaskCard({s}:any){
   function startDrag(e:any){if(boardMode==='Live')return;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('asm',dragKey);e.dataTransfer.setData('text/plain',dragKey)}
   const status=cardStatus(s);
   const locked=!!source.locked;
-  const tileProject=(data.projects||[]).find((p:any)=>p.id===(source.projectId||s.projectId));
   const dimmed=shouldDimProject(source.projectId||s.projectId||'');
   const suggestion=autoAssignSuggestionMap[`${src}|${phase}`];
   const autoAssigned=recentAutoAssignedKeys.includes(`${src}|${phase}`);
@@ -752,15 +751,27 @@ function TaskCard({s}:any){
     <span className="chunkHours">{Number(s.chunkHours).toFixed(1)} hrs{phase==='Build'&&totalHrs?` · ${m.hrsBefore.toFixed(1)}–${tileEnd.toFixed(1)} of ${totalHrs.toFixed(1)}`:''}</span>
     {s.isLate&&<span className="lateBadge">late</span>}{s.chunkLabel==='Draft'&&<span className="splitBadge">draft</span>}{s.chunkLabel==='Manual'&&<span className="splitBadge">manual</span>}{s.forecastMoved&&<span className="forecastMovedBadge">Moved</span>}
   </>:<>
-    <div className="taskBadgeRow"><span className={`phaseBadge phase-${phaseTone}`}>{phaseLabel}</span>{!dUltra&&<span className="statusBadge">{status}</span>}{locked&&<span className="forecastBadge">LOCK</span>}{!dUltra&&autoAssigned&&<span className="forecastBadge autoBadge">AUTO</span>}{!dUltra&&s.isLive&&<span className="forecastBadge">Live</span>}{!dUltra&&s.forecastMoved&&<span className="forecastMovedBadge">Moved</span>}{s.isLate&&<span className="lateBadge">late</span>}</div>
     <div className="taskProgress"><div className="taskProgressFill" style={{width:`${Math.max(0,Math.min(100,pct))}%`}}/></div>
-    <b className="tileDescription">{(source.instanceLabel||s.instanceLabel)&&<span className="tileAssemblyNo">{source.instanceLabel||s.instanceLabel}</span>}{source.description||s.description}</b>
-    {!dCompact&&s.batchId&&<span className="batchBadge">{(data.shipmentBatches||[]).find((b:any)=>b.id===s.batchId)?.name}</span>}
-    {!dUltra&&<span className="tileMeta">{tileProject?.projectId||s.projectName} · P/N {source.partNumber||s.partNumber}</span>}
-    <span className="chunkHours">{!dUltra&&`Day ${m.index}/${m.count} · `}{Number(s.chunkHours).toFixed(1)} hrs{!dCompact&&phase==='Build'&&totalHrs?` · ${m.hrsBefore.toFixed(1)}–${tileEnd.toFixed(1)} of ${totalHrs.toFixed(1)}`:''}</span>
-    {!dCompact&&!s.employeeChunkId&&suggestion?.employeeName&&<span className="suggestedAssignBadge">Suggest: {suggestion.employeeName}</span>}
-    {!dCompact&&suggestion?.nonPreferredButNecessary&&<span className="suggestedAssignBadge warn">Non-preferred but needed</span>}
-    {!dUltra&&s.chunkLabel==='Manual'&&<span className="splitBadge">manual</span>}{!dUltra&&s.chunkLabel==='Partial'&&<span className="splitBadge">split</span>}{!dUltra&&s.chunkLabel==='Live Hold'&&<span className="splitBadge">hold</span>}
+    <div className="tileTopRow">
+      <div className="tileTextCol">
+        <b className="tileDescription">{source.description||s.description}{(source.instanceLabel||s.instanceLabel)&&<span className="tileAssemblyNo"> {source.instanceLabel||s.instanceLabel}</span>}</b>
+        {!dUltra&&<span className="tilePartNo">{source.partNumber||s.partNumber}</span>}
+        {!dCompact&&s.batchId&&<span className="tileBatch">{(data.shipmentBatches||[]).find((b:any)=>b.id===s.batchId)?.name}</span>}
+        {!dCompact&&!s.employeeChunkId&&suggestion?.employeeName&&<span className="suggestedAssignBadge">Suggest: {suggestion.employeeName}</span>}
+        {!dCompact&&suggestion?.nonPreferredButNecessary&&<span className="suggestedAssignBadge warn">Non-preferred but needed</span>}
+      </div>
+      <div className="tileBadgeCol">
+        {s.chunkLabel==='Partial'&&<span className="splitBadge">Split</span>}{s.chunkLabel==='Manual'&&<span className="splitBadge">Manual</span>}{s.chunkLabel==='Live Hold'&&<span className="splitBadge">Hold</span>}
+        {s.isLate&&<span className="lateBadge">Late</span>}
+        {locked&&<span className="forecastBadge">LOCK</span>}
+        {!dUltra&&autoAssigned&&<span className="forecastBadge autoBadge">AUTO</span>}{!dUltra&&s.isLive&&<span className="forecastBadge">Live</span>}{!dUltra&&s.forecastMoved&&<span className="forecastMovedBadge">Moved</span>}
+        {dCompact&&<span className={`phaseChip phase-${phaseTone}`}>{Number(s.chunkHours).toFixed(1)}h {phaseLabel}</span>}
+      </div>
+    </div>
+    {!dCompact&&<div className="tileBottomRow">
+      <span className="tileHoursDay">{Number(s.chunkHours).toFixed(1)} hrs{phase==='Build'?` · Day ${m.index}/${m.count}`:''}</span>
+      <span className={`phaseBadge phase-${phaseTone}`}>{phaseLabel}</span>
+    </div>}
   </>}</div>
 }
 function FocusFlowOverlay(){
