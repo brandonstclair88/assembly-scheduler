@@ -720,6 +720,8 @@ function TaskCard({s}:any){
   const phase=s.phase||'Build';
   const phaseLabel=phaseBadgeLabel(phase);
   const phaseTone=phaseToneKey(phase);
+  const dCompact=boardDensity==='compact'||boardDensity==='ultra';
+  const dUltra=boardDensity==='ultra';
   const source=sourceAssembly(src)||s;
   const pct=phasePercentFor(src,phase,s);
   const totalHrs=Number(source.qty||0)*Number(source.hoursEach||0);
@@ -745,15 +747,15 @@ function TaskCard({s}:any){
     <span className="chunkHours">{Number(s.chunkHours).toFixed(1)} hrs{phase==='Build'&&totalHrs?` · ${m.hrsBefore.toFixed(1)}–${tileEnd.toFixed(1)} of ${totalHrs.toFixed(1)}`:''}</span>
     {s.isLate&&<span className="lateBadge">late</span>}{s.chunkLabel==='Draft'&&<span className="splitBadge">draft</span>}{s.chunkLabel==='Manual'&&<span className="splitBadge">manual</span>}{s.forecastMoved&&<span className="forecastMovedBadge">Moved</span>}
   </>:<>
-    <div className="taskBadgeRow"><span className={`phaseBadge phase-${phaseTone}`}>{phaseLabel}</span><span className="statusBadge">{status}</span>{locked&&<span className="forecastBadge">LOCK</span>}{autoAssigned&&<span className="forecastBadge autoBadge">AUTO</span>}{s.isLive&&<span className="forecastBadge">Live</span>}{s.forecastMoved&&<span className="forecastMovedBadge">Moved</span>}{s.isLate&&<span className="lateBadge">late</span>}</div>
-    <div className="taskProgress"><div className="taskProgressFill" style={{width:`${Math.max(0,Math.min(100,pct))}%`}}/></div>
+    <div className="taskBadgeRow"><span className={`phaseBadge phase-${phaseTone}`}>{phaseLabel}</span>{!dUltra&&<span className="statusBadge">{status}</span>}{locked&&<span className="forecastBadge">LOCK</span>}{!dUltra&&autoAssigned&&<span className="forecastBadge autoBadge">AUTO</span>}{!dUltra&&s.isLive&&<span className="forecastBadge">Live</span>}{!dUltra&&s.forecastMoved&&<span className="forecastMovedBadge">Moved</span>}{s.isLate&&<span className="lateBadge">late</span>}</div>
+    {!dUltra&&<div className="taskProgress"><div className="taskProgressFill" style={{width:`${Math.max(0,Math.min(100,pct))}%`}}/></div>}
     <b className="tileDescription">{(source.instanceLabel||s.instanceLabel)&&<span className="tileAssemblyNo">{source.instanceLabel||s.instanceLabel}</span>}{source.description||s.description}</b>
-    {s.batchId&&<span className="batchBadge">{(data.shipmentBatches||[]).find((b:any)=>b.id===s.batchId)?.name}</span>}
-    <span className="tileMeta">{tileProject?.projectId||s.projectName} · P/N {source.partNumber||s.partNumber}</span>
-    <span className="chunkHours">Day {m.index}/{m.count} · {Number(s.chunkHours).toFixed(1)} hrs{phase==='Build'&&totalHrs?` · ${m.hrsBefore.toFixed(1)}–${tileEnd.toFixed(1)} of ${totalHrs.toFixed(1)}`:''}</span>
-    {!s.employeeChunkId&&suggestion?.employeeName&&<span className="suggestedAssignBadge">Suggest: {suggestion.employeeName}</span>}
-    {suggestion?.nonPreferredButNecessary&&<span className="suggestedAssignBadge warn">Non-preferred but needed</span>}
-    {s.chunkLabel==='Manual'&&<span className="splitBadge">manual</span>}{s.chunkLabel==='Partial'&&<span className="splitBadge">split</span>}{s.chunkLabel==='Live Hold'&&<span className="splitBadge">hold</span>}
+    {!dCompact&&s.batchId&&<span className="batchBadge">{(data.shipmentBatches||[]).find((b:any)=>b.id===s.batchId)?.name}</span>}
+    {!dUltra&&<span className="tileMeta">{tileProject?.projectId||s.projectName} · P/N {source.partNumber||s.partNumber}</span>}
+    <span className="chunkHours">{!dUltra&&`Day ${m.index}/${m.count} · `}{Number(s.chunkHours).toFixed(1)} hrs{!dCompact&&phase==='Build'&&totalHrs?` · ${m.hrsBefore.toFixed(1)}–${tileEnd.toFixed(1)} of ${totalHrs.toFixed(1)}`:''}</span>
+    {!dCompact&&!s.employeeChunkId&&suggestion?.employeeName&&<span className="suggestedAssignBadge">Suggest: {suggestion.employeeName}</span>}
+    {!dCompact&&suggestion?.nonPreferredButNecessary&&<span className="suggestedAssignBadge warn">Non-preferred but needed</span>}
+    {!dUltra&&s.chunkLabel==='Manual'&&<span className="splitBadge">manual</span>}{!dUltra&&s.chunkLabel==='Partial'&&<span className="splitBadge">split</span>}{!dUltra&&s.chunkLabel==='Live Hold'&&<span className="splitBadge">hold</span>}
   </>}</div>
 }
 function FocusFlowOverlay(){

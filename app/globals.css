@@ -745,7 +745,7 @@ body.__legacyDarkDisabled .task select{
 .weeklyBoardCard{padding:16px!important;overflow:visible!important}.boardHeader{display:grid!important;grid-template-columns:minmax(260px,1fr) minmax(620px,1.8fr);align-items:start;gap:18px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}.boardHeader h2{margin:0 0 4px}.boardHeader p{margin:0;line-height:1.35}.enhancedBoardTools{display:grid!important;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;align-items:flex-end}.enhancedBoardTools .field{grid-column:auto!important;min-width:0}.enhancedBoardTools .monthPick{max-width:none!important}.enhancedBoardTools .checkLine{min-height:40px;align-self:flex-end}.enhancedBoardTools button{white-space:nowrap;min-height:40px}.capacitySuggestion{white-space:pre-wrap;max-height:180px;overflow:auto}
 
 /* weekly board: fit Mon-Fri cleanly instead of clipping to only early week columns */
-.weekBoard{width:100%!important;overflow:visible!important;margin:22px 0 28px!important}.strongerWeekBoard{border:1px solid #c8d1dc!important;border-radius:18px!important;background:#ffffff!important;padding:0!important;box-shadow:var(--shadow)!important;overflow:visible!important}.weekDividerHeader{position:sticky!important;top:62px!important;z-index:18!important;margin:0!important;padding:11px 14px!important;background:#eef2f5!important;color:#263849!important;border-bottom:1px solid #c8d1dc!important;border-radius:18px 18px 0 0!important}.strongerWeekBoard .employeeBoard,.employeeBoard{display:grid!important;grid-template-columns:150px repeat(var(--week-days,5),minmax(135px,1fr))!important;gap:0!important;min-width:0!important;width:100%!important;padding:0!important}.employeeHeader,.dayHeader,.employeeCell,.assignmentCell{border-radius:0!important;border:0!important;border-right:1px solid #d5dde7!important;border-bottom:1px solid #d5dde7!important;padding:8px!important;min-width:0!important}.employeeHeader,.dayHeader{background:#f3f6f9!important;color:#263849!important;position:sticky;top:109px;z-index:10}.employeeHeader{left:0;z-index:14}.employeeCell{background:#f8fafc!important;position:sticky;left:0;z-index:9}.assignmentCell{background:#fbfcfd!important;min-height:118px!important;overflow:visible!important}.assignmentCell:hover{background:#f6f9fb!important}.dayHeader b{font-size:13px}.dayHeader span,.employeeCell span{font-size:11px}.task{padding:7px!important;margin:6px 0!important;border-radius:10px!important;box-shadow:0 2px 8px rgba(15,23,42,.08)!important;overflow:hidden}.tileDescription{font-size:12.5px!important;line-height:1.18!important}.tileMeta,.task small{font-size:11px!important}
+.weekBoard{width:100%!important;overflow:visible!important;margin:22px 0 28px!important}.strongerWeekBoard{border:1px solid #c8d1dc!important;border-radius:18px!important;background:#ffffff!important;padding:0!important;box-shadow:var(--shadow)!important;overflow:visible!important}.weekDividerHeader{position:sticky!important;top:62px!important;z-index:18!important;margin:0!important;padding:11px 14px!important;background:#eef2f5!important;color:#263849!important;border-bottom:1px solid #c8d1dc!important;border-radius:18px 18px 0 0!important}.strongerWeekBoard .employeeBoard,.employeeBoard{display:grid!important;grid-template-columns:150px repeat(var(--week-days,5),minmax(135px,1fr))!important;gap:0!important;min-width:0!important;width:100%!important;padding:0!important}.employeeHeader,.dayHeader,.employeeCell,.assignmentCell{border-radius:0!important;border:0!important;border-right:1px solid #d5dde7!important;border-bottom:1px solid #d5dde7!important;padding:var(--cell-pad,8px)!important;min-width:0!important}.employeeHeader,.dayHeader{background:#f3f6f9!important;color:#263849!important;position:sticky;top:109px;z-index:10}.employeeHeader{left:0;z-index:14}.employeeCell{background:#f8fafc!important;position:sticky;left:0;z-index:9}.assignmentCell{background:#fbfcfd!important;min-height:var(--cell-min,118px)!important;overflow:visible!important}.assignmentCell:hover{background:#f6f9fb!important}.dayHeader b{font-size:13px}.dayHeader span,.employeeCell span{font-size:11px}.task{padding:var(--tile-pad,7px)!important;margin:var(--tile-mar,6px) 0!important;border-radius:10px!important;box-shadow:0 2px 8px rgba(15,23,42,.08)!important;overflow:hidden}.tileDescription{font-size:var(--tile-desc,12.5px)!important;line-height:1.18!important}.tileMeta,.task small{font-size:var(--tile-meta,11px)!important}
 
 /* dates shown as month/day/year in text areas/cards */
 .weekDividerHeader::first-letter{text-transform:uppercase}
@@ -1582,17 +1582,23 @@ html[data-theme="dark"] .highlightedBoardDate{outline-color:#60a5fa}
 .weeklyBoardCard .employeeCell{position:sticky;left:0;z-index:4}
 .weeklyBoardCard .weekDividerHeader{margin-bottom:8px}
 .weekBoardEmpty{border:1px dashed #cbd5e1;border-radius:16px;background:#f8fafc;padding:16px}
+/* Density is driven by CSS custom properties that the !important base rules
+   (.task / .assignmentCell / .tileDescription / .tileMeta, defined earlier)
+   consume via var(). Setting them on the density level actually resizes tiles
+   and rows, which the old non-!important rules could not do. */
+.weeklyBoardCard.density-comfortable{--cell-min:118px;--cell-pad:8px;--tile-pad:8px;--tile-mar:7px;--tile-desc:13px;--tile-meta:11px}
 .weeklyBoardCard.density-comfortable .employeeBoard{gap:8px}
+.weeklyBoardCard.density-compact{--cell-min:82px;--cell-pad:6px;--tile-pad:6px;--tile-mar:5px;--tile-desc:12px;--tile-meta:10.5px}
 .weeklyBoardCard.density-compact .employeeBoard{gap:6px}
-.weeklyBoardCard.density-compact .assignmentCell,.weeklyBoardCard.density-compact .employeeCell,.weeklyBoardCard.density-compact .employeeHeader,.weeklyBoardCard.density-compact .dayHeader{padding:8px}
-.weeklyBoardCard.density-compact .task{font-size:12px}
+.weeklyBoardCard.density-ultra{--cell-min:56px;--cell-pad:4px;--tile-pad:4px;--tile-mar:3px;--tile-desc:11.5px;--tile-meta:10px}
 .weeklyBoardCard.density-ultra .employeeBoard{gap:4px}
-.weeklyBoardCard.density-ultra .assignmentCell,.weeklyBoardCard.density-ultra .employeeCell,.weeklyBoardCard.density-ultra .employeeHeader,.weeklyBoardCard.density-ultra .dayHeader{padding:6px}
-.weeklyBoardCard.density-ultra .employeeCell b,.weeklyBoardCard.density-ultra .dayHeader b{font-size:13px}
-.weeklyBoardCard.density-ultra .employeeCell span,.weeklyBoardCard.density-ultra .dayHeader span{font-size:11px}
-.compactTask{padding:8px}
-.ultraCompactTask{padding:6px}
-.ultraCompactTask .tileMeta,.ultraCompactTask .chunkHours{font-size:11px}
+.weeklyBoardCard.density-ultra .employeeCell b,.weeklyBoardCard.density-ultra .dayHeader b{font-size:12px}
+.weeklyBoardCard.density-ultra .employeeCell span,.weeklyBoardCard.density-ultra .dayHeader span{font-size:10px}
+.weeklyBoardCard.density-ultra .phaseBadge{font-size:9px}
+/* Light-touch hierarchy: description leads; secondary meta recedes. Uses weight
+   and opacity (not hardcoded colors) so it stays correct in dark mode. */
+.weeklyBoardCard .tileDescription{font-weight:800!important}
+.weeklyBoardCard .tileMeta{opacity:.78}
 
 
 html[data-theme="dark"] .dashKpis div,
