@@ -465,6 +465,18 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
   setSlippageSelection([]);
   toast(result.applied.length?`Pushed ${result.applied.length} behind-schedule build${result.applied.length===1?'':'s'} forward. Review on the board and click Undo Apply to revert.`:'No behind-schedule builds were applied.',result.applied.length?'good':'info');
  }
+	 async function unassignAll(){
+  if(boardMode==='Live')return;
+  const scoped=projectFocusId!=='All';
+  const inScope=(a:any)=>!scoped||a.projectId===projectFocusId;
+  const targets=(data.projectAssemblies||[]).filter((a:any)=>inScope(a)&&!a.locked&&(String(a.assignedTo||'').trim()||String(a.finalizingAssignedTo||'').trim()||String(a.shippingAssignedTo||'').trim()||(Array.isArray(a.manualWorkSegments)&&a.manualWorkSegments.length>0)));
+  if(!targets.length){toast('Nothing is assigned to clear here.','info');return;}
+  const where=scoped?`in ${visibleProjects.find((p:any)=>p.id===projectFocusId)?.projectId||'this project'}`:'across every project';
+  if(!(await confirmDialog(`Unassign all employees from ${targets.length} assembl${targets.length===1?'y':'ies'} ${where}? Locked assemblies are left as-is, and you can Undo Apply afterward.`)))return;
+  pushUndoSnapshot();
+  setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.map((a:any)=>(inScope(a)&&!a.locked)?({...a,assignedTo:'',finalizingAssignedTo:'',shippingAssignedTo:'',manualWorkSegments:[],manuallyScheduled:false}):a)}));
+  toast(`Unassigned ${targets.length} assembl${targets.length===1?'y':'ies'}.`,'good');
+ }
 	 function clearSegments(sourceId:string){if(boardMode==='Live')return;setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.map((a:any)=>a.id===sourceId?{...a,manualWorkSegments:[],manuallyScheduled:false}:a)}))}
  function overlayBoardDrafts(list:any[]){
    if(!boardDrafts.length)return list;
@@ -1051,6 +1063,7 @@ function AssemblyDetailPanel(){
     <button className="btn" disabled={boardMode==='Live'} onClick={previewBalanceThisWeek}>Preview Smart Rebalance</button>
     <button className="btn primary autoAssignPrimaryButton" title="Preview Smart Assign suggestions for unassigned work and unlocked assignments. Nothing is saved until you apply the suggestions." disabled={boardMode==='Live'} onClick={()=>setShowAutoAssignPreview(true)}>Smart Assign <span className="buttonBadge">{unassignedSuggestionCount} Unassigned</span><span className="buttonBadge good">{actionableAutoAssign.length} Auto-Assignable</span>{unlockedImprovementCount>0&&<span className="buttonBadge">{unlockedImprovementCount} Improvable</span>}{overloadCount>0&&<span className="buttonBadge warn">{overloadCount} Overloaded</span>}{lockedTileCount>0&&<span className="buttonBadge">{lockedTileCount} Locked</span>}</button>
     <button className="btn" title="Find in-progress builds that have fallen behind the plan for today and push their remaining hours (plus downstream Finalizing/Shipping and any parent top-level assembly) forward into open capacity. Preview only — nothing saves until you apply." disabled={boardMode==='Live'} onClick={()=>setShowSlippagePreview(true)}>Behind Schedule{slippageSuggestions.length>0&&<span className={`buttonBadge ${slippageLateCount>0?'warn':'good'}`}>{slippageSuggestions.length} Behind</span>}</button>
+    <button className="btn" title="Clear every employee assignment (build, finalizing, shipping, and manual day placements) so work drops back to Unassigned. Locked assemblies are skipped. Undoable via Undo Apply. Scopes to the focused project when one is selected." disabled={boardMode==='Live'} onClick={unassignAll}>Unassign All</button>
     <button className="btn primary" disabled={boardMode==='Live'||!boardDrafts.length} onClick={applyBoardDrafts}>Apply Changes {boardDrafts.length?`(${boardDrafts.length})`:``}</button>
     <button className="btn" disabled={boardMode==='Live'||!undoCount} onClick={undoLastApply}>Undo Apply {undoCount?`(${undoCount})`:``}</button>
     <button className="btn" disabled={boardMode==='Live'||!boardDrafts.length} onClick={discardBoardDrafts}>Discard Changes</button>
