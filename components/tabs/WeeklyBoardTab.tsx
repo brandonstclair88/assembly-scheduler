@@ -6,6 +6,7 @@ import {applyAssemblyPatch} from '../../lib/mutations';
 import {download} from '../../lib/persistence';
 import {capacityForDate} from '../../lib/scheduler';
 import {applySmartAssignSuggestionsToData,previewSmartAssignSuggestions,smartAssignSuggestionMapByAssemblyPhase} from '../../lib/smartAssign';
+import {previewScheduleSlippage,applyScheduleSlippageToData} from '../../lib/scheduleSlippage';
 import {BufferedPercentInput,HealthBadge,ScheduleWarningsPanel,assemblyAccentColor,confirmDialog,phaseBadgeLabel,phaseToneKey,projectAccentColor,rolledCompletion,toast} from '../shared/common';
 
 const boardUndoStack:any[]=[];
@@ -42,6 +43,8 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
 	 const [expandedSuggestionIds,setExpandedSuggestionIds]=useState<string[]>([]);
 	 function toggleSuggestionExpanded(id:string){setExpandedSuggestionIds((value:string[])=>value.includes(id)?value.filter(x=>x!==id):[...value,id])}
 	 const [showScheduleWarnings,setShowScheduleWarnings]=useState(false);
+	 const [showSlippagePreview,setShowSlippagePreview]=useState(false);
+	 const [slippageSelection,setSlippageSelection]=useState<string[]>([]);
 	 const lastAutoScrollAt=useRef(0);
 	 const autoScrollFrame=useRef<any>(null);
 	 const autoScrollDelta=useRef(0);
@@ -83,6 +86,11 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
  }),[blockedAutoAssign]);
  const actionableSuggestionIds=actionableAutoAssign.map((suggestion:any)=>suggestion.id);
  const selectedSmartAssignCount=smartAssignSelection.filter((id:string)=>actionableAutoAssign.some((suggestion:any)=>suggestion.id===id)).length;
+ const slippageToday=dateOnly(new Date());
+ const slippageSuggestions=useMemo(()=>previewScheduleSlippage(data,schedule,slippageToday),[data,schedule,slippageToday]);
+ const slippageSuggestionIds=slippageSuggestions.map((suggestion:any)=>suggestion.id);
+ const selectedSlippageCount=slippageSelection.filter((id:string)=>slippageSuggestionIds.includes(id)).length;
+ const slippageLateCount=slippageSuggestions.filter((suggestion:any)=>suggestion.willBeLate).length;
  function smartAssignToneFor(suggestion:any){
    if(suggestion.status==='suggested')return 'info';
    if(suggestion.status==='kept')return 'capacity';
@@ -444,6 +452,16 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
   setShowAutoAssignResults(true);
   setShowAutoAssignPreview(false);
   setSmartAssignSelection([]);
+ }
+ function applySlippageSuggestions(selectionIds:string[]=slippageSelection){
+  if(boardMode==='Live')return;
+  const chosenIds=Array.from(new Set((selectionIds||[]).filter(Boolean)));
+  if(!chosenIds.length)return;
+  const result=applyScheduleSlippageToData(data,chosenIds,slippageSuggestions);
+  if(result.applied.length){pushUndoSnapshot();setData(result.data);}
+  setShowSlippagePreview(false);
+  setSlippageSelection([]);
+  toast(result.applied.length?`Pushed ${result.applied.length} behind-schedule build${result.applied.length===1?'':'s'} forward. Review on the board and click Undo Apply to revert.`:'No behind-schedule builds were applied.',result.applied.length?'good':'info');
  }
 	 function clearSegments(sourceId:string){if(boardMode==='Live')return;setData((d:any)=>({...d,projectAssemblies:d.projectAssemblies.map((a:any)=>a.id===sourceId?{...a,manualWorkSegments:[],manuallyScheduled:false}:a)}))}
  function overlayBoardDrafts(list:any[]){
@@ -917,6 +935,68 @@ function AssemblyDetailPanel(){
     </div>
   );
  }
+ function BehindSchedulePreviewPanel(){
+  return (
+    <div className="autoAssignPreviewPanel">
+      <div className="autoAssignPreviewHeader">
+        <div>
+          <h3>Behind Schedule</h3>
+          <p className="muted">Builds where today has moved further into the plan than the entered Build % supports, weighted by each assignee&apos;s real capacity. Preview first, apply second — nothing saves until you apply. Locked, protected, and on-hold work is skipped.</p>
+        </div>
+        <div className="scheduleWarningCounts">
+          <span className="warningCount capacity">{slippageSuggestions.length} behind</span>
+          <span className="warningCount critical">{slippageLateCount} would be late</span>
+        </div>
+      </div>
+      <div className="smartAssignSelectionBar">
+        <span className="muted">{selectedSlippageCount} of {slippageSuggestions.length} behind-schedule builds selected.</span>
+        <div className="actions">
+          <button className="btn" onClick={()=>setSlippageSelection(slippageSuggestionIds)}>Select all</button>
+          <button className="btn" onClick={()=>setSlippageSelection([])}>Clear selection</button>
+        </div>
+      </div>
+      <div className="autoAssignCompactList">
+        {slippageSuggestions.length===0&&<p className="muted">Nothing is behind schedule right now. Every in-progress build is at or ahead of where the plan expects it to be today.</p>}
+        {slippageSuggestions.map((suggestion:any)=>{
+          const tone=suggestion.willBeLate?'critical':'capacity';
+          const selectedSuggestion=slippageSelection.includes(suggestion.id);
+          const expanded=expandedSuggestionIds.includes(suggestion.id);
+          return (
+            <div key={suggestion.id} className={`autoAssignRow ${tone}${expanded?' expanded':''}`}>
+              <div className="autoAssignRowMain" onClick={()=>toggleSuggestionExpanded(suggestion.id)}>
+                <input type="checkbox" checked={selectedSuggestion} onClick={e=>e.stopPropagation()} onChange={e=>setSlippageSelection((value:string[])=>e.target.checked?[...value,suggestion.id]:value.filter(id=>id!==suggestion.id))}/>
+                <span className={`warningLevel ${tone}`}>{Math.round(suggestion.actualPercent)}% vs {Math.round(suggestion.expectedPercent)}%</span>
+                <span className="warningDate">{fmtDate(suggestion.newBuildEnd)}</span>
+                <b>{suggestion.projectCode}</b>
+                <span className="autoAssignRowDesc">{suggestion.partNumber} — {suggestion.description}</span>
+                {suggestion.daysSlipped>0&&<small>+{suggestion.daysSlipped} day{suggestion.daysSlipped===1?'':'s'}</small>}
+                {suggestion.willBeLate&&<small>Past ship date</small>}
+                <span className={`autoAssignRowChevron${expanded?' open':''}`}>▾</span>
+              </div>
+              {expanded&&<div className="autoAssignRowDetail">
+                <div className="smartAssignReasonMeta">
+                  <small>Assigned: {suggestion.employeeNames}</small>
+                  <small>Remaining: {suggestion.remainingHours.toFixed(1)} hrs</small>
+                  <small>Build finish {fmtDate(suggestion.originalBuildEnd)} → {fmtDate(suggestion.newBuildEnd)}</small>
+                  {suggestion.newFinalizingStart&&<small>Finalizing start → {fmtDate(suggestion.newFinalizingStart)}</small>}
+                  {suggestion.newShippingStart&&<small>Shipping start → {fmtDate(suggestion.newShippingStart)}</small>}
+                  {suggestion.shipDate&&<small>Ship By {fmtDate(suggestion.shipDate)}</small>}
+                  {suggestion.parentAssemblyId&&<small>Pushes parent top-level start</small>}
+                </div>
+                <small>{suggestion.reason}</small>
+              </div>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="warningActionRow">
+        <button className="btn primary" disabled={!selectedSlippageCount||boardMode==='Live'} onClick={()=>applySlippageSuggestions()}>Apply Selected {selectedSlippageCount?`(${selectedSlippageCount})`:''}</button>
+        <button className="btn" disabled={!slippageSuggestions.length||boardMode==='Live'} onClick={()=>applySlippageSuggestions(slippageSuggestionIds)}>Apply All</button>
+        <button className="btn" onClick={()=>setShowSlippagePreview(false)}>Cancel</button>
+      </div>
+    </div>
+  );
+ }
  return <div className={`card weeklyBoardCard density-${boardDensity}`}><div className="boardHeader"><div><h2>Weekly Board</h2><p className="muted">{boardMode==='Live'?'Read-only forecast from saved schedule, status, holds, time off, tests, dependencies, and ship rules.':'Drag individual daily chunks. Moves stay in draft mode until you click Apply Changes, so accidental moves can be discarded.'}</p></div><div className="boardTools enhancedBoardTools">
   <div className="boardToolGroup boardToolGroupView">
    <span className="boardToolGroupLabel">View</span>
@@ -938,6 +1018,7 @@ function AssemblyDetailPanel(){
     <button className="btn" disabled={boardMode==='Live'} onClick={suggestMoveForSelection}>Show conflicts</button>
     <button className="btn" disabled={boardMode==='Live'} onClick={previewBalanceThisWeek}>Preview Smart Rebalance</button>
     <button className="btn primary autoAssignPrimaryButton" title="Preview Smart Assign suggestions for unassigned work and unlocked assignments. Nothing is saved until you apply the suggestions." disabled={boardMode==='Live'} onClick={()=>setShowAutoAssignPreview(true)}>Smart Assign <span className="buttonBadge">{unassignedSuggestionCount} Unassigned</span><span className="buttonBadge good">{actionableAutoAssign.length} Auto-Assignable</span>{unlockedImprovementCount>0&&<span className="buttonBadge">{unlockedImprovementCount} Improvable</span>}{overloadCount>0&&<span className="buttonBadge warn">{overloadCount} Overloaded</span>}{lockedTileCount>0&&<span className="buttonBadge">{lockedTileCount} Locked</span>}</button>
+    <button className="btn" title="Find in-progress builds that have fallen behind the plan for today and push their remaining hours (plus downstream Finalizing/Shipping and any parent top-level assembly) forward into open capacity. Preview only — nothing saves until you apply." disabled={boardMode==='Live'} onClick={()=>setShowSlippagePreview(true)}>Behind Schedule{slippageSuggestions.length>0&&<span className={`buttonBadge ${slippageLateCount>0?'warn':'good'}`}>{slippageSuggestions.length} Behind</span>}</button>
     <button className="btn primary" disabled={boardMode==='Live'||!boardDrafts.length} onClick={applyBoardDrafts}>Apply Changes {boardDrafts.length?`(${boardDrafts.length})`:``}</button>
     <button className="btn" disabled={boardMode==='Live'||!undoCount} onClick={undoLastApply}>Undo Apply {undoCount?`(${undoCount})`:``}</button>
     <button className="btn" disabled={boardMode==='Live'||!boardDrafts.length} onClick={discardBoardDrafts}>Discard Changes</button>
@@ -951,5 +1032,5 @@ function AssemblyDetailPanel(){
     <button className="btn quiet" onClick={exportNextYearWeeklyPdf}>Export Next Year PDF</button>
    </div>
   </div>
- </div></div><div className="projectFocusBar"><div className="field projectFocusField"><label>Project Focus</label><select value={projectFocusId} onChange={e=>setProjectFocusId(e.target.value)}><option value="All">All Projects</option>{visibleProjects.map((project:any)=>{const record=projectHealthById?.[project.id];return <option key={project.id} value={project.id}>{project.projectId||project.name}{record?` • ${record.status}`:''}</option>})}</select></div>{projectFocusId!=='All'&&<><div className="projectFocusSummary"><HealthBadge status={projectHealthById?.[projectFocusId]?.status||'At Risk'}/><span>{visibleProjects.find((project:any)=>project.id===projectFocusId)?.name||visibleProjects.find((project:any)=>project.id===projectFocusId)?.projectId}</span></div><label className="checkLine boardCheck"><input type="checkbox" checked={hideOthers} onChange={e=>setHideOthers(e.target.checked)}/> Hide other projects</label><button className="btn" onClick={()=>{setProjectFocusId('All');setHideOthers(false);setHighlightDate('')}}>Clear focus</button>{onOpenProject&&<button className="btn" onClick={()=>onOpenProject(projectFocusId)}>Open project</button>}</>}</div>{focusedAssemblyId&&<div className="draftNotice focusNotice">Highlighting one assembly across the board. <button className="mini" onClick={()=>{setFocusedAssemblyId('');setDetailTarget(null)}}>Clear highlight</button></div>}{boardDrafts.length>0&&<div className="draftNotice weeklyDraftNotice">Draft mode: {boardDrafts.length} weekly board move{boardDrafts.length===1?``:`s`} pending. Dashboard/master schedule will update after Apply Changes.</div>}{capacitySuggestion&&<pre className="capacitySuggestion">{capacitySuggestion}</pre>}{showAutoAssignPreview&&<SmartAssignPreviewPanel/>}{lastAutoAssignRun&&<SmartAssignResultsPanel/>}<AssemblyDetailPanel/><FocusFlowOverlay/><div className="weeklyWarningWrap"><button type="button" className="weeklyWarningToggle" onClick={()=>setShowScheduleWarnings((v:boolean)=>!v)}><span>{showScheduleWarnings?'Hide':'Show'} Schedule Warnings</span><span className="scheduleWarningCounts"><span className="warningCount critical">{boardWarnings.filter((w:any)=>w.level==='critical').length} critical</span><span className="warningCount capacity">{boardWarnings.filter((w:any)=>w.level==='capacity').length} capacity</span><span className="warningCount info">{boardWarnings.filter((w:any)=>w.level==='info').length} info</span></span><span className={`weeklyWarningChevron${showScheduleWarnings?' open':''}`}>▾</span></button>{showScheduleWarnings&&<ScheduleWarningsPanel warnings={boardWarnings} maxItems={8} subtitle="These warnings are informational only. They do not block drag/drop or change saved schedule data." onAction={jumpToWarning} getActionLabel={(warning:any)=>warning.projectId||warning.date?'Jump to item':''}/>}</div>{weeks.map((w:string)=>{const weekEmployees=visibleEmployeesForWeek(w);const showUnassignedRow=!collapseEmptyRows||weekHasUnassigned(w);const showTestRow=!collapseEmptyRows||weekHasTests(w);const emptyWeek=weekEmployees.length===0&&!showUnassignedRow&&!showTestRow;return <div key={w} className={`weekBoard strongerWeekBoard density-${boardDensity}`}><h3 className="weekDividerHeader">Week of {fmtDate(w)}</h3>{emptyWeek?<div className="weekBoardEmpty muted">No visible work in this week with the current filters.</div>:<div className="employeeBoard" style={{"--week-days":days.length,gridTemplateColumns:`${labelColumnWidth}px repeat(${days.length}, minmax(${dayColumnWidth}px,1fr))`} as any}><div className="employeeHeader">Employee</div>{days.map((day,idx)=>{const date=dateFor(w,idx);return <div className={`dayHeader ${highlightDate===date?'highlightedBoardDate':''}`} key={day}><b>{day}</b><span>{fmtDate(date)}</span></div>})}{weekEmployees.map((emp:any)=><React.Fragment key={emp.id}><div className="employeeCell"><b>{emp.name}</b><span>{emp.skills}</span></div>{days.map((day,idx)=>{const date=dateFor(w,idx);const cards=cardsFor(emp.id,date);const hours=cards.reduce((n:number,s:any)=>n+(Number(s.chunkHours)||0),0);const cap=capacityForDate(data,emp.id,date);const overloaded=hours>cap;const friday=isFri(date);return <div className={'assignmentCell '+(overloaded?'overloaded ':'')+(cap===0?' unavailable ':'')+(highlightDate===date?'highlightedBoardDate ':'')} key={emp.id+day} onDragOver={boardMode==='Live'?undefined:boardDragOver} onDragLeave={stopAutoScroll} onDrop={e=>{stopAutoScroll();if(boardMode!=='Live')moveChunk(e.dataTransfer.getData('asm'),emp.id,date)}}>{friday&&<button className="mini otToggle" disabled={boardMode==='Live'} onClick={()=>toggleFri(emp.id,date)}>{cap>0?'Friday OT On':'Enable Friday OT'}</button>}{cap===0&&!friday&&<div className="offBadge">{absenceLabel(emp,date)||'Off / Holiday'}</div>}{overloaded&&<div className="overBadge">{hours.toFixed(1)} / {cap.toFixed(1)} hrs</div>}{!overloaded&&hours>0&&<div className="hourBadge">{hours.toFixed(1)} hrs</div>}{cards.map((row:any)=><TaskCard key={(row.employeeChunkId||'u')+row.id+row.chunkDate} s={row}/>)}</div>})}</React.Fragment>)}{showUnassignedRow&&<><div className="employeeCell unassignedLabel"><b>Unassigned</b><span>Unassigned work appears here until employees are selected</span></div>{days.map((day,idx)=>{const date=dateFor(w,idx);const cards=unassignedFor(date);return <div className={`assignmentCell ${highlightDate===date?'highlightedBoardDate':''}`} key={'unassigned'+day} onDragOver={boardMode==='Live'?undefined:boardDragOver} onDragLeave={stopAutoScroll} onDrop={e=>{stopAutoScroll();if(boardMode!=='Live')moveChunk(e.dataTransfer.getData('asm'),'',date)}}>{cards.map((row:any)=><TaskCard key={'u'+row.id+row.chunkDate} s={row}/>)}</div>})}</>}{showTestRow&&<><div className="employeeCell testRowLabel"><b>In Test</b><span>External test gate by day</span></div>{days.map((day,idx)=>{const date=dateFor(w,idx);const tests=testItemsFor(date);return <div className={`assignmentCell testAssignmentCell ${highlightDate===date?'highlightedBoardDate':''}`} key={'test'+day}>{tests.length===0&&<span className="muted small">No test items</span>}{tests.map((a:any)=>{const dimmed=shouldDimProject(a.projectId||'');return <div className={`testMiniCard phase-test ${dimmed?'taskDimmed ':''}${projectFocusId!=='All'&&!dimmed?'taskFocused ':''}${focusedAssemblyId?(focusedAssemblyId===a.id?'focusedAssembly ':'dimmedByFocus '):''}`} style={{'--project-accent':projectAccentColor(a.projectId||''),'--assembly-accent':assemblyAccentColor(a.id)} as any} key={a.id+date} data-asm={a.id} data-phase="Test" data-date={date} onClick={()=>{if(focusedAssemblyId===a.id){setFocusedAssemblyId('');setDetailTarget(null)}else{setFocusedAssemblyId(a.id);setDetailTarget({sourceId:a.id,phase:'Test'})}}}><div className="taskBadgeRow"><span className="phaseBadge phase-test">{phaseBadgeLabel('Test')}</span>{a.shipDate&&<span className="testReturnPill">Ship {fmtDate(a.shipDate)}</span>}</div><b>{a.description||a.partNumber}</b><span>Assembly: {a.partNumber||'—'} {a.instanceLabel||''}</span><small>{a.testReturnDateTime?`Expected return ${fmtDateTime(a.testReturnDateTime)}`:`Test gate ${Number(a.testHours||0).toFixed(1)}h`}</small></div>})}</div>})}</>}</div>}</div>})}</div>
+ </div></div><div className="projectFocusBar"><div className="field projectFocusField"><label>Project Focus</label><select value={projectFocusId} onChange={e=>setProjectFocusId(e.target.value)}><option value="All">All Projects</option>{visibleProjects.map((project:any)=>{const record=projectHealthById?.[project.id];return <option key={project.id} value={project.id}>{project.projectId||project.name}{record?` • ${record.status}`:''}</option>})}</select></div>{projectFocusId!=='All'&&<><div className="projectFocusSummary"><HealthBadge status={projectHealthById?.[projectFocusId]?.status||'At Risk'}/><span>{visibleProjects.find((project:any)=>project.id===projectFocusId)?.name||visibleProjects.find((project:any)=>project.id===projectFocusId)?.projectId}</span></div><label className="checkLine boardCheck"><input type="checkbox" checked={hideOthers} onChange={e=>setHideOthers(e.target.checked)}/> Hide other projects</label><button className="btn" onClick={()=>{setProjectFocusId('All');setHideOthers(false);setHighlightDate('')}}>Clear focus</button>{onOpenProject&&<button className="btn" onClick={()=>onOpenProject(projectFocusId)}>Open project</button>}</>}</div>{focusedAssemblyId&&<div className="draftNotice focusNotice">Highlighting one assembly across the board. <button className="mini" onClick={()=>{setFocusedAssemblyId('');setDetailTarget(null)}}>Clear highlight</button></div>}{boardDrafts.length>0&&<div className="draftNotice weeklyDraftNotice">Draft mode: {boardDrafts.length} weekly board move{boardDrafts.length===1?``:`s`} pending. Dashboard/master schedule will update after Apply Changes.</div>}{capacitySuggestion&&<pre className="capacitySuggestion">{capacitySuggestion}</pre>}{showAutoAssignPreview&&<SmartAssignPreviewPanel/>}{showSlippagePreview&&<BehindSchedulePreviewPanel/>}{lastAutoAssignRun&&<SmartAssignResultsPanel/>}<AssemblyDetailPanel/><FocusFlowOverlay/><div className="weeklyWarningWrap"><button type="button" className="weeklyWarningToggle" onClick={()=>setShowScheduleWarnings((v:boolean)=>!v)}><span>{showScheduleWarnings?'Hide':'Show'} Schedule Warnings</span><span className="scheduleWarningCounts"><span className="warningCount critical">{boardWarnings.filter((w:any)=>w.level==='critical').length} critical</span><span className="warningCount capacity">{boardWarnings.filter((w:any)=>w.level==='capacity').length} capacity</span><span className="warningCount info">{boardWarnings.filter((w:any)=>w.level==='info').length} info</span></span><span className={`weeklyWarningChevron${showScheduleWarnings?' open':''}`}>▾</span></button>{showScheduleWarnings&&<ScheduleWarningsPanel warnings={boardWarnings} maxItems={8} subtitle="These warnings are informational only. They do not block drag/drop or change saved schedule data." onAction={jumpToWarning} getActionLabel={(warning:any)=>warning.projectId||warning.date?'Jump to item':''}/>}</div>{weeks.map((w:string)=>{const weekEmployees=visibleEmployeesForWeek(w);const showUnassignedRow=!collapseEmptyRows||weekHasUnassigned(w);const showTestRow=!collapseEmptyRows||weekHasTests(w);const emptyWeek=weekEmployees.length===0&&!showUnassignedRow&&!showTestRow;return <div key={w} className={`weekBoard strongerWeekBoard density-${boardDensity}`}><h3 className="weekDividerHeader">Week of {fmtDate(w)}</h3>{emptyWeek?<div className="weekBoardEmpty muted">No visible work in this week with the current filters.</div>:<div className="employeeBoard" style={{"--week-days":days.length,gridTemplateColumns:`${labelColumnWidth}px repeat(${days.length}, minmax(${dayColumnWidth}px,1fr))`} as any}><div className="employeeHeader">Employee</div>{days.map((day,idx)=>{const date=dateFor(w,idx);return <div className={`dayHeader ${highlightDate===date?'highlightedBoardDate':''}`} key={day}><b>{day}</b><span>{fmtDate(date)}</span></div>})}{weekEmployees.map((emp:any)=><React.Fragment key={emp.id}><div className="employeeCell"><b>{emp.name}</b><span>{emp.skills}</span></div>{days.map((day,idx)=>{const date=dateFor(w,idx);const cards=cardsFor(emp.id,date);const hours=cards.reduce((n:number,s:any)=>n+(Number(s.chunkHours)||0),0);const cap=capacityForDate(data,emp.id,date);const overloaded=hours>cap;const friday=isFri(date);return <div className={'assignmentCell '+(overloaded?'overloaded ':'')+(cap===0?' unavailable ':'')+(highlightDate===date?'highlightedBoardDate ':'')} key={emp.id+day} onDragOver={boardMode==='Live'?undefined:boardDragOver} onDragLeave={stopAutoScroll} onDrop={e=>{stopAutoScroll();if(boardMode!=='Live')moveChunk(e.dataTransfer.getData('asm'),emp.id,date)}}>{friday&&<button className="mini otToggle" disabled={boardMode==='Live'} onClick={()=>toggleFri(emp.id,date)}>{cap>0?'Friday OT On':'Enable Friday OT'}</button>}{cap===0&&!friday&&<div className="offBadge">{absenceLabel(emp,date)||'Off / Holiday'}</div>}{overloaded&&<div className="overBadge">{hours.toFixed(1)} / {cap.toFixed(1)} hrs</div>}{!overloaded&&hours>0&&<div className="hourBadge">{hours.toFixed(1)} hrs</div>}{cards.map((row:any)=><TaskCard key={(row.employeeChunkId||'u')+row.id+row.chunkDate} s={row}/>)}</div>})}</React.Fragment>)}{showUnassignedRow&&<><div className="employeeCell unassignedLabel"><b>Unassigned</b><span>Unassigned work appears here until employees are selected</span></div>{days.map((day,idx)=>{const date=dateFor(w,idx);const cards=unassignedFor(date);return <div className={`assignmentCell ${highlightDate===date?'highlightedBoardDate':''}`} key={'unassigned'+day} onDragOver={boardMode==='Live'?undefined:boardDragOver} onDragLeave={stopAutoScroll} onDrop={e=>{stopAutoScroll();if(boardMode!=='Live')moveChunk(e.dataTransfer.getData('asm'),'',date)}}>{cards.map((row:any)=><TaskCard key={'u'+row.id+row.chunkDate} s={row}/>)}</div>})}</>}{showTestRow&&<><div className="employeeCell testRowLabel"><b>In Test</b><span>External test gate by day</span></div>{days.map((day,idx)=>{const date=dateFor(w,idx);const tests=testItemsFor(date);return <div className={`assignmentCell testAssignmentCell ${highlightDate===date?'highlightedBoardDate':''}`} key={'test'+day}>{tests.length===0&&<span className="muted small">No test items</span>}{tests.map((a:any)=>{const dimmed=shouldDimProject(a.projectId||'');return <div className={`testMiniCard phase-test ${dimmed?'taskDimmed ':''}${projectFocusId!=='All'&&!dimmed?'taskFocused ':''}${focusedAssemblyId?(focusedAssemblyId===a.id?'focusedAssembly ':'dimmedByFocus '):''}`} style={{'--project-accent':projectAccentColor(a.projectId||''),'--assembly-accent':assemblyAccentColor(a.id)} as any} key={a.id+date} data-asm={a.id} data-phase="Test" data-date={date} onClick={()=>{if(focusedAssemblyId===a.id){setFocusedAssemblyId('');setDetailTarget(null)}else{setFocusedAssemblyId(a.id);setDetailTarget({sourceId:a.id,phase:'Test'})}}}><div className="taskBadgeRow"><span className="phaseBadge phase-test">{phaseBadgeLabel('Test')}</span>{a.shipDate&&<span className="testReturnPill">Ship {fmtDate(a.shipDate)}</span>}</div><b>{a.description||a.partNumber}</b><span>Assembly: {a.partNumber||'—'} {a.instanceLabel||''}</span><small>{a.testReturnDateTime?`Expected return ${fmtDateTime(a.testReturnDateTime)}`:`Test gate ${Number(a.testHours||0).toFixed(1)}h`}</small></div>})}</div>})}</>}</div>}</div>})}</div>
 }
