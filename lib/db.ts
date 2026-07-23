@@ -44,7 +44,7 @@ async function ensureTable(sql: ReturnType<typeof neon>) {
 export async function readSchedulerData() {
   const sql = getSql();
   await ensureTable(sql);
-  const rows = await sql`SELECT data, updated_at FROM app_state WHERE id = 1;`;
+  const rows = await sql`SELECT data, updated_at::text AS updated_at FROM app_state WHERE id = 1;`;
   if (rows.length && rows[0].data) {
     return { data: rows[0].data, updatedAt: String(rows[0].updated_at) };
   }
@@ -53,7 +53,7 @@ export async function readSchedulerData() {
     INSERT INTO app_state (id, data) VALUES (1, ${seedJson}::jsonb)
     ON CONFLICT (id) DO NOTHING;
   `;
-  const seeded = await sql`SELECT data, updated_at FROM app_state WHERE id = 1;`;
+  const seeded = await sql`SELECT data, updated_at::text AS updated_at FROM app_state WHERE id = 1;`;
   return { data: seeded[0]?.data || defaultData, updatedAt: String(seeded[0]?.updated_at || '') };
 }
 
@@ -67,17 +67,17 @@ export async function writeSchedulerData(data: any, baseUpdatedAt = '') {
   if (baseUpdatedAt) {
     const rows = await sql`
       UPDATE app_state SET data = ${json}::jsonb, updated_at = now()
-      WHERE id = 1 AND updated_at = ${baseUpdatedAt}::timestamptz
-      RETURNING updated_at;
+      WHERE id = 1 AND updated_at::text = ${baseUpdatedAt}
+      RETURNING updated_at::text AS updated_at;
     `;
     if (rows.length) return { ok: true, updatedAt: String(rows[0].updated_at) };
-    const current = await sql`SELECT updated_at FROM app_state WHERE id = 1;`;
+    const current = await sql`SELECT updated_at::text AS updated_at FROM app_state WHERE id = 1;`;
     if (!current.length) {
       // Row vanished; insert fresh.
       const inserted = await sql`
         INSERT INTO app_state (id, data) VALUES (1, ${json}::jsonb)
         ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
-        RETURNING updated_at;
+        RETURNING updated_at::text AS updated_at;
       `;
       return { ok: true, updatedAt: String(inserted[0].updated_at) };
     }
@@ -86,7 +86,7 @@ export async function writeSchedulerData(data: any, baseUpdatedAt = '') {
   const rows = await sql`
     INSERT INTO app_state (id, data, updated_at) VALUES (1, ${json}::jsonb, now())
     ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
-    RETURNING updated_at;
+    RETURNING updated_at::text AS updated_at;
   `;
   return { ok: true, updatedAt: String(rows[0].updated_at) };
 }
@@ -138,7 +138,7 @@ export async function restoreServerBackup(id: number) {
   const rows = await sql`
     UPDATE app_state SET data = (SELECT data FROM app_backups WHERE id = ${id}), updated_at = now()
     WHERE id = 1 AND EXISTS (SELECT 1 FROM app_backups WHERE id = ${id})
-    RETURNING updated_at;
+    RETURNING updated_at::text AS updated_at;
   `;
   return rows.length ? { ok: true, updatedAt: String(rows[0].updated_at) } : { ok: false };
 }
