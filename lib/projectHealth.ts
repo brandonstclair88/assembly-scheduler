@@ -9,7 +9,7 @@ export type ProjectHealthStatus =
   | 'Missing Assignment'
   | 'Over Capacity'
   | 'Waiting on Test'
-  | 'Waiting on Inspection'
+  | 'Waiting on Finalizing'
   | 'Ready to Ship';
 
 export type ProjectHealthTone = 'good' | 'warn' | 'late' | 'info';
@@ -23,7 +23,7 @@ export type ProjectTimelineStepStatus =
   | 'Not Needed';
 
 export type ProjectTimelineStep = {
-  key: 'subs' | 'top' | 'test' | 'inspect' | 'ship';
+  key: 'subs' | 'top' | 'test' | 'finalize' | 'ship';
   label: string;
   status: ProjectTimelineStepStatus;
   date?: string;
@@ -51,7 +51,7 @@ export type ProjectHealthRecord = {
   missingAssignmentCount: number;
   overCapacityCount: number;
   waitingOnTestCount: number;
-  waitingOnInspectionCount: number;
+  waitingOnFinalizingCount: number;
   relatedAssemblyIds: string[];
   timeline: ProjectTimelineStep[];
 };
@@ -112,9 +112,9 @@ function taskHours(assembly: any) {
   return Math.max(0, Number(assembly?.qty || 1) * Number(assembly?.hoursEach || 0));
 }
 
-function phaseAssignments(assembly: any, phase: 'Build' | 'Inspection' | 'Shipping') {
-  const raw = phase === 'Inspection'
-    ? (assembly?.inspectionAssignedTo || assembly?.assignedTo)
+function phaseAssignments(assembly: any, phase: 'Build' | 'Finalizing' | 'Shipping') {
+  const raw = phase === 'Finalizing'
+    ? (assembly?.finalizingAssignedTo || assembly?.assignedTo)
     : phase === 'Shipping'
       ? (assembly?.shippingAssignedTo || assembly?.assignedTo)
       : assembly?.assignedTo;
@@ -167,7 +167,7 @@ function buildScheduleMap(schedule: ScheduledItem[]) {
   const byKey: Record<string, ScheduledItem> = {};
   for (const item of schedule) {
     const sourceId = item.sourceAssemblyId || String(item.id).split('|')[0];
-    const phase = (item.phase || 'Build') as 'Build' | 'Inspection' | 'Shipping';
+    const phase = (item.phase || 'Build') as 'Build' | 'Finalizing' | 'Shipping';
     byKey[`${sourceId}|${phase}`] = item;
   }
   return byKey;
@@ -176,13 +176,13 @@ function buildScheduleMap(schedule: ScheduledItem[]) {
 function allDone(assemblies: ProjectAssembly[]) {
   return assemblies.every(assembly => {
     const buildDone = assembly.status === 'Complete' || Number(assembly.percent || 0) >= 100 || taskHours(assembly) <= 0;
-    const inspectDone = !assembly.inspectionRequired || !!assembly.inspectionComplete;
+    const finalizeDone = !assembly.finalizingRequired || !!assembly.finalizingComplete;
     const shipDone = !shippingExpected(assembly) || !!assembly.shippingComplete;
-    return buildDone && inspectDone && shipDone;
+    return buildDone && finalizeDone && shipDone;
   });
 }
 
-function phaseEmployees(assemblies: ProjectAssembly[], employeesById: Record<string, any>, phase: 'Build' | 'Inspection' | 'Shipping') {
+function phaseEmployees(assemblies: ProjectAssembly[], employeesById: Record<string, any>, phase: 'Build' | 'Finalizing' | 'Shipping') {
   return uniqueNames(
     assemblies.flatMap(assembly =>
       phaseAssignments(assembly, phase).map(id => employeesById[id]?.name || id)
@@ -190,7 +190,7 @@ function phaseEmployees(assemblies: ProjectAssembly[], employeesById: Record<str
   );
 }
 
-function phaseWarningCount(warnings: ScheduleWarning[], phase?: 'Build' | 'Inspection' | 'Shipping') {
+function phaseWarningCount(warnings: ScheduleWarning[], phase?: 'Build' | 'Finalizing' | 'Shipping') {
   return warnings.filter(warning => {
     if (phase) return warning.phase === phase;
     return !warning.phase;
@@ -233,7 +233,7 @@ export function buildProjectTimeline(
   const subs = assemblies.filter(assembly => assembly.type === 'Sub Assembly');
   const tops = assemblies.filter(assembly => assembly.type === 'Top Level Assembly');
   const tests = assemblies.filter(assembly => !!assembly.testRequired || Number(assembly.testHours || 0) > 0 || !!assembly.testReturnDateTime);
-  const inspections = assemblies.filter(assembly => !!assembly.inspectionRequired);
+  const finalizings = assemblies.filter(assembly => !!assembly.finalizingRequired);
   const shipping = assemblies.filter(assembly => shippingExpected(assembly));
 
   const latestSubDate = subs.map(assembly => scheduleMap[`${assembly.id}|Build`]?.scheduledEnd || '').filter(Boolean).sort().slice(-1)[0] || '';
@@ -242,7 +242,7 @@ export function buildProjectTimeline(
     const buildFinish = scheduleMap[`${assembly.id}|Build`]?.scheduledEnd || '';
     return testReleaseDate(buildFinish, assembly, data);
   }).filter(Boolean).sort().slice(-1)[0] || '';
-  const latestInspectionDate = inspections.map(assembly => scheduleMap[`${assembly.id}|Inspection`]?.scheduledEnd || '').filter(Boolean).sort().slice(-1)[0] || '';
+  const latestFinalizingDate = finalizings.map(assembly => scheduleMap[`${assembly.id}|Finalizing`]?.scheduledEnd || '').filter(Boolean).sort().slice(-1)[0] || '';
   const latestShippingDate = shipping.map(assembly => scheduleMap[`${assembly.id}|Shipping`]?.scheduledEnd || assembly.shipDate || '').filter(Boolean).sort().slice(-1)[0] || '';
 
   const subsBlocked = subs.some(assembly => assembly.status === 'On Hold' || !!String(assembly.holdReason || '').trim());
@@ -252,19 +252,19 @@ export function buildProjectTimeline(
     const release = testReleaseDate(buildFinish, assembly, data);
     return !!assembly.shipDate && !!release && release > assembly.shipDate;
   });
-  const inspectionBlocked = inspections.some(assembly => !phaseAssignments(assembly, 'Inspection').length);
+  const finalizingBlocked = finalizings.some(assembly => !phaseAssignments(assembly, 'Finalizing').length);
   const shippingBlocked = shipping.some(assembly => !phaseAssignments(assembly, 'Shipping').length);
 
   const subsComplete = subs.length > 0 && subs.every(assembly => Number(assembly.percent || 0) >= 100 || assembly.status === 'Complete');
   const topsComplete = tops.length > 0 && tops.every(assembly => Number(assembly.percent || 0) >= 100 || assembly.status === 'Complete');
-  const inspectionComplete = inspections.length > 0 && inspections.every(assembly => !!assembly.inspectionComplete);
+  const finalizingComplete = finalizings.length > 0 && finalizings.every(assembly => !!assembly.finalizingComplete);
   const shippingComplete = shipping.length > 0 && shipping.every(assembly => !!assembly.shippingComplete);
 
   const testWaiting = tests.some(assembly => {
     const buildFinish = scheduleMap[`${assembly.id}|Build`]?.scheduledEnd || '';
     if (!buildFinish) return false;
     const release = testReleaseDate(buildFinish, assembly, data);
-    return !!release && !assembly.inspectionComplete && !assembly.shippingComplete;
+    return !!release && !assembly.finalizingComplete && !assembly.shippingComplete;
   });
 
   const steps: ProjectTimelineStep[] = [
@@ -304,8 +304,8 @@ export function buildProjectTimeline(
         complete: tests.length > 0 && tests.every(assembly => {
           const buildFinish = scheduleMap[`${assembly.id}|Build`]?.scheduledEnd || '';
           const release = testReleaseDate(buildFinish, assembly, data);
-          const inspectionStart = scheduleMap[`${assembly.id}|Inspection`]?.scheduledStart || scheduleMap[`${assembly.id}|Shipping`]?.scheduledStart || '';
-          return !!release && (!!inspectionStart ? inspectionStart >= release : !!assembly.inspectionComplete || !!assembly.shippingComplete);
+          const finalizingStart = scheduleMap[`${assembly.id}|Finalizing`]?.scheduledStart || scheduleMap[`${assembly.id}|Shipping`]?.scheduledStart || '';
+          return !!release && (!!finalizingStart ? finalizingStart >= release : !!assembly.finalizingComplete || !!assembly.shippingComplete);
         }),
         blocked: testBlocked,
         waiting: testWaiting,
@@ -316,27 +316,27 @@ export function buildProjectTimeline(
       }),
       date: latestTestRelease,
       employeeName: '',
-      note: tests.length ? 'External gate between build and inspection.' : 'No test gate required.',
+      note: tests.length ? 'External gate between build and finalizing.' : 'No test gate required.',
       warningCount: projectWarnings.filter(warning => warning.reason.toLowerCase().includes('test')).length,
     },
     {
-      key: 'inspect',
-      label: 'Inspect',
+      key: 'finalize',
+      label: 'Finalize',
       status: stepStatusFromFlags({
-        needed: inspections.length > 0,
-        complete: inspectionComplete,
-        blocked: inspectionBlocked || phaseWarningCount(projectWarnings, 'Inspection') > 0,
-        waiting: inspections.some(assembly => {
+        needed: finalizings.length > 0,
+        complete: finalizingComplete,
+        blocked: finalizingBlocked || phaseWarningCount(projectWarnings, 'Finalizing') > 0,
+        waiting: finalizings.some(assembly => {
           const buildFinish = scheduleMap[`${assembly.id}|Build`]?.scheduledEnd || '';
           const release = testReleaseDate(buildFinish, assembly, data);
-          return !!release && !assembly.inspectionComplete && !scheduleMap[`${assembly.id}|Inspection`];
+          return !!release && !assembly.finalizingComplete && !scheduleMap[`${assembly.id}|Finalizing`];
         }),
-        scheduled: inspections.some(assembly => !!scheduleMap[`${assembly.id}|Inspection`]),
+        scheduled: finalizings.some(assembly => !!scheduleMap[`${assembly.id}|Finalizing`]),
       }),
-      date: latestInspectionDate,
-      employeeName: phaseEmployees(inspections, employeesById, 'Inspection'),
-      note: inspections.length ? 'Inspection must finish before shipping.' : 'No inspection required.',
-      warningCount: phaseWarningCount(projectWarnings, 'Inspection'),
+      date: latestFinalizingDate,
+      employeeName: phaseEmployees(finalizings, employeesById, 'Finalizing'),
+      note: finalizings.length ? 'Finalizing must finish before shipping.' : 'No finalizing required.',
+      warningCount: phaseWarningCount(projectWarnings, 'Finalizing'),
     },
     {
       key: 'ship',
@@ -379,13 +379,13 @@ export function calculateProjectHealth(
     const overdueIncomplete = assemblies.filter(assembly => {
       if (!assembly.shipDate || assembly.lateAllowed) return false;
       const buildDone = assembly.status === 'Complete' || Number(assembly.percent || 0) >= 100 || taskHours(assembly) <= 0;
-      const inspectDone = !assembly.inspectionRequired || !!assembly.inspectionComplete;
+      const finalizeDone = !assembly.finalizingRequired || !!assembly.finalizingComplete;
       const shipDone = !shippingExpected(assembly) || !!assembly.shippingComplete;
-      return assembly.shipDate < today && !(buildDone && inspectDone && shipDone);
+      return assembly.shipDate < today && !(buildDone && finalizeDone && shipDone);
     }).length;
     const lateItemCount = lateItemsFromSchedule + overdueIncomplete;
 
-    const missingAssignmentCount = projectWarnings.filter(warning => warning.code === 'missing_build_assignment' || warning.code === 'missing_inspection_assignment' || warning.code === 'missing_shipping_assignment').length;
+    const missingAssignmentCount = projectWarnings.filter(warning => warning.code === 'missing_build_assignment' || warning.code === 'missing_finalizing_assignment' || warning.code === 'missing_shipping_assignment').length;
     const overCapacityCount = projectWarnings.filter(warning => warning.code === 'over_capacity' || warning.code === 'non_working_day').length;
 
     const waitingOnTestAssemblies = assemblies.filter(assembly => {
@@ -393,21 +393,21 @@ export function calculateProjectHealth(
       if (!hasTest) return false;
       const buildItem = scheduleMap[`${assembly.id}|Build`];
       const buildReady = Number(assembly.percent || 0) >= 90 || assembly.status === 'Complete' || (!!buildItem && buildItem.scheduledEnd <= today);
-      if (!buildReady || assembly.inspectionComplete || assembly.shippingComplete) return false;
+      if (!buildReady || assembly.finalizingComplete || assembly.shippingComplete) return false;
       const release = testReleaseDate(buildItem?.scheduledEnd || '', assembly, data);
-      return !!release && (!scheduleMap[`${assembly.id}|Inspection`] || release >= today);
+      return !!release && (!scheduleMap[`${assembly.id}|Finalizing`] || release >= today);
     });
     const waitingOnTestCount = waitingOnTestAssemblies.length;
 
-    const waitingOnInspectionAssemblies = assemblies.filter(assembly => {
-      if (!assembly.inspectionRequired || assembly.inspectionComplete) return false;
+    const waitingOnFinalizingAssemblies = assemblies.filter(assembly => {
+      if (!assembly.finalizingRequired || assembly.finalizingComplete) return false;
       const buildItem = scheduleMap[`${assembly.id}|Build`];
       const buildReady = Number(assembly.percent || 0) >= 90 || assembly.status === 'Complete' || (!!buildItem && buildItem.scheduledEnd <= today);
       if (!buildReady) return false;
       const release = testReleaseDate(buildItem?.scheduledEnd || '', assembly, data);
       return !release || release <= today;
     });
-    const waitingOnInspectionCount = waitingOnInspectionAssemblies.length;
+    const waitingOnFinalizingCount = waitingOnFinalizingAssemblies.length;
 
     const readyToShipAssemblies = relevantAssemblies.filter(assembly => {
       if (!shippingExpected(assembly) || assembly.shippingComplete) return false;
@@ -417,9 +417,9 @@ export function calculateProjectHealth(
       const buildReady = Number(assembly.percent || 0) >= 90 || assembly.status === 'Complete' || buildItem.scheduledEnd <= today;
       if (!buildReady) return false;
       const release = testReleaseDate(buildItem.scheduledEnd || '', assembly, data);
-      const inspectionReady = !assembly.inspectionRequired || assembly.inspectionComplete || !!scheduleMap[`${assembly.id}|Inspection`];
-      const beforeShip = !assembly.shipDate || (maxDate(release || buildItem.scheduledEnd, scheduleMap[`${assembly.id}|Inspection`]?.scheduledEnd || '') <= assembly.shipDate);
-      return inspectionReady && beforeShip;
+      const finalizingReady = !assembly.finalizingRequired || assembly.finalizingComplete || !!scheduleMap[`${assembly.id}|Finalizing`];
+      const beforeShip = !assembly.shipDate || (maxDate(release || buildItem.scheduledEnd, scheduleMap[`${assembly.id}|Finalizing`]?.scheduledEnd || '') <= assembly.shipDate);
+      return finalizingReady && beforeShip;
     });
     const readyToShipCount = readyToShipAssemblies.length;
 
@@ -437,9 +437,9 @@ export function calculateProjectHealth(
     } else if (overCapacityCount > 0) {
       status = 'Over Capacity';
       reason = `${overCapacityCount} capacity warning${overCapacityCount === 1 ? '' : 's'} tied to this project.`;
-    } else if (waitingOnInspectionCount > 0) {
-      status = 'Waiting on Inspection';
-      reason = `${waitingOnInspectionCount} item${waitingOnInspectionCount === 1 ? '' : 's'} ready for inspection.`;
+    } else if (waitingOnFinalizingCount > 0) {
+      status = 'Waiting on Finalizing';
+      reason = `${waitingOnFinalizingCount} item${waitingOnFinalizingCount === 1 ? '' : 's'} ready for finalizing.`;
     } else if (waitingOnTestCount > 0) {
       status = 'Waiting on Test';
       reason = `${waitingOnTestCount} item${waitingOnTestCount === 1 ? '' : 's'} waiting on test return or release.`;
@@ -472,7 +472,7 @@ export function calculateProjectHealth(
       missingAssignmentCount,
       overCapacityCount,
       waitingOnTestCount,
-      waitingOnInspectionCount,
+      waitingOnFinalizingCount,
       relatedAssemblyIds: assemblies.map(assembly => assembly.id),
       timeline,
     };

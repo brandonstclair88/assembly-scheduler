@@ -2,7 +2,8 @@ import { neon } from '@neondatabase/serverless';
 import { defaultData } from './defaultData';
 
 // Serverless-friendly Postgres storage (Neon, via the Vercel Marketplace integration
-// or a standalone Neon project).
+// or a standalone Neon project). Replaces the old local-file node:sqlite store, which
+// doesn't work on Vercel's serverless functions (no persistent disk between invocations).
 //
 // DATABASE_URL is injected automatically by Vercel when you add the Neon integration
 // in Project Settings > Storage. For local development, copy the connection string from
@@ -30,123 +31,100 @@ async function ensureTable(sql: ReturnType<typeof neon>) {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
   `;
-  await sql`
-    CREATE TABLE IF NOT EXISTS app_backups (
-      id SERIAL PRIMARY KEY,
-      reason TEXT NOT NULL DEFAULT 'manual',
-      data JSONB NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-    );
-  `;
   ensured = true;
+}
+
+// --- Inspection -> Finalizing field-name migration ---
+// The "Inspection" phase was renamed to "Finalizing" throughout the app,
+// including its data field names (inspectionAssignedTo, inspectionRequired,
+// inspectionHours, inspectionComplete, inspectionManualStartDate, and the
+// employee capability flag canInspect). Records already saved in Postgres
+// from before this rename still use the old field names. Without this shim,
+// every already-scheduled finalizing assignment, requirement flag, and
+// hours value would silently read as blank/false the moment this code
+// deploys, because the app now looks for finalizingAssignedTo etc. and
+// finds nothing under those keys.
+//
+// migrateRecord renames each old key to its new key IN PLACE, but only
+// fills the new key if it isn't already set (so it never clobbers a value
+// that was already migrated or entered fresh under the new name).
+const ASSEMBLY_FIELD_RENAMES: Record<string, string> = {
+  inspectionRequired: 'finalizingRequired',
+  inspectionHours: 'finalizingHours',
+  inspectionAssignedTo: 'finalizingAssignedTo',
+  inspectionManualStartDate: 'finalizingManualStartDate',
+  inspectionComplete: 'finalizingComplete',
+};
+const TEMPLATE_FIELD_RENAMES: Record<string, string> = {
+  inspectionRequired: 'finalizingRequired',
+  inspectionHours: 'finalizingHours',
+};
+const EMPLOYEE_FIELD_RENAMES: Record<string, string> = {
+  canInspect: 'canFinalize',
+};
+
+function migrateRecord(record: any, fieldMap: Record<string, string>): boolean {
+  if (!record || typeof record !== 'object') return false;
+  let changed = false;
+  for (const oldKey in fieldMap) {
+    if (!Object.prototype.hasOwnProperty.call(record, oldKey)) continue;
+    const newKey = fieldMap[oldKey];
+    if (record[newKey] === undefined) record[newKey] = record[oldKey];
+    delete record[oldKey];
+    changed = true;
+  }
+  return changed;
+}
+
+function migrateInspectionFieldNames(data: any): boolean {
+  if (!data || typeof data !== 'object') return false;
+  let changed = false;
+  const assemblyLists = [data.projectAssemblies, data.assemblies].filter(Array.isArray);
+  for (const list of assemblyLists) {
+    for (const assembly of list) {
+      if (migrateRecord(assembly, ASSEMBLY_FIELD_RENAMES)) changed = true;
+    }
+  }
+  for (const template of data.assemblyTemplates || []) {
+    if (migrateRecord(template, TEMPLATE_FIELD_RENAMES)) changed = true;
+  }
+  for (const employee of data.employees || []) {
+    if (migrateRecord(employee, EMPLOYEE_FIELD_RENAMES)) changed = true;
+  }
+  return changed;
 }
 
 export async function readSchedulerData() {
   const sql = getSql();
   await ensureTable(sql);
-  const rows = await sql`SELECT data, updated_at FROM app_state WHERE id = 1;`;
+  const rows = await sql`SELECT data FROM app_state WHERE id = 1;`;
   if (rows.length && rows[0].data) {
-    return { data: rows[0].data, updatedAt: String(rows[0].updated_at) };
+    const data = rows[0].data;
+    if (migrateInspectionFieldNames(data)) {
+      // Old field names were found and renamed in memory above; persist the
+      // upgrade so the stored JSON itself is clean and future reads don't
+      // need to migrate again. Failure here isn't fatal - the in-memory
+      // data returned below is already correct for this request either way.
+      await writeSchedulerData(data).catch(() => {});
+    }
+    return data;
   }
   const seedJson = JSON.stringify(defaultData);
   await sql`
     INSERT INTO app_state (id, data) VALUES (1, ${seedJson}::jsonb)
     ON CONFLICT (id) DO NOTHING;
   `;
-  const seeded = await sql`SELECT data, updated_at FROM app_state WHERE id = 1;`;
-  return { data: seeded[0]?.data || defaultData, updatedAt: String(seeded[0]?.updated_at || '') };
+  return defaultData;
 }
 
-// Conditional write: only saves if the caller's baseUpdatedAt matches the row's
-// updated_at (prevents a stale browser tab from silently overwriting newer data).
-// Pass an empty baseUpdatedAt to force-write (first save, or explicit override).
-export async function writeSchedulerData(data: any, baseUpdatedAt = '') {
+export async function writeSchedulerData(data: any) {
   const sql = getSql();
   await ensureTable(sql);
   const json = JSON.stringify(data);
-  if (baseUpdatedAt) {
-    const rows = await sql`
-      UPDATE app_state SET data = ${json}::jsonb, updated_at = now()
-      WHERE id = 1 AND updated_at = ${baseUpdatedAt}::timestamptz
-      RETURNING updated_at;
-    `;
-    if (rows.length) return { ok: true, updatedAt: String(rows[0].updated_at) };
-    const current = await sql`SELECT updated_at FROM app_state WHERE id = 1;`;
-    if (!current.length) {
-      // Row vanished; insert fresh.
-      const inserted = await sql`
-        INSERT INTO app_state (id, data) VALUES (1, ${json}::jsonb)
-        ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
-        RETURNING updated_at;
-      `;
-      return { ok: true, updatedAt: String(inserted[0].updated_at) };
-    }
-    return { ok: false, conflict: true, currentUpdatedAt: String(current[0].updated_at) };
-  }
-  const rows = await sql`
+  await sql`
     INSERT INTO app_state (id, data, updated_at) VALUES (1, ${json}::jsonb, now())
-    ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = now()
-    RETURNING updated_at;
+    ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = EXCLUDED.updated_at;
   `;
-  return { ok: true, updatedAt: String(rows[0].updated_at) };
-}
-
-export async function createServerBackup(reason = 'manual') {
-  const sql = getSql();
-  await ensureTable(sql);
-  await sql`
-    INSERT INTO app_backups (reason, data)
-    SELECT ${reason}, data FROM app_state WHERE id = 1;
-  `;
-  // Keep the most recent 40 snapshots.
-  await sql`
-    DELETE FROM app_backups
-    WHERE id NOT IN (SELECT id FROM app_backups ORDER BY created_at DESC LIMIT 40);
-  `;
-}
-
-export async function listServerBackups() {
-  const sql = getSql();
-  await ensureTable(sql);
-  const rows = await sql`
-    SELECT id, reason, created_at,
-      jsonb_array_length(COALESCE(data->'employees','[]'::jsonb)) AS employees,
-      jsonb_array_length(COALESCE(data->'projects','[]'::jsonb)) AS projects,
-      jsonb_array_length(COALESCE(data->'assemblyTemplates','[]'::jsonb)) AS library,
-      jsonb_array_length(COALESCE(data->'projectAssemblies','[]'::jsonb)) AS project_assemblies
-    FROM app_backups ORDER BY created_at DESC;
-  `;
-  return rows.map((r: any) => ({
-    id: r.id,
-    reason: r.reason,
-    createdAt: String(r.created_at),
-    counts: { employees: r.employees, projects: r.projects, library: r.library, projectAssemblies: r.project_assemblies },
-  }));
-}
-
-export async function getServerBackup(id: number) {
-  const sql = getSql();
-  await ensureTable(sql);
-  const rows = await sql`SELECT data FROM app_backups WHERE id = ${id};`;
-  return rows.length ? rows[0].data : null;
-}
-
-export async function restoreServerBackup(id: number) {
-  const sql = getSql();
-  await ensureTable(sql);
-  await createServerBackup('before-restore');
-  const rows = await sql`
-    UPDATE app_state SET data = (SELECT data FROM app_backups WHERE id = ${id}), updated_at = now()
-    WHERE id = 1 AND EXISTS (SELECT 1 FROM app_backups WHERE id = ${id})
-    RETURNING updated_at;
-  `;
-  return rows.length ? { ok: true, updatedAt: String(rows[0].updated_at) } : { ok: false };
-}
-
-export async function deleteServerBackup(id: number) {
-  const sql = getSql();
-  await ensureTable(sql);
-  await sql`DELETE FROM app_backups WHERE id = ${id};`;
 }
 
 export function databaseInfo() {
