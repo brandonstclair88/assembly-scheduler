@@ -748,7 +748,7 @@ function TaskCard({s}:any){
     {s.isLate&&<span className="lateBadge">late</span>}{s.chunkLabel==='Draft'&&<span className="splitBadge">draft</span>}{s.chunkLabel==='Manual'&&<span className="splitBadge">manual</span>}{s.forecastMoved&&<span className="forecastMovedBadge">Moved</span>}
   </>:<>
     <div className="taskBadgeRow"><span className={`phaseBadge phase-${phaseTone}`}>{phaseLabel}</span>{!dUltra&&<span className="statusBadge">{status}</span>}{locked&&<span className="forecastBadge">LOCK</span>}{!dUltra&&autoAssigned&&<span className="forecastBadge autoBadge">AUTO</span>}{!dUltra&&s.isLive&&<span className="forecastBadge">Live</span>}{!dUltra&&s.forecastMoved&&<span className="forecastMovedBadge">Moved</span>}{s.isLate&&<span className="lateBadge">late</span>}</div>
-    {!dUltra&&<div className="taskProgress"><div className="taskProgressFill" style={{width:`${Math.max(0,Math.min(100,pct))}%`}}/></div>}
+    <div className="taskProgress"><div className="taskProgressFill" style={{width:`${Math.max(0,Math.min(100,pct))}%`}}/></div>
     <b className="tileDescription">{(source.instanceLabel||s.instanceLabel)&&<span className="tileAssemblyNo">{source.instanceLabel||s.instanceLabel}</span>}{source.description||s.description}</b>
     {!dCompact&&s.batchId&&<span className="batchBadge">{(data.shipmentBatches||[]).find((b:any)=>b.id===s.batchId)?.name}</span>}
     {!dUltra&&<span className="tileMeta">{tileProject?.projectId||s.projectName} · P/N {source.partNumber||s.partNumber}</span>}

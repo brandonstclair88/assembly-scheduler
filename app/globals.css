@@ -39,7 +39,7 @@ td textarea{min-width:220px;min-height:76px;resize:vertical}
 /* v32 high-level monthly calendar */
 .monthCalendar{display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));gap:8px;overflow:auto}.calHead{background:#eef4ff;border:1px solid var(--line);border-radius:12px;padding:9px;font-weight:800;text-align:center}.calDay{min-height:170px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;vertical-align:top}.calMuted{background:#f8fafc;color:#94a3b8}.calDate{font-weight:800;margin-bottom:6px}.calCard{background:#f8fbff;border:1px solid #c9d8ff;border-radius:12px;padding:8px;margin:6px 0;font-size:12px;line-height:1.25;color:#172033}.calCard b,.calCard span,.calCard small{display:block}.calCard small{color:#657085;margin-top:2px}.calLate{background:#fff0ee;border-color:#f3b1b1}.calSub{font-size:11px;color:#475569;margin-top:3px;padding-left:4px}.calMore{font-size:12px;font-weight:800;color:#315ea8;margin-top:6px}@media(max-width:1000px){.monthCalendar{grid-template-columns:repeat(7,minmax(130px,1fr));min-width:980px}}.task input,.task button{cursor:auto}
 .task.buildTileDone{background:#e0f2fe!important;border-color:#7dd3fc!important;box-shadow:0 6px 14px rgba(14,116,144,.14)}
-.task.buildTilePartial{background:linear-gradient(90deg,#e0f2fe 0%,#e0f2fe 35%,#ffffff 35%,#ffffff 100%);border-color:#bae6fd}
+.task.buildTilePartial{border-color:#bae6fd}
 
 /* v42 dashboard: Today's Work by Employee */
 .todayWorkList{display:flex;flex-direction:column;gap:14px;margin-top:12px}
@@ -1685,8 +1685,8 @@ html[data-theme="dark"] textarea:disabled{background:#1e293b!important;color:#cb
 .smartAssignReasonMeta{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .smartAssignReasonMeta small{display:inline-flex;padding:3px 7px;border-radius:999px;background:#eef2ff;color:#334155;border:1px solid #c7d2fe}
 .smartAssignCardSelect{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;font-weight:700;color:#334155}
-.taskProgress{position:relative;height:7px;border-radius:999px;background:#e2e8f0;overflow:hidden;margin:8px 0 6px}
-.taskProgressFill{height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#60a5fa)}
+.taskProgress{position:absolute;inset:0;border-radius:inherit;background:transparent;overflow:hidden;margin:0;z-index:-1;pointer-events:none}
+.taskProgressFill{position:absolute;left:0;top:0;bottom:0;border-radius:0;background:var(--progress-fill,rgba(37,99,235,.14))}
 .suggestedAssignBadge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-size:11px;font-weight:800}
 .mobileAccessCallout{margin:10px 0 12px;padding:10px 12px;border-radius:12px;background:#eef6ff;border:1px solid #bfdbfe;color:#1e3a8a;font-size:13px;font-weight:700}
 .employeeSettingsTable th:nth-child(8),.employeeSettingsTable td:nth-child(8){min-width:340px}
@@ -1748,8 +1748,8 @@ html[data-theme="dark"] .smartAssignOption{background:#0f172a!important;border-c
 html[data-theme="dark"] .smartAssignOption small,
 html[data-theme="dark"] .smartAssignCardSelect{color:#cbd5e1!important}
 html[data-theme="dark"] .smartAssignReasonMeta small{background:#1e293b!important;color:#f8fafc!important;border-color:#475569!important}
-html[data-theme="dark"] .taskProgress{background:#334155!important}
-html[data-theme="dark"] .taskProgressFill{background:linear-gradient(90deg,#60a5fa,#93c5fd)!important}
+html[data-theme="dark"] .taskProgress{background:transparent!important}
+html[data-theme="dark"] .taskProgressFill{background:rgba(96,165,250,.22)!important}
 html[data-theme="dark"] .mobileAccessCallout{background:#0f172a!important;border-color:#334155!important;color:#cbd5e1!important}
 html[data-theme="dark"] .mobileAccessPanel,
 html[data-theme="dark"] .mobileAccessQr,
@@ -2396,7 +2396,7 @@ html[data-theme="dark"] .autoAssignRowMain:hover{background:#172033!important;}
 .holdFilterChip{width:100%;margin:0 0 10px;text-align:center}
 
 /* Assembly identity system (Phase C1) */
-.task{position:relative;overflow:hidden}
+.task{position:relative;overflow:hidden;isolation:isolate}
 .asmStripe{position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--assembly-accent,#94a3b8);border-radius:3px 0 0 3px;pointer-events:none}
 .task.focusedAssembly{outline:2px solid var(--assembly-accent);box-shadow:0 0 0 4px color-mix(in srgb, var(--assembly-accent) 22%, transparent),0 10px 26px rgba(15,23,42,.18)!important}
 .task.dimmedByFocus,.testMiniCard.dimmedByFocus{opacity:.22;filter:saturate(.4)}
@@ -2418,7 +2418,7 @@ html[data-theme="dark"] .autoAssignRowMain:hover{background:#172033!important;}
 .task.runCont{padding-top:6px;padding-bottom:6px}
 .contLabel{display:block;font-size:12px;font-weight:800;margin-top:3px}
 .task.runNext::after{content:'▶';position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--assembly-accent);opacity:.85;pointer-events:none}
-.task.runCont .taskProgress{margin-top:2px}
+.task.runCont .taskProgress{margin-top:0}
 .flowOverlay{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:55}
 @media print{.flowOverlay,.assemblyDetailPanel{display:none!important}}
 
