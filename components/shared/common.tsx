@@ -71,7 +71,7 @@ export function batchCompletion(data:any,batchId:string){const tops=(data.projec
 
 export const PROJECT_HEALTH_OPTIONS=['All','On Track','At Risk','Late','Missing Assignment','Over Capacity','Waiting on Test','Waiting on Finalizing','Ready to Ship'];
 
-export function phaseBadgeLabel(phase:string){return phase==='Finalizing'?'INSPECT':phase==='Shipping'?'SHIP':phase==='Test'?'TEST':'BUILD'}
+export function phaseBadgeLabel(phase:string){return phase==='Finalizing'?'FINALIZE':phase==='Shipping'?'SHIP':phase==='Test'?'TEST':'BUILD'}
 
 export function phaseToneKey(phase:string){return phase==='Finalizing'?'finalize':phase==='Shipping'?'ship':phase==='Test'?'test':'build'}
 

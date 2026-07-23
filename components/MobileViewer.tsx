@@ -97,7 +97,7 @@ function warningTone(level: string) {
 }
 
 function phaseLabel(phase: string) {
-  if (phase === 'Finalizing') return 'INSPECT';
+  if (phase === 'Finalizing') return 'FINALIZE';
   if (phase === 'Shipping') return 'SHIP';
   if (phase === 'Test') return 'TEST';
   return 'BUILD';

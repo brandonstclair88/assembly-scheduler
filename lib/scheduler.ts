@@ -112,7 +112,7 @@ export function buildSchedule(data:AppData):ScheduledItem[]{
   }
   function makeItem(a:Assembly,phase:'Build'|'Finalizing'|'Shipping',start:string,finish:string,totalHours:number,hoursPerEmployee:number,assignees:string[],deps:string[],isLate:boolean):ScheduledItem{
     const proj=projects[a.projectId];
-    const phasePrefix=phase==='Build'?'BUILD':phase==='Finalizing'?'INSPECT':'SHIP';
+    const phasePrefix=phase==='Build'?'BUILD':phase==='Finalizing'?'FINALIZE':'SHIP';
     return {...a,id:`${a.id}|${phase.toLowerCase()}`,scheduleId:`${a.id}|${phase.toLowerCase()}`,sourceAssemblyId:a.id,phase,assignedTo:assignees.join(','),projectName:proj?.name||proj?.projectId||'Unknown Project',employeeName:assignees.map(id=>employees[id]?.name||id).join(', ')||'Unassigned',assignedEmployeeNames:assignees.map(id=>employees[id]?.name||id).join(', ')||'Unassigned',description:`${phasePrefix}: ${a.description}`,scheduledStart:start,scheduledEnd:finish,totalHours,hoursPerEmployee,week:mondayOf(parseDate(start)),dependencyNames:deps.join(', '),isLate,lateAllowed:!!a.lateAllowed} as ScheduledItem;
   }
   function phasePlan(a:Assembly,phase:'Finalizing'|'Shipping',deadline:string){
