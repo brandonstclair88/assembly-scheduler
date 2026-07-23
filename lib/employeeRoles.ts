@@ -1,11 +1,11 @@
-export type WorkPhase='Build'|'Finalizing'|'Shipping';
+export type WorkPhase='Build'|'Inspection'|'Shipping';
 
 export function canEmployeeBuild(employee:any){
   return !!employee && employee.canBuild!==false;
 }
 
-export function canEmployeeFinalize(employee:any){
-  return !!employee && employee.canFinalize!==false;
+export function canEmployeeInspect(employee:any){
+  return !!employee && employee.canInspect!==false;
 }
 
 export function canEmployeeShip(employee:any){
@@ -13,7 +13,7 @@ export function canEmployeeShip(employee:any){
 }
 
 export function canEmployeeForPhase(employee:any,phase:WorkPhase='Build'){
-  if(phase==='Finalizing')return canEmployeeFinalize(employee);
+  if(phase==='Inspection')return canEmployeeInspect(employee);
   if(phase==='Shipping')return canEmployeeShip(employee);
   return canEmployeeBuild(employee);
 }

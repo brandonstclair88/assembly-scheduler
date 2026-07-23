@@ -78,22 +78,22 @@ export function calculateTodayPriorities(
   const weekEnd = addDays(fromDate, 6);
   const priorities: TodayPriority[] = [];
 
-  const overdueFinalizings = assemblies
-    .filter(assembly => assembly.finalizingRequired && !assembly.finalizingComplete)
+  const overdueInspections = assemblies
+    .filter(assembly => assembly.inspectionRequired && !assembly.inspectionComplete)
     .map(assembly => ({
       assembly,
-      item: scheduleByKey[`${assembly.id}|Finalizing`],
+      item: scheduleByKey[`${assembly.id}|Inspection`],
     }))
     .filter(row => row.item?.scheduledEnd && row.item.scheduledEnd < fromDate)
     .sort((a, b) => String(a.item?.scheduledEnd || '').localeCompare(String(b.item?.scheduledEnd || '')));
-  if (overdueFinalizings.length) {
-    const first = overdueFinalizings[0];
+  if (overdueInspections.length) {
+    const first = overdueInspections[0];
     priorities.push({
-      id: 'overdue-finalizings',
+      id: 'overdue-inspections',
       tone: 'critical',
-      title: 'Overdue finalizing',
-      count: overdueFinalizings.length,
-      detail: `${overdueFinalizings.length} item${overdueFinalizings.length === 1 ? '' : 's'} overdue. First: ${projectLabel(projectsById[first.assembly.projectId])} · ${assemblyLabel(first.assembly)}`,
+      title: 'Overdue inspections',
+      count: overdueInspections.length,
+      detail: `${overdueInspections.length} item${overdueInspections.length === 1 ? '' : 's'} overdue. First: ${projectLabel(projectsById[first.assembly.projectId])} · ${assemblyLabel(first.assembly)}`,
       action: {
         kind: 'board',
         projectId: first.assembly.projectId,
@@ -180,7 +180,7 @@ export function calculateTodayPriorities(
   }
 
   const missingAssignments = warnings
-    .filter(warning => warning.code === 'missing_build_assignment' || warning.code === 'missing_finalizing_assignment' || warning.code === 'missing_shipping_assignment')
+    .filter(warning => warning.code === 'missing_build_assignment' || warning.code === 'missing_inspection_assignment' || warning.code === 'missing_shipping_assignment')
     .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
   if (missingAssignments.length) {
     const first = missingAssignments[0];
@@ -212,7 +212,7 @@ export function calculateTodayPriorities(
   }
 
   const blockedSmartAssign = warnings
-    .filter(warning => warning.code === 'no_preferred_employee_available' || warning.code === 'no_qualified_builder_available' || warning.code === 'no_qualified_finalizer_available' || warning.code === 'no_qualified_shipper_available' || warning.code === 'employee_unavailable' || warning.code === 'over_capacity_smart_assign')
+    .filter(warning => warning.code === 'no_preferred_employee_available' || warning.code === 'no_qualified_builder_available' || warning.code === 'no_qualified_inspector_available' || warning.code === 'no_qualified_shipper_available' || warning.code === 'employee_unavailable' || warning.code === 'over_capacity_smart_assign')
     .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
   if (blockedSmartAssign.length) {
     const first = blockedSmartAssign[0];

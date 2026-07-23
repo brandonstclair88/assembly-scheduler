@@ -28,10 +28,10 @@ function buildSnapshot(data: AppData, schedule: ScheduledItem[], suggestions: Sm
     id: e.id,
     name: e.name,
     canBuild: e.canBuild !== false,
-    canFinalize: e.canFinalize !== false,
+    canInspect: e.canInspect !== false,
     canShip: e.canShip !== false,
-    preferredProjects: (e.preferredProjectIds || '').split(/[\n,;\s]+/).filter(Boolean),
-    limitToPreferred: !!e.limitAutoAssignToTrainedProjects,
+    preferredProjects: (e.preferredProjectIds || e.trainedProjectIds || '').split(/[\n,;\s]+/).filter(Boolean),
+    limitToPreferred: !!e.preferPreferredProjects,
   }));
 
   // Project summary
@@ -59,7 +59,7 @@ function buildSnapshot(data: AppData, schedule: ScheduledItem[], suggestions: Sm
         type: a.type,
         phase: a.type,
         assignedTo: a.assignedTo || '(unassigned)',
-        finalizingAssignedTo: a.finalizingRequired ? (a.finalizingAssignedTo || '(unassigned)') : undefined,
+        inspectionAssignedTo: a.inspectionRequired ? (a.inspectionAssignedTo || '(unassigned)') : undefined,
         shippingAssignedTo: a.shippingRequired ? (a.shippingAssignedTo || '(unassigned)') : undefined,
         status: a.status,
         percent: a.percent,
@@ -67,7 +67,7 @@ function buildSnapshot(data: AppData, schedule: ScheduledItem[], suggestions: Sm
         locked: !!a.locked,
         smartAssignProtected: !!a.smartAssignProtected,
         manuallyScheduled: !!a.manuallyScheduled,
-        finalizingRequired: !!a.finalizingRequired,
+        inspectionRequired: !!a.inspectionRequired,
         shippingRequired: !!a.shippingRequired,
       };
     });
@@ -146,7 +146,7 @@ SCHEDULER SNAPSHOT (as of ${snapshot.today}):
 ${JSON.stringify(snapshot, null, 2)}
 
 KEY CONCEPTS you must understand:
-- Smart Assign is the app's AI assignment engine. It suggests which employee should handle each assembly phase (Build / Finalizing / Shipping) based on qualifications, preferred projects, capacity, and ship dates.
+- Smart Assign is the app's AI assignment engine. It suggests which employee should handle each assembly phase (Build / Inspection / Shipping) based on qualifications, preferred projects, capacity, and ship dates.
 - A suggestion with status "suggested" is actionable — the engine recommends a change.
 - Diagnostics like "no_preferred_employee_available" or "no_qualified_builder_available" mean the engine is blocked.
 - "smart_assign_available" = the engine has a better assignment than the current one.

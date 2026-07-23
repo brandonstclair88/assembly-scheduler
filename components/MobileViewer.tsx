@@ -2,42 +2,17 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { AppData } from '../lib/types';
+import { APP_VERSION, migrate } from '../lib/migrate';
+import { splitIds, dateOnly, fmtDate, fmtDateTime } from '../lib/format';
 import { defaultData, STORAGE_KEY } from '../lib/defaultData';
 import { buildSchedule, capacityForDate, dailyHours, scheduleHealth } from '../lib/scheduler';
+import { expandChunks, sortChunksByDate } from '../lib/chunks';
 import { calculateScheduleWarnings } from '../lib/scheduleWarnings';
 import { calculateProjectHealth, healthTone } from '../lib/projectHealth';
 import { calculateTodayPriorities } from '../lib/todayPriorities';
 import { previewSmartAssignSuggestions, smartAssignSuggestionMapByAssemblyPhase } from '../lib/smartAssign';
 
-const APP_VERSION = 91;
 type MobileTab = 'today' | 'week' | 'projects' | 'detail' | 'people';
-
-const uid = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
-
-function splitIds(value: string) {
-  return (value || '').split(/[\n,;\s]+/).map(x => x.trim()).filter(Boolean);
-}
-
-function dateOnly(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-
-function fmtDate(value: any) {
-  if (!value) return '';
-  const raw = String(value);
-  const datePart = raw.includes('T') ? raw.split('T')[0] : raw;
-  const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!match) return raw;
-  return `${Number(match[2])}/${Number(match[3])}/${match[1]}`;
-}
-
-function fmtDateTime(value: any) {
-  if (!value) return '';
-  const raw = String(value);
-  const [datePart, timePart = ''] = raw.split('T');
-  const hhmm = timePart.slice(0, 5);
-  return hhmm ? `${fmtDate(datePart)} ${hhmm}` : fmtDate(datePart);
-}
 
 function nextDate(value: string) {
   const date = new Date(`${value}T00:00:00`);
@@ -78,110 +53,6 @@ function projectCompletion(data: AppData, projectId: string) {
   if (!rows.length) return 0;
   const total = rows.reduce((sum, row) => sum + Number(row.percent || 0), 0);
   return Math.round(total / rows.length);
-}
-
-function migrate(raw: any): AppData {
-  const data = { ...defaultData, ...raw };
-  if (!data.assemblyTemplates) data.assemblyTemplates = [];
-  if (!data.holidays) data.holidays = [];
-  if (!data.shipmentBatches) data.shipmentBatches = [];
-  if (!data.projectAssemblies) data.projectAssemblies = data.assemblies || defaultData.projectAssemblies;
-  if (!data.assemblyTemplates.length && data.projectAssemblies?.length) {
-    const seen = new Set();
-    data.assemblyTemplates = data.projectAssemblies
-      .filter((assembly: any) => {
-        if (seen.has(assembly.partNumber)) return false;
-        seen.add(assembly.partNumber);
-        return true;
-      })
-      .map((assembly: any) => ({
-        id: uid('tpl'),
-        partNumber: assembly.partNumber,
-        description: assembly.description,
-        type: assembly.type,
-        defaultQty: assembly.qty || 1,
-        hoursEach: assembly.hoursEach || 1,
-        testRequired: assembly.testRequired || false,
-        testHours: assembly.testHours || 0,
-        finalizingRequired: assembly.finalizingRequired || false,
-        finalizingHours: assembly.finalizingHours || 0,
-        shippingRequired: assembly.shippingRequired || false,
-        shippingHours: assembly.shippingHours || 0,
-        defaultDependsOn: assembly.dependsOn || '',
-        notes: 'Created from older project assembly.',
-      }));
-  }
-  delete data.assemblies;
-  data.assemblyTemplates = (data.assemblyTemplates || []).map((template: any) => ({
-    testRequired: false,
-    testHours: 0,
-    finalizingRequired: false,
-    finalizingHours: 0,
-    shippingRequired: false,
-    shippingHours: 0,
-    testReturnDateTime: '',
-    finalizingAssignedTo: '',
-    shippingAssignedTo: '',
-    finalizingManualStartDate: '',
-    shippingManualStartDate: '',
-    finalizingComplete: false,
-    shippingComplete: false,
-    maxTopPercentWhenSubHeld: 80,
-    defaultDependsOn: '',
-    archived: false,
-    ...template,
-    type: template.type === 'Tool Level Assembly' ? 'Top Level Assembly' : template.type,
-  }));
-  data.employees = (data.employees || []).map((employee: any) => ({
-    timeOffDates: employee.timeOffDates || employee.pto || '',
-    fridayOvertimeDates: employee.fridayOvertimeDates || '',
-    workDays: employee.workDays || '',
-    workHoursByDay: employee.workHoursByDay || '',
-    canBuild: employee.canBuild !== false,
-    canFinalize: employee.canFinalize !== false,
-    canShip: employee.canShip !== false,
-    trainedProjectIds: employee.trainedProjectIds || '',
-    limitAutoAssignToTrainedProjects: !!employee.limitAutoAssignToTrainedProjects,
-    preferredProjectIds: employee.preferredProjectIds || employee.trainedProjectIds || '',
-    preferPreferredProjects: typeof employee.preferPreferredProjects === 'boolean' ? employee.preferPreferredProjects : !!employee.limitAutoAssignToTrainedProjects,
-    ...employee,
-  }));
-  data.projects = (data.projects || []).map((project: any) => ({
-    projectType: project.projectType || 'New Build',
-    sequencingEnabled: project.sequencingEnabled !== false,
-    ...project,
-  }));
-  data.projectAssemblies = (data.projectAssemblies || []).map((assembly: any) => ({
-    testRequired: false,
-    testHours: 0,
-    finalizingRequired: false,
-    finalizingHours: 0,
-    shippingRequired: false,
-    shippingHours: 0,
-    testReturnDateTime: '',
-    finalizingAssignedTo: '',
-    shippingAssignedTo: '',
-    finalizingManualStartDate: '',
-    shippingManualStartDate: '',
-    finalizingComplete: false,
-    shippingComplete: false,
-    maxTopPercentWhenSubHeld: 80,
-    instanceNumber: assembly.instanceNumber || 1,
-    instanceLabel: assembly.instanceLabel || '#1',
-    shipDate: assembly.shipDate || assembly.manualStart || '',
-    lateAllowed: !!assembly.lateAllowed,
-    manuallyScheduled: !!assembly.manuallyScheduled,
-    manualStartDate: assembly.manualStartDate || '',
-    buildGroupId: assembly.buildGroupId || '',
-    buildGroupLabel: assembly.buildGroupLabel || '',
-    parentAssemblyId: assembly.parentAssemblyId || '',
-    locked: !!assembly.locked,
-    smartAssignProtected: !!assembly.smartAssignProtected,
-    ...assembly,
-    type: assembly.type === 'Tool Level Assembly' ? 'Top Level Assembly' : assembly.type,
-    manualStart: undefined,
-  }));
-  return { ...data, version: APP_VERSION, settings: { ...defaultData.settings, ...data.settings } };
 }
 
 function loadLocal() {
@@ -226,14 +97,14 @@ function warningTone(level: string) {
 }
 
 function phaseLabel(phase: string) {
-  if (phase === 'Finalizing') return 'FINALIZING';
+  if (phase === 'Inspection') return 'INSPECT';
   if (phase === 'Shipping') return 'SHIP';
   if (phase === 'Test') return 'TEST';
   return 'BUILD';
 }
 
 function phaseTone(phase: string) {
-  if (phase === 'Finalizing') return 'finalize';
+  if (phase === 'Inspection') return 'inspect';
   if (phase === 'Shipping') return 'ship';
   if (phase === 'Test') return 'test';
   return 'build';
@@ -312,64 +183,7 @@ export default function MobileViewer() {
   }
 
   function expandChunksForRange(startDate: string, endDate: string) {
-    const chunks: any[] = [];
-    for (const item of schedule) {
-      const source = sourceAssembly(item);
-      const manualSegments = item.phase === 'Build' && Array.isArray(source?.manualWorkSegments)
-        ? source.manualWorkSegments.filter((segment: any) => (segment.phase || 'Build') === 'Build' && Number(segment.hours) > 0)
-        : [];
-      if (manualSegments.length) {
-        manualSegments.forEach((segment: any, index: number) => {
-          if (segment.date >= startDate && segment.date <= endDate) {
-            chunks.push({
-              ...item,
-              employeeChunkId: segment.employeeId || '',
-              chunkDate: segment.date,
-              chunkHours: Number(segment.hours) || 0,
-              segmentIndex: index,
-            });
-          }
-        });
-        continue;
-      }
-      const assignees = splitIds(item.assignedTo);
-      if (!assignees.length) {
-        let date = item.scheduledStart;
-        let remaining = Number(item.hoursPerEmployee) || Number(item.totalHours) || 0;
-        let guard = 0;
-        while (remaining > 0 && guard < 120) {
-          const capacity = capacityForDate(data, '', date);
-          if (capacity > 0) {
-            const hours = Math.min(remaining, capacity);
-            if (date >= startDate && date <= endDate) {
-              chunks.push({ ...item, employeeChunkId: '', chunkDate: date, chunkHours: hours });
-            }
-            remaining -= hours;
-          }
-          date = nextDate(date);
-          guard += 1;
-        }
-      } else {
-        for (const employeeId of assignees) {
-          let date = item.scheduledStart;
-          let remaining = Number(item.hoursPerEmployee) || 0;
-          let guard = 0;
-          while (remaining > 0 && guard < 120) {
-            const capacity = capacityForDate(data, employeeId, date);
-            if (capacity > 0) {
-              const hours = Math.min(remaining, capacity);
-              if (date >= startDate && date <= endDate) {
-                chunks.push({ ...item, employeeChunkId: employeeId, chunkDate: date, chunkHours: hours });
-              }
-              remaining -= hours;
-            }
-            date = nextDate(date);
-            guard += 1;
-          }
-        }
-      }
-    }
-    return chunks.sort((a, b) => a.chunkDate.localeCompare(b.chunkDate) || String(a.projectName).localeCompare(String(b.projectName)));
+    return sortChunksByDate(expandChunks(data, schedule, { startDate, endDate }));
   }
 
   const todayChunks = useMemo(() => expandChunksForRange(today, today), [data, schedule, today]);
@@ -484,7 +298,7 @@ export default function MobileViewer() {
     const rows: any[] = [];
     for (const assembly of (data.projectAssemblies || [])) {
       const hasTest = !!assembly.testRequired || Number(assembly.testHours || 0) > 0 || !!assembly.testReturnDateTime;
-      if (!hasTest || assembly.finalizingComplete || assembly.shippingComplete) continue;
+      if (!hasTest || assembly.inspectionComplete || assembly.shippingComplete) continue;
       if (weeklyProjectFocusId !== 'All' && assembly.projectId !== weeklyProjectFocusId) continue;
       const buildEnd = schedule.find(item => (item.sourceAssemblyId || String(item.id).split('|')[0]) === assembly.id && (item.phase || 'Build') === 'Build')?.scheduledEnd || '';
       if (!buildEnd) continue;
@@ -511,7 +325,7 @@ export default function MobileViewer() {
   function phaseLine(assembly: any) {
     const parts = [`Build ${taskHours(assembly).toFixed(1)}h`];
     if (assembly.testRequired || Number(assembly.testHours || 0) > 0) parts.push(`Test ${Number(assembly.testHours || 0).toFixed(1)}h`);
-    if (assembly.finalizingRequired) parts.push(`Finalizing ${Number(assembly.finalizingHours || 0).toFixed(1)}h`);
+    if (assembly.inspectionRequired) parts.push(`Inspection ${Number(assembly.inspectionHours || 0).toFixed(1)}h`);
     if (assembly.shippingRequired) parts.push(`Shipping ${Number(assembly.shippingHours || 0).toFixed(1)}h`);
     return parts.join(' • ');
   }
@@ -577,7 +391,7 @@ export default function MobileViewer() {
                 <div className="mobilePanelHeader">
                   <div>
                     <h2>Today&apos;s Priorities</h2>
-                    <p>Compact read-only list for finalizing, shipping, capacity, dependencies, and assignments.</p>
+                    <p>Compact read-only list for inspections, shipping, capacity, dependencies, and assignments.</p>
                   </div>
                 </div>
                 <div className="mobileMiniList">
@@ -1107,7 +921,7 @@ export default function MobileViewer() {
                       <span>{employeeTodayHours(selectedEmployee.id).toFixed(1)}h scheduled today</span>
                       <span>{employeeWeekHours(selectedEmployee.id).toFixed(1)}h scheduled this week</span>
                       <span>{selectedEmployee.canBuild === false ? 'Build off' : 'Build on'}</span>
-                      <span>{selectedEmployee.canFinalize === false ? 'Finalize off' : 'Finalize on'}</span>
+                      <span>{selectedEmployee.canInspect === false ? 'Inspect off' : 'Inspect on'}</span>
                       <span>{selectedEmployee.canShip === false ? 'Ship off' : 'Ship on'}</span>
                       <span>{nextTimeOff(selectedEmployee) ? `Next time off ${fmtDate(nextTimeOff(selectedEmployee))}` : 'No upcoming time off'}</span>
                     </div>
