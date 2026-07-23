@@ -1599,7 +1599,8 @@ html[data-theme="dark"] .highlightedBoardDate{outline-color:#60a5fa}
    and opacity (not hardcoded colors) so it stays correct in dark mode. */
 .weeklyBoardCard .tileDescription{font-weight:600!important}
 .weeklyBoardCard .tileMeta{opacity:.78}
-.weeklyBoardCard .tileAssemblyNo{font-size:1em!important;font-weight:600!important;color:inherit!important;margin:0!important}
+.weeklyBoardCard .tileAssemblyNo{font-size:1em!important;font-weight:600!important;color:inherit!important;margin:0 0 0 4px!important}
+.weeklyBoardCard .contArrow{color:var(--assembly-accent,#64748b);font-weight:700;margin-right:2px}
 /* Tile layout: left text column (description, part number, batch) + right badge
    stack (Split / phase). Phase sits bottom-right in Comfortable and folds into an
    hours+phase chip in Compact/Ultra. Matches the drawn examples. */

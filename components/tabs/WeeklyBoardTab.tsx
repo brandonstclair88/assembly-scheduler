@@ -747,9 +747,23 @@ function TaskCard({s}:any){
   function tileClick(){if(focusedAssemblyId===src&&detailTarget?.sourceId===src){setFocusedAssemblyId('');setDetailTarget(null)}else{setFocusedAssemblyId(src);setDetailTarget({sourceId:src,phase})}}
   return <div data-asm={src} data-phase={phase} data-date={s.chunkDate} className={'task phaseCard phase-'+phaseTone+' status'+status.replace(/\s+/g,'')+' '+asmFocus+(isCont?'runCont ':'')+(m.contNext?'runNext ':'')+(locked?'lockedTask ':'')+(buildTileDone?'buildTileDone ':'')+(buildTilePartial?'buildTilePartial ':'')+(s.chunkLabel==='Draft'?'draftTask ':'')+(s.isLive?' liveForecastTask ':'')+(s.forecastMoved?' forecastMovedTask ':'')+(s.forecastBlocked?' forecastBlockedTask ':'')+(dimmed?'taskDimmed ':'')+(projectFocusId!=='All'&&!dimmed?'taskFocused ':'')+(autoAssigned?' autoAssignedTask ':'')+((boardDensity==='compact'||boardDensity==='ultra')?'compactTask ':'')+(boardDensity==='ultra'?'ultraCompactTask ':'')} style={{'--project-accent':projectAccentColor(source.projectId||s.projectId||''),'--assembly-accent':assemblyAccentColor(src)} as any} draggable={!locked&&boardMode!=='Live'} onDragStart={boardMode==='Live'?undefined:startDrag} onDragEnd={stopAutoScroll} onClick={tileClick}><span className="asmStripe"/>{isCont?<>
     <div className="taskProgress"><div className="taskProgressFill" style={{width:`${Math.max(0,Math.min(100,pct))}%`}}/></div>
-    <b className="contLabel">↳ {(source.instanceLabel||s.instanceLabel||'')} Day {m.index}/{m.count}</b>
-    <span className="chunkHours">{Number(s.chunkHours).toFixed(1)} hrs{phase==='Build'&&totalHrs?` · ${m.hrsBefore.toFixed(1)}–${tileEnd.toFixed(1)} of ${totalHrs.toFixed(1)}`:''}</span>
-    {s.isLate&&<span className="lateBadge">late</span>}{s.chunkLabel==='Draft'&&<span className="splitBadge">draft</span>}{s.chunkLabel==='Manual'&&<span className="splitBadge">manual</span>}{s.forecastMoved&&<span className="forecastMovedBadge">Moved</span>}
+    <div className="tileTopRow">
+      <div className="tileTextCol">
+        <b className="tileDescription"><span className="contArrow">↳ </span>{source.description||s.description}{(source.instanceLabel||s.instanceLabel)&&<span className="tileAssemblyNo">{source.instanceLabel||s.instanceLabel}</span>}</b>
+        {!dUltra&&<span className="tilePartNo">{source.partNumber||s.partNumber}</span>}
+        {!dCompact&&s.batchId&&<span className="tileBatch">{(data.shipmentBatches||[]).find((b:any)=>b.id===s.batchId)?.name}</span>}
+      </div>
+      <div className="tileBadgeCol">
+        {s.chunkLabel==='Manual'&&<span className="splitBadge">Manual</span>}{s.chunkLabel==='Draft'&&<span className="splitBadge">Draft</span>}
+        {s.isLate&&<span className="lateBadge">Late</span>}
+        {s.forecastMoved&&<span className="forecastMovedBadge">Moved</span>}
+        {dCompact&&<span className={`phaseChip phase-${phaseTone}`}>{Number(s.chunkHours).toFixed(1)}h {phaseLabel}</span>}
+      </div>
+    </div>
+    {!dCompact&&<div className="tileBottomRow">
+      <span className="tileHoursDay">{Number(s.chunkHours).toFixed(1)} hrs{phase==='Build'?` · Day ${m.index}/${m.count}`:''}</span>
+      <span className={`phaseBadge phase-${phaseTone}`}>{phaseLabel}</span>
+    </div>}
   </>:<>
     <div className="taskProgress"><div className="taskProgressFill" style={{width:`${Math.max(0,Math.min(100,pct))}%`}}/></div>
     <div className="tileTopRow">
