@@ -1,13 +1,13 @@
 import { AppData, ProjectAssembly, ScheduledItem } from './types';
 import { buildSchedule, capacityForDate } from './scheduler';
-import { canEmployeeBuild, canEmployeeInspect, canEmployeeShip } from './employeeRoles';
+import { canEmployeeBuild, canEmployeeFinalize, canEmployeeShip } from './employeeRoles';
 
-export type SmartAssignPhase = 'Build' | 'Inspection' | 'Shipping';
+export type SmartAssignPhase = 'Build' | 'Finalizing' | 'Shipping';
 export type SmartAssignDiagnostic =
   | 'smart_assign_available'
   | 'no_preferred_employee_available'
   | 'no_qualified_builder_available'
-  | 'no_qualified_inspector_available'
+  | 'no_qualified_finalizer_available'
   | 'no_qualified_shipper_available'
   | 'employee_unavailable'
   | 'over_capacity_smart_assign'
@@ -125,20 +125,20 @@ function projectLabel(project: any) {
 }
 
 function phaseRoleKey(phase: SmartAssignPhase) {
-  if (phase === 'Inspection') return 'inspector';
+  if (phase === 'Finalizing') return 'finalizer';
   if (phase === 'Shipping') return 'shipper';
   return 'builder';
 }
 
 function phaseOrder(phase: SmartAssignPhase) {
   if (phase === 'Shipping') return 0;
-  if (phase === 'Inspection') return 1;
+  if (phase === 'Finalizing') return 1;
   return 2;
 }
 
 function phaseAssignmentIds(assembly: ProjectAssembly, phase: SmartAssignPhase) {
-  const raw = phase === 'Inspection'
-    ? (assembly.inspectionAssignedTo || assembly.assignedTo)
+  const raw = phase === 'Finalizing'
+    ? (assembly.finalizingAssignedTo || assembly.assignedTo)
     : phase === 'Shipping'
       ? (assembly.shippingAssignedTo || assembly.assignedTo)
       : assembly.assignedTo;
@@ -149,7 +149,7 @@ function needsWork(assembly: ProjectAssembly, item: ScheduledItem | undefined, p
   if (!item) return false;
   if (assembly.status === 'On Hold' || String(assembly.holdReason || '').trim()) return false;
   if (phase === 'Build') return taskHours(assembly) > 0 && assembly.status !== 'Complete' && Number(assembly.percent || 0) < 100;
-  if (phase === 'Inspection') return !!assembly.inspectionRequired && !assembly.inspectionComplete;
+  if (phase === 'Finalizing') return !!assembly.finalizingRequired && !assembly.finalizingComplete;
   return shippingExpected(assembly) && !assembly.shippingComplete;
 }
 
@@ -268,7 +268,7 @@ function buildSuggestionFallback(id: string, phase: SmartAssignPhase = 'Build'):
 }
 
 function phaseQualified(employee: any, phase: SmartAssignPhase) {
-  if (phase === 'Inspection') return canEmployeeInspect(employee);
+  if (phase === 'Finalizing') return canEmployeeFinalize(employee);
   if (phase === 'Shipping') return canEmployeeShip(employee);
   return canEmployeeBuild(employee);
 }
@@ -282,7 +282,7 @@ function firstChunkDate(chunks: WorkChunk[]) {
 }
 
 function hoursForPhase(assembly: ProjectAssembly, phase: SmartAssignPhase) {
-  if (phase === 'Inspection') return Math.max(0, Number(assembly.inspectionHours || 0));
+  if (phase === 'Finalizing') return Math.max(0, Number(assembly.finalizingHours || 0));
   if (phase === 'Shipping') return Math.max(0, Number(assembly.shippingHours || 0));
   return taskHours(assembly);
 }
@@ -382,7 +382,7 @@ export function applySmartAssignSuggestionsToData(
     }
 
     const currentAssembly = nextAssemblies[assemblyIndex];
-    if (!['Build', 'Inspection', 'Shipping'].includes(suggestion.phase)) {
+    if (!['Build', 'Finalizing', 'Shipping'].includes(suggestion.phase)) {
       failed.push(applyItem(suggestion, 'Missing target id or unsupported phase.', 'failed'));
       continue;
     }
@@ -407,8 +407,8 @@ export function applySmartAssignSuggestionsToData(
 
     const phaseChunks = (chunkMap.get(`${currentAssembly.id}|${suggestion.phase}`) || []).map(chunk => ({ ...chunk }));
     const fallbackDate = suggestion.date
-      || (suggestion.phase === 'Inspection'
-        ? currentAssembly.inspectionManualStartDate
+      || (suggestion.phase === 'Finalizing'
+        ? currentAssembly.finalizingManualStartDate
         : suggestion.phase === 'Shipping'
           ? currentAssembly.shippingManualStartDate
           : currentAssembly.manualStartDate)
@@ -479,17 +479,17 @@ export function applySmartAssignSuggestionsToData(
       continue;
     }
 
-    if (suggestion.phase === 'Inspection') {
-      const alreadyAssigned = (currentAssembly.inspectionAssignedTo || currentAssembly.assignedTo || '') === suggestion.employeeId
-        && (currentAssembly.inspectionManualStartDate || manualDate) === manualDate;
+    if (suggestion.phase === 'Finalizing') {
+      const alreadyAssigned = (currentAssembly.finalizingAssignedTo || currentAssembly.assignedTo || '') === suggestion.employeeId
+        && (currentAssembly.finalizingManualStartDate || manualDate) === manualDate;
       if (alreadyAssigned) {
         skipped.push(applyItem(suggestion, 'Skipped because the item is already assigned that way.', 'skipped'));
         continue;
       }
       nextAssemblies[assemblyIndex] = {
         ...currentAssembly,
-        inspectionAssignedTo: suggestion.employeeId,
-        inspectionManualStartDate: manualDate,
+        finalizingAssignedTo: suggestion.employeeId,
+        finalizingManualStartDate: manualDate,
       };
     } else {
       const alreadyAssigned = (currentAssembly.shippingAssignedTo || currentAssembly.assignedTo || '') === suggestion.employeeId
@@ -529,7 +529,7 @@ export function applySmartAssignSuggestionsToData(
 function rawRoleQualifiedEmployees(data: AppData, phase: SmartAssignPhase) {
   return (data.employees || []).filter(employee => {
     if (!employee || employee.active === false) return false;
-    if (phase === 'Inspection') return canEmployeeInspect(employee);
+    if (phase === 'Finalizing') return canEmployeeFinalize(employee);
     if (phase === 'Shipping') return canEmployeeShip(employee);
     return canEmployeeBuild(employee);
   });
@@ -590,10 +590,10 @@ function buildTaskCandidates(data: AppData, schedule: ScheduledItem[], prioritiz
     const shipDate = assembly.shipDate || project?.dueDate || '';
     const urgent = urgencyScore(shipDate) + (Number(project?.priority ?? 5) <= 2 ? 8 : 0);
     const buildItem = scheduleByKey[`${assembly.id}|Build`];
-    const inspectionItem = scheduleByKey[`${assembly.id}|Inspection`];
+    const finalizingItem = scheduleByKey[`${assembly.id}|Finalizing`];
     const shippingItem = scheduleByKey[`${assembly.id}|Shipping`];
     if (needsWork(assembly, buildItem, 'Build')) tasks.push({ assembly, item: buildItem!, phase: 'Build', chunks: chunkPlanForItem(data, buildItem!, assembly), project, shipDate, currentIds: phaseAssignmentIds(assembly, 'Build'), protected: isProtected(assembly), urgentScore: urgent });
-    if (needsWork(assembly, inspectionItem, 'Inspection')) tasks.push({ assembly, item: inspectionItem!, phase: 'Inspection', chunks: chunkPlanForItem(data, inspectionItem!, assembly), project, shipDate, currentIds: phaseAssignmentIds(assembly, 'Inspection'), protected: isProtected(assembly), urgentScore: urgent });
+    if (needsWork(assembly, finalizingItem, 'Finalizing')) tasks.push({ assembly, item: finalizingItem!, phase: 'Finalizing', chunks: chunkPlanForItem(data, finalizingItem!, assembly), project, shipDate, currentIds: phaseAssignmentIds(assembly, 'Finalizing'), protected: isProtected(assembly), urgentScore: urgent });
     if (needsWork(assembly, shippingItem, 'Shipping')) tasks.push({ assembly, item: shippingItem!, phase: 'Shipping', chunks: chunkPlanForItem(data, shippingItem!, assembly), project, shipDate, currentIds: phaseAssignmentIds(assembly, 'Shipping'), protected: isProtected(assembly), urgentScore: urgent });
   }
   return tasks.sort((a, b) => {
@@ -852,8 +852,8 @@ export function previewSmartAssignSuggestions(data: AppData, scheduleInput?: Sch
 
     const availableBySchedule = roleQualified.filter(employee => task.chunks.every(chunk => capacityForDate(data, employee.id, chunk.date) > 0));
     const blockedDiagnostic: SmartAssignDiagnostic = !roleQualified.length
-      ? task.phase === 'Inspection'
-        ? 'no_qualified_inspector_available'
+      ? task.phase === 'Finalizing'
+        ? 'no_qualified_finalizer_available'
         : task.phase === 'Shipping'
           ? 'no_qualified_shipper_available'
           : 'no_qualified_builder_available'

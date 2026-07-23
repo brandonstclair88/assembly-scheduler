@@ -32,7 +32,7 @@ export function ProjectTrainingPicker({projects,employee,onChange}:any){
 }
 
 export function Employees({data,setData}:any){
- const blank={id:uid('emp'),name:'',email:'',skills:'',active:true,pto:'',timeOffDates:'',fridayOvertimeDates:'',workDays:'',workHoursByDay:'',canBuild:true,canInspect:true,canShip:true,trainedProjectIds:'',limitAutoAssignToTrainedProjects:false,preferredProjectIds:'',preferPreferredProjects:false};
+ const blank={id:uid('emp'),name:'',email:'',skills:'',active:true,pto:'',timeOffDates:'',fridayOvertimeDates:'',workDays:'',workHoursByDay:'',canBuild:true,canFinalize:true,canShip:true,trainedProjectIds:'',limitAutoAssignToTrainedProjects:false,preferredProjectIds:'',preferPreferredProjects:false};
  const weekdays=[['1','Mon'],['2','Tue'],['3','Wed'],['4','Thu'],['5','Fri']];
  const [selectedId,setSelectedId]=useState(data.employees[0]?.id||'');
  const emp=data.employees.find((e:any)=>e.id===selectedId)||data.employees[0];
@@ -52,7 +52,7 @@ export function Employees({data,setData}:any){
    <div className="librarySelectableList">
     {data.employees.length===0&&<p className="muted">No employees yet.</p>}
     {data.employees.map((e:any)=>{
-     const roles=[e.canBuild!==false?'Build':'',e.canInspect!==false?'Inspect':'',e.canShip!==false?'Ship':''].filter(Boolean).join(' · ');
+     const roles=[e.canBuild!==false?'Build':'',e.canFinalize!==false?'Finalize':'',e.canShip!==false?'Ship':''].filter(Boolean).join(' · ');
      const preferredCount=splitIds(e.preferredProjectIds||e.trainedProjectIds||'').length;
      return <button key={e.id} className={emp?.id===e.id?'librarySelect activeLibrarySelect':'librarySelect'} onClick={()=>setSelectedId(e.id)}>
       <div><b>{e.name||'New Employee'}</b>{e.active===false&&<span className="pill warn">Inactive</span>}</div>
@@ -72,7 +72,7 @@ export function Employees({data,setData}:any){
     </div></section>
     <section><h3>Roles</h3><p className="muted">What kind of scheduled work this person can be assigned.</p><div className="actions">
      <label className="checkLine"><input type="checkbox" checked={emp.canBuild!==false} onChange={ev=>updateEmp(emp.id,{canBuild:ev.target.checked})}/> Can Build</label>
-     <label className="checkLine"><input type="checkbox" checked={emp.canInspect!==false} onChange={ev=>updateEmp(emp.id,{canInspect:ev.target.checked})}/> Can Inspect</label>
+     <label className="checkLine"><input type="checkbox" checked={emp.canFinalize!==false} onChange={ev=>updateEmp(emp.id,{canFinalize:ev.target.checked})}/> Can Finalize</label>
      <label className="checkLine"><input type="checkbox" checked={emp.canShip!==false} onChange={ev=>updateEmp(emp.id,{canShip:ev.target.checked})}/> Can Ship</label>
     </div></section>
     <section><h3>Preferred Projects</h3><p className="muted">Smart Assign favors these projects for this person.</p><ProjectTrainingPicker projects={data.projects||[]} employee={emp} onChange={(patch:any)=>updateEmp(emp.id,patch)}/></section>

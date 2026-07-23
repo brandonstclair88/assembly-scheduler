@@ -163,12 +163,12 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
 	   const phase=parsed.phase||'Build';
 	   let end=projectedEnd(id,employeeId,date);
 	   if(phase==='Shipping')return end;
-	   if(phase==='Build')end=earliestInspectionDateFor({...asm,id:asm.id,_projectedBuildEnd:end});
-	   const inspection=schedule.find((x:any)=>(x.sourceAssemblyId||String(x.id).split('|')[0])===asm.id&&x.phase==='Inspection');
-	   if(phase==='Build'&&inspection&&!asm.inspectionComplete){
-	     const ids=splitAssigned(inspection.assignedTo);const hpe=Number(inspection.hoursPerEmployee)||Number(inspection.totalHours)||0;
-	     end=projectedEnd(inspection.scheduleId||inspection.id,ids[0]||'',dateMax(inspection.scheduledStart,end));
-	   }else if(phase==='Inspection'){
+	   if(phase==='Build')end=earliestFinalizingDateFor({...asm,id:asm.id,_projectedBuildEnd:end});
+	   const finalizing=schedule.find((x:any)=>(x.sourceAssemblyId||String(x.id).split('|')[0])===asm.id&&x.phase==='Finalizing');
+	   if(phase==='Build'&&finalizing&&!asm.finalizingComplete){
+	     const ids=splitAssigned(finalizing.assignedTo);const hpe=Number(finalizing.hoursPerEmployee)||Number(finalizing.totalHours)||0;
+	     end=projectedEnd(finalizing.scheduleId||finalizing.id,ids[0]||'',dateMax(finalizing.scheduledStart,end));
+	   }else if(phase==='Finalizing'){
 	     end=projectedEnd(id,employeeId,date);
 	   }
 	   const shipping=schedule.find((x:any)=>(x.sourceAssemblyId||String(x.id).split('|')[0])===asm.id&&x.phase==='Shipping');
@@ -189,7 +189,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
    const build=schedule.find((x:any)=>(x.sourceAssemblyId||String(x.id).split('|')[0])===asmId&&(x.phase||'Build')==='Build');
    return build?.scheduledEnd||'';
  }
-	 function earliestInspectionDateFor(asm:any){
+	 function earliestFinalizingDateFor(asm:any){
 	   const buildFinish=asm._projectedBuildEnd||latestBuildChunkDate(asm.id);
    if(!buildFinish)return '';
    const hasTest=!!asm.testRequired || Number(asm.testHours||0)>0;
@@ -215,19 +215,19 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
    if(employeeId&&capacityForDate(data,employeeId,date)<=0){const emp=data.employees.find((e:any)=>e.id===employeeId);toast(`${emp?.name||'That employee'} is not available on ${fmtDate(date)}. Remove the time off/holiday or choose another employee/date.`,'bad');return false;}
    const freeze=(data.settings as any)?.freezeBeforeDate||'';
    if(freeze&&date<=freeze){toast(`This date is in the frozen schedule window through ${fmtDate(freeze)}. Change the freeze date in Settings before moving work here.`,'bad');return false;}
-   if((parsed.phase||'Build')==='Inspection'){
-     const release=earliestInspectionDateFor(asm);
+   if((parsed.phase||'Build')==='Finalizing'){
+     const release=earliestFinalizingDateFor(asm);
      if(release&&date<release){
        const testH=Number(asm.testHours||0);
-       toast(`Inspection cannot start on ${fmtDate(date)}. This assembly is gated by test${testH?` (${testH} hrs)`:''} until ${fmtDate(release)}.`,'bad');
+       toast(`Finalizing cannot start on ${fmtDate(date)}. This assembly is gated by test${testH?` (${testH} hrs)`:''} until ${fmtDate(release)}.`,'bad');
        return false;
      }
    }
    if((parsed.phase||'Build')==='Shipping'){
-     const release=earliestInspectionDateFor(asm);
-     const insp=schedule.find((x:any)=>(x.sourceAssemblyId||String(x.id).split('|')[0])===asm.id&&x.phase==='Inspection');
+     const release=earliestFinalizingDateFor(asm);
+     const insp=schedule.find((x:any)=>(x.sourceAssemblyId||String(x.id).split('|')[0])===asm.id&&x.phase==='Finalizing');
      const shipRelease=insp?dateMax(release,insp.scheduledEnd):release;
-     if(shipRelease&&date<shipRelease){toast(`Shipping cannot start before upstream test/inspection is available on ${fmtDate(shipRelease)}.`,'bad');return false;}
+     if(shipRelease&&date<shipRelease){toast(`Shipping cannot start before upstream test/finalizing is available on ${fmtDate(shipRelease)}.`,'bad');return false;}
    }
    const ship=top?.shipDate||asm.shipDate;
    const late=!!(top?.lateAllowed||asm.lateAllowed);
@@ -244,7 +244,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
    if(topStart&&newSubFinish>topStart){
      return rows.map((a:any)=>{
        if(a.id===top.id)return {...a,manualStartDate:newSubFinish,manuallyScheduled:true};
-       if(a.id===top.id+'|inspection')return a;
+       if(a.id===top.id+'|finalizing')return a;
        return a;
      });
    }
@@ -328,12 +328,12 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
 	   for(const asm of assemblies){
 	     const buildEnd=buildEnds[asm.id]||buildItemFor(asm)?.scheduledEnd||asm.shipDate||'';
 	     let release=releaseAfterBuild(asm,buildEnd);
-	     const inspection=itemFor(asm,'Inspection');
-	     if(inspection&&!asm.inspectionComplete){
-	       const ids=splitAssigned(inspection.assignedTo);let latest=release;
-	       for(const empId of (ids.length?ids:[''])){const r=addWorkToForecast(out,used,inspection,empId,inspection.scheduledStart,Number(inspection.hoursPerEmployee)||Number(inspection.totalHours)||0,release);latest=dateMax(latest,r.end)}
-	       phaseEnds[asm.id+'|Inspection']=latest;release=latest;
-	     }else if(inspection){phaseEnds[asm.id+'|Inspection']=inspection.scheduledEnd;release=dateMax(release,inspection.scheduledEnd)}
+	     const finalizing=itemFor(asm,'Finalizing');
+	     if(finalizing&&!asm.finalizingComplete){
+	       const ids=splitAssigned(finalizing.assignedTo);let latest=release;
+	       for(const empId of (ids.length?ids:[''])){const r=addWorkToForecast(out,used,finalizing,empId,finalizing.scheduledStart,Number(finalizing.hoursPerEmployee)||Number(finalizing.totalHours)||0,release);latest=dateMax(latest,r.end)}
+	       phaseEnds[asm.id+'|Finalizing']=latest;release=latest;
+	     }else if(finalizing){phaseEnds[asm.id+'|Finalizing']=finalizing.scheduledEnd;release=dateMax(release,finalizing.scheduledEnd)}
 	     const shipping=itemFor(asm,'Shipping');
 	     if(shipping&&!asm.shippingComplete){
 	       const ids=splitAssigned(shipping.assignedTo);let latest=release;
@@ -381,7 +381,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
      for(const draft of boardDrafts){
        rows=rows.map((a:any)=>{
          if(a.id!==draft.sourceId)return a;
-         if(draft.phase==='Inspection')return {...a,inspectionAssignedTo:draft.employeeId,inspectionManualStartDate:draft.date};
+         if(draft.phase==='Finalizing')return {...a,finalizingAssignedTo:draft.employeeId,finalizingManualStartDate:draft.date};
          if(draft.phase==='Shipping')return {...a,shippingAssignedTo:draft.employeeId,shippingManualStartDate:draft.date};
          const existing=Array.isArray(a.manualWorkSegments)&&a.manualWorkSegments.length?a.manualWorkSegments:defaultSegmentsFor(draft.sourceId,draft.phase);
          const idx=Number.isFinite(Number(draft.segmentIndex))?Number(draft.segmentIndex):0;
@@ -489,7 +489,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
    const rows:any[]=[];
    for(const asm of (data.projectAssemblies||[])){
      const hasTest=!!asm.testRequired||Number(asm.testHours||0)>0||!!asm.testReturnDateTime;
-     if(!hasTest||asm.inspectionComplete||asm.shippingComplete)continue;
+     if(!hasTest||asm.finalizingComplete||asm.shippingComplete)continue;
      const buildEnd=latestBuildChunkDate(asm.id)||schedule.find((x:any)=>(x.sourceAssemblyId||String(x.id).split('|')[0])===asm.id&&(x.phase||'Build')==='Build')?.scheduledEnd||'';
      if(!buildEnd)continue;
      const estimated=Number(asm.testHours||0)>0?addShopWaitDays(buildEnd,Number(asm.testHours||0)):buildEnd;
@@ -546,12 +546,12 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
 	 function updateCompletion(sourceId:string,phase:string,value:any){
    if(boardMode==='Live')return;
    const pct=Math.max(0,Math.min(100,Number(value)||0));
-   setData((d:any)=>applyAssemblyPatch(d,sourceId,phase==='Inspection'?{inspectionComplete:pct>=100}:phase==='Shipping'?{shippingComplete:pct>=100}:{percent:pct}));
+   setData((d:any)=>applyAssemblyPatch(d,sourceId,phase==='Finalizing'?{finalizingComplete:pct>=100}:phase==='Shipping'?{shippingComplete:pct>=100}:{percent:pct}));
  }
  function sourceAssembly(sourceId:string){return (data.projectAssemblies||[]).find((a:any)=>a.id===sourceId)}
  function phasePercentFor(sourceId:string,phase:string,fallback:any){
    const a=sourceAssembly(sourceId)||fallback;
-   if(phase==='Inspection')return a.inspectionComplete?100:0;
+   if(phase==='Finalizing')return a.finalizingComplete?100:0;
    if(phase==='Shipping')return a.shippingComplete?100:0;
    return Math.max(0,Math.min(100,Number(a.percent||0)));
  }
@@ -672,7 +672,7 @@ export function WeeklyBoard({data,setData,schedule,warnings,projectHealthById,bo
      const unassigned=days.map((d,idx)=>{const date=dateFor(week,idx);const dayCards=chunks.filter((c:any)=>c.chunkDate===date&&!c.employeeChunkId);return `<div class="pdfCell">${dayCards.map(taskHtml).join('')}</div>`}).join('');
      return `<section class="pdfWeek"><div class="pdfWeekHeader"><h2>Week of ${fmtDate(week)}</h2><span>${fmtDate(week)} - ${fmtDate(weekEnd)}</span></div><div class="pdfGrid"><div class="pdfHeader empHead">Employee</div>${dayHeaders}${rows}<div class="pdfEmp"><b>Unassigned</b><span>Needs assignment</span></div>${unassigned}</div></section>`;
    };
-   const html=`<!doctype html><html><head><title>Weekly Board - Next Year</title><style>@page{size:landscape;margin:.22in}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#172033;margin:0;font-size:8px}h1{font-size:16px;margin:0 0 10px}.pdfWeek{break-after:page;page-break-after:always;break-inside:avoid;margin-bottom:10px}.pdfWeek:last-child{break-after:auto;page-break-after:auto}.pdfWeekHeader{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#e9eef2;border:1px solid #aeb8c4;border-bottom:0}.pdfWeekHeader span{font-size:9px;color:#526071;font-weight:700}.pdfWeekHeader h2{font-size:13px;margin:0}.pdfGrid{display:grid;grid-template-columns:112px repeat(${days.length},1fr);border-left:1px solid #aeb8c4;border-top:1px solid #aeb8c4}.pdfHeader,.pdfEmp,.pdfCell{border-right:1px solid #aeb8c4;border-bottom:1px solid #aeb8c4;padding:4px;min-height:34px}.pdfHeader{background:#eef2f5;font-weight:800;text-align:center}.pdfHeader span,.pdfEmp span,.pdfTask span,.pdfTask small{display:block;color:#536173;margin-top:1px}.pdfEmp{background:#f7f9fb;font-weight:800}.pdfCell{min-height:92px;background:#fff;vertical-align:top}.pdfTask{border:1px solid #b8c2cc;border-left:4px solid #6f8798;border-radius:5px;margin:2px 0;padding:3px;background:#fff;break-inside:avoid;page-break-inside:avoid}.pdfTask.phase-build{border-left-color:#6f8798}.pdfTask.phase-inspection{border-left-color:#d97706}.pdfTask.phase-shipping{border-left-color:#0891b2}.pdfTask b{display:block;font-size:8.5px;line-height:1.2}</style></head><body><h1>Weekly Board Export - Next 52 Weeks</h1>${weeksOut.map(boardFor).join('')}</body></html>`;
+   const html=`<!doctype html><html><head><title>Weekly Board - Next Year</title><style>@page{size:landscape;margin:.22in}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#172033;margin:0;font-size:8px}h1{font-size:16px;margin:0 0 10px}.pdfWeek{break-after:page;page-break-after:always;break-inside:avoid;margin-bottom:10px}.pdfWeek:last-child{break-after:auto;page-break-after:auto}.pdfWeekHeader{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#e9eef2;border:1px solid #aeb8c4;border-bottom:0}.pdfWeekHeader span{font-size:9px;color:#526071;font-weight:700}.pdfWeekHeader h2{font-size:13px;margin:0}.pdfGrid{display:grid;grid-template-columns:112px repeat(${days.length},1fr);border-left:1px solid #aeb8c4;border-top:1px solid #aeb8c4}.pdfHeader,.pdfEmp,.pdfCell{border-right:1px solid #aeb8c4;border-bottom:1px solid #aeb8c4;padding:4px;min-height:34px}.pdfHeader{background:#eef2f5;font-weight:800;text-align:center}.pdfHeader span,.pdfEmp span,.pdfTask span,.pdfTask small{display:block;color:#536173;margin-top:1px}.pdfEmp{background:#f7f9fb;font-weight:800}.pdfCell{min-height:92px;background:#fff;vertical-align:top}.pdfTask{border:1px solid #b8c2cc;border-left:4px solid #6f8798;border-radius:5px;margin:2px 0;padding:3px;background:#fff;break-inside:avoid;page-break-inside:avoid}.pdfTask.phase-build{border-left-color:#6f8798}.pdfTask.phase-finalizing{border-left-color:#d97706}.pdfTask.phase-shipping{border-left-color:#0891b2}.pdfTask b{display:block;font-size:8.5px;line-height:1.2}</style></head><body><h1>Weekly Board Export - Next 52 Weeks</h1>${weeksOut.map(boardFor).join('')}</body></html>`;
    const win=window.open('','_blank'); if(!win){toast('Popup blocked. Allow popups to export PDF.','bad');return;} win.document.write(html); win.document.close(); setTimeout(()=>win.print(),500);
   }
  function exportWeeklyExcel(){
@@ -751,7 +751,7 @@ function FocusFlowOverlay(){
       if(top){family.add(top.id);(data.projectAssemblies||[]).forEach((a:any)=>{if(a.parentAssemblyId===top.id||(top.buildGroupId&&a.buildGroupId===top.buildGroupId&&a.projectId===top.projectId))family.add(a.id)});}
       const pts:any[]=[];
       family.forEach(id=>{document.querySelectorAll(`[data-asm="${id}"]`).forEach(el=>{const r=(el as HTMLElement).getBoundingClientRect();if(r.width>0&&r.height>0)pts.push({id,phase:(el as HTMLElement).dataset.phase||'Build',date:(el as HTMLElement).dataset.date||'',x:r.left+r.width/2,y:r.top+r.height/2})})});
-      const rank:any={Build:0,Test:1,Inspection:2,Shipping:3};
+      const rank:any={Build:0,Test:1,Finalizing:2,Shipping:3};
       pts.sort((a:any,b:any)=>String(a.date).localeCompare(String(b.date))||((rank[a.phase]??0)-(rank[b.phase]??0))||(a.id===top?.id?1:0)-(b.id===top?.id?1:0));
       const out:any[]=[];
       for(let i=0;i<pts.length-1;i++)out.push({x1:pts[i].x,y1:pts[i].y,x2:pts[i+1].x,y2:pts[i+1].y});
@@ -781,7 +781,7 @@ function AssemblyDetailPanel(){
   const proj=(data.projects||[]).find((p:any)=>p.id===asm.projectId);
   const items=schedule.filter((x:any)=>(x.sourceAssemblyId||String(x.id).split('|')[0])===asm.id);
   const build=items.find((x:any)=>(x.phase||'Build')==='Build');
-  const insp=items.find((x:any)=>x.phase==='Inspection');
+  const insp=items.find((x:any)=>x.phase==='Finalizing');
   const shipItem=items.find((x:any)=>x.phase==='Shipping');
   const hasManualSegs=Array.isArray(asm.manualWorkSegments)&&asm.manualWorkSegments.length>0;
   const totalHrs=Number(asm.qty||0)*Number(asm.hoursEach||0);
@@ -791,13 +791,13 @@ function AssemblyDetailPanel(){
     <div className="assemblyDetailPhases">
       {build&&<div className={'detailPhaseRow'+(build.isLate?' late':'')}><span className="phaseBadge phase-build">BUILD</span><span>{fmtDate(build.scheduledStart)} → {fmtDate(build.scheduledEnd)}</span><span>{Number(build.totalHours||0).toFixed(1)} hrs</span><span>{build.assignedEmployeeNames||'Unassigned'}</span></div>}
       {(asm.testRequired||Number(asm.testHours||0)>0)&&<div className="detailPhaseRow"><span className="phaseBadge phase-test">TEST</span><span>{asm.testReturnDateTime?`Expected return ${fmtDateTime(asm.testReturnDateTime)}`:`${Number(asm.testHours||0).toFixed(1)} hr external gate`}</span></div>}
-      {insp&&<div className={'detailPhaseRow'+(insp.isLate?' late':'')}><span className="phaseBadge phase-inspect">INSPECT</span><span>{fmtDate(insp.scheduledStart)} → {fmtDate(insp.scheduledEnd)}</span><span>{Number(insp.totalHours||0).toFixed(1)} hrs</span><span>{insp.assignedEmployeeNames||'Unassigned'}</span></div>}
+      {insp&&<div className={'detailPhaseRow'+(insp.isLate?' late':'')}><span className="phaseBadge phase-finalize">INSPECT</span><span>{fmtDate(insp.scheduledStart)} → {fmtDate(insp.scheduledEnd)}</span><span>{Number(insp.totalHours||0).toFixed(1)} hrs</span><span>{insp.assignedEmployeeNames||'Unassigned'}</span></div>}
       {shipItem&&<div className={'detailPhaseRow'+(shipItem.isLate?' late':'')}><span className="phaseBadge phase-ship">SHIP</span><span>{fmtDate(shipItem.scheduledStart)} → {fmtDate(shipItem.scheduledEnd)}</span><span>{Number(shipItem.totalHours||0).toFixed(1)} hrs</span><span>{shipItem.assignedEmployeeNames||'Unassigned'}</span></div>}
       <div className="detailPhaseRow"><span className="phaseBadge">SHIP BY</span><span>{fmtDate(asm.shipDate)||'Not set'}</span>{asm.lateAllowed&&<span className="pill warn">Late allowed</span>}{(asm.status==='On Hold'||asm.holdReason)&&<span className="pill bad">On Hold{asm.holdReason?`: ${asm.holdReason}`:''}</span>}</div>
     </div>
     {boardMode!=='Live'&&<div className="assemblyDetailControls">
       <div className="field"><label>Build % Complete ({(buildPct/100*totalHrs).toFixed(1)} / {totalHrs.toFixed(1)} hrs)</label><BufferedPercentInput className="largeInput" value={buildPct} onCommit={(value:any)=>updateCompletion(asm.id,'Build',value)}/></div>
-      {asm.inspectionRequired&&<label className="checkLine"><input type="checkbox" checked={!!asm.inspectionComplete} onChange={e=>updateCompletion(asm.id,'Inspection',e.target.checked?100:0)}/> Inspection complete</label>}
+      {asm.finalizingRequired&&<label className="checkLine"><input type="checkbox" checked={!!asm.finalizingComplete} onChange={e=>updateCompletion(asm.id,'Finalizing',e.target.checked?100:0)}/> Finalizing complete</label>}
       {asm.shippingRequired&&<label className="checkLine"><input type="checkbox" checked={!!asm.shippingComplete} onChange={e=>updateCompletion(asm.id,'Shipping',e.target.checked?100:0)}/> Shipping complete</label>}
       <div className="assemblyMoveRow"><label>Move {detailTarget.phase==='Test'?'Build':detailTarget.phase} start (keyboard-friendly alternative to dragging)</label><div className="actions"><select value={moveEmp} onChange={e=>setMoveEmp(e.target.value)}><option value="">Unassigned</option>{activeEmployees.map((e:any)=><option key={e.id} value={e.id}>{e.name}</option>)}</select><input type="date" value={moveDate} onChange={e=>setMoveDate(e.target.value)}/><button className="btn" disabled={!moveDate} onClick={()=>{const phase=detailTarget.phase==='Test'?'Build':detailTarget.phase;const sched=items.find((x:any)=>(x.phase||'Build')===phase);if(!sched){toast('No scheduled item for this phase.','bad');return;}if(drop(`${sched.scheduleId||sched.id}::chunk::0::hours::0`,moveEmp,moveDate))toast('Draft move added. Click Apply Changes on the board to save it.','good');}}>Add draft move</button></div></div>
       <div className="actions"><button className="btn" onClick={()=>toggleLock(asm.id)}>{asm.locked?'Unlock Assignment':'Lock Assignment'}</button>{hasManualSegs&&<button className="btn" onClick={()=>clearSegments(asm.id)}>Reset split</button>}{onOpenProject&&<button className="btn" onClick={()=>onOpenProject(asm.projectId)}>Open project</button>}</div>

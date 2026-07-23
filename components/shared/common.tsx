@@ -36,17 +36,17 @@ export function CollapsibleSection({storageKey,title,subtitle,summary,defaultOpe
   return <section className={`collapsibleSection ${open?'open':'collapsed'} ${tone}`.trim()}><div className="collapsibleHeader"><button type="button" className="collapsibleToggle" onClick={()=>setOpen((value:boolean)=>!value)}><span className={`chevron ${open?'open':''}`}>▾</span><span><b>{title}</b>{subtitle&&<small>{subtitle}</small>}</span></button>{actions&&<div className="collapsibleActions">{actions}</div>}</div>{!open&&summary&&<div className="collapsibleSummary">{summary}</div>}{open&&<div className="collapsibleBody">{children}</div>}</section>
 }
 
-export function makeAsm(t:AssemblyTemplate,projectId:string,shipDate:string,instanceNumber=1,buildGroupId='',buildGroupLabel='',parentAssemblyId='',batchId=''):ProjectAssembly{return {id:uid('asm'),projectId,templateId:t.id,partNumber:t.partNumber,description:t.description,type:t.type,instanceNumber,instanceLabel:'#'+instanceNumber,buildGroupId,buildGroupLabel,parentAssemblyId,batchId,qty:t.defaultQty||1,hoursEach:t.hoursEach||1,testRequired:!!t.testRequired,testHours:t.testHours||0,inspectionRequired:!!t.inspectionRequired,inspectionHours:t.inspectionHours||0,shippingRequired:!!t.shippingRequired,shippingHours:t.shippingHours||0,testReturnDateTime:'',inspectionAssignedTo:'',shippingAssignedTo:'',inspectionManualStartDate:'',shippingManualStartDate:'',inspectionComplete:false,shippingComplete:false,maxTopPercentWhenSubHeld:t.maxTopPercentWhenSubHeld||80,dependsOn:'',assignedTo:'',startAfter:'',status:'Not Started',percent:0,holdReason:'',shipDate,lateAllowed:false,overrideDependencies:false,manuallyScheduled:false,manualStartDate:'',locked:false,smartAssignProtected:false}}
+export function makeAsm(t:AssemblyTemplate,projectId:string,shipDate:string,instanceNumber=1,buildGroupId='',buildGroupLabel='',parentAssemblyId='',batchId=''):ProjectAssembly{return {id:uid('asm'),projectId,templateId:t.id,partNumber:t.partNumber,description:t.description,type:t.type,instanceNumber,instanceLabel:'#'+instanceNumber,buildGroupId,buildGroupLabel,parentAssemblyId,batchId,qty:t.defaultQty||1,hoursEach:t.hoursEach||1,testRequired:!!t.testRequired,testHours:t.testHours||0,finalizingRequired:!!t.finalizingRequired,finalizingHours:t.finalizingHours||0,shippingRequired:!!t.shippingRequired,shippingHours:t.shippingHours||0,testReturnDateTime:'',finalizingAssignedTo:'',shippingAssignedTo:'',finalizingManualStartDate:'',shippingManualStartDate:'',finalizingComplete:false,shippingComplete:false,maxTopPercentWhenSubHeld:t.maxTopPercentWhenSubHeld||80,dependsOn:'',assignedTo:'',startAfter:'',status:'Not Started',percent:0,holdReason:'',shipDate,lateAllowed:false,overrideDependencies:false,manuallyScheduled:false,manualStartDate:'',locked:false,smartAssignProtected:false}}
 
 export function taskHours(a:any){return Math.max(0,Number(a.qty||1)*Number(a.hoursEach||0))}
 
 export function baseTaskCompletion(a:any){
-  const buildHours=taskHours(a); const inspectHours=a.inspectionRequired?Number(a.inspectionHours||0):0; const shipHours=a.shippingRequired?Number(a.shippingHours||0):0;
-  const total=Math.max(1,buildHours+inspectHours+shipHours);
+  const buildHours=taskHours(a); const finalizeHours=a.finalizingRequired?Number(a.finalizingHours||0):0; const shipHours=a.shippingRequired?Number(a.shippingHours||0):0;
+  const total=Math.max(1,buildHours+finalizeHours+shipHours);
   const buildPct=a.status==='Complete'?100:Math.max(0,Math.min(100,Number(a.percent||0)));
-  const inspectPct=a.inspectionRequired?(a.inspectionComplete?100:0):100;
+  const finalizePct=a.finalizingRequired?(a.finalizingComplete?100:0):100;
   const shipPct=a.shippingRequired?(a.shippingComplete?100:0):100;
-  return Math.round(((buildPct/100*buildHours)+(inspectPct/100*inspectHours)+(shipPct/100*shipHours))/total*100);
+  return Math.round(((buildPct/100*buildHours)+(finalizePct/100*finalizeHours)+(shipPct/100*shipHours))/total*100);
 }
 
 export function rolledCompletion(data:any,a:any){
@@ -69,14 +69,14 @@ export function projectCompletion(data:any,projectId:string){
 
 export function batchCompletion(data:any,batchId:string){const tops=(data.projectAssemblies||[]).filter((a:any)=>a.batchId===batchId&&a.type==='Top Level Assembly');if(!tops.length)return 0;return Math.round(tops.reduce((s:number,a:any)=>s+rolledCompletion(data,a),0)/tops.length)}
 
-export const PROJECT_HEALTH_OPTIONS=['All','On Track','At Risk','Late','Missing Assignment','Over Capacity','Waiting on Test','Waiting on Inspection','Ready to Ship'];
+export const PROJECT_HEALTH_OPTIONS=['All','On Track','At Risk','Late','Missing Assignment','Over Capacity','Waiting on Test','Waiting on Finalizing','Ready to Ship'];
 
-export function phaseBadgeLabel(phase:string){return phase==='Inspection'?'INSPECT':phase==='Shipping'?'SHIP':phase==='Test'?'TEST':'BUILD'}
+export function phaseBadgeLabel(phase:string){return phase==='Finalizing'?'INSPECT':phase==='Shipping'?'SHIP':phase==='Test'?'TEST':'BUILD'}
 
-export function phaseToneKey(phase:string){return phase==='Inspection'?'inspect':phase==='Shipping'?'ship':phase==='Test'?'test':'build'}
+export function phaseToneKey(phase:string){return phase==='Finalizing'?'finalize':phase==='Shipping'?'ship':phase==='Test'?'test':'build'}
 
 export function warningActionTarget(warning:any){
-  const projectAction=warning?.code==='missing_build_assignment'||warning?.code==='missing_inspection_assignment'||warning?.code==='missing_shipping_assignment';
+  const projectAction=warning?.code==='missing_build_assignment'||warning?.code==='missing_finalizing_assignment'||warning?.code==='missing_shipping_assignment';
   if(projectAction&&warning?.projectId)return {tab:'Projects',label:'View project'};
   if(warning?.projectId||warning?.date)return {tab:'Weekly Board',label:'Jump to item'};
   return null;

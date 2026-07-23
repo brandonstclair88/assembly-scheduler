@@ -56,7 +56,7 @@ td textarea{min-width:220px;min-height:76px;resize:vertical}
 .boardTools{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}.boardTools .field{min-width:160px}.employeeHeader,.employeeCell{position:sticky;left:0;z-index:2}.employeeHeader{z-index:3}.task.statusBuildComplete{background:#eaf4ff;border-color:#93c5fd}.task.statusBlocked{background:#f3f4f6;border-color:#cbd5e1}.task.statusAtRisk{background:#fff7d6;border-color:#f6d365}.task.statusLate{background:#ffe8e8;border-color:#f5a3a3}.task.statusShipped{background:#e8f8ee;border-color:#86efac}.task.lockedTask{opacity:.82;border-style:dashed;cursor:not-allowed}.statusBadge{display:inline-block;background:#eef2ff;border:1px solid #c7d2fe;color:#334155;border-radius:999px;font-size:11px;font-weight:800;padding:2px 6px;margin-left:4px}.lockBtn{float:right;margin-top:0}.todayWorkList table td{font-size:13px}.card h2{letter-spacing:-.01em}
 
 /* v45 Gantt / timeline planning view */
-.ganttWrap{overflow:auto;border:1px solid var(--line);border-radius:16px;background:#fff}.ganttGrid{display:grid;min-width:1180px;align-items:stretch}.ganttCorner,.ganttDay,.ganttLabel{border-bottom:1px solid var(--line);border-right:1px solid var(--line);background:#f8fafc;padding:8px}.ganttCorner{font-weight:800;position:sticky;left:0;z-index:4}.ganttDay{text-align:center;font-size:12px;min-height:46px}.ganttDay b,.ganttDay span{display:block}.ganttDay span{color:var(--muted)}.ganttWeekend{background:#f3f4f6;color:#94a3b8}.ganttLabel{position:sticky;left:0;z-index:3;background:#fff;min-height:64px}.ganttLabel b,.ganttLabel span,.ganttLabel small{display:block}.ganttLabel span,.ganttLabel small{color:var(--muted);margin-top:3px}.ganttRow{position:relative;min-height:64px;border-bottom:1px solid var(--line);background:repeating-linear-gradient(90deg,#fff 0,#fff 33px,#f6f8fc 34px)}.ganttBar{position:absolute;top:18px;height:24px;border-radius:999px;border:1px solid #cbd5e1;background:#dbeafe;color:#172033;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap}.ganttScheduled{background:#dbeafe;border-color:#bfdbfe}.ganttAtRisk{background:#fef3c7;border-color:#fcd34d}.ganttLate{background:#fee2e2;border-color:#fca5a5}.ganttBlocked{background:#e5e7eb;border-color:#cbd5e1}.ganttComplete{background:#dcfce7;border-color:#86efac}.ganttShip{position:absolute;top:12px;transform:translateX(-50%);color:#7c2d12;font-size:20px;z-index:2}.ganttMilestone{position:absolute;top:40px;transform:translateX(-50%);border-radius:999px;width:20px;height:20px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff}.ganttMilestone.inspect{background:#eef2ff;color:#3730a3}.ganttMilestone.ship{background:#dcfce7;color:#166534}.ganttLegend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:13px}.legend{border:1px solid var(--line);border-radius:999px;padding:4px 9px;font-weight:800;color:#172033}.legend.scheduled{background:#dbeafe}.legend.risk{background:#fef3c7}.legend.late{background:#fee2e2}.legend.blocked{background:#e5e7eb}.legend.complete{background:#dcfce7}.emptyState{padding:12px}
+.ganttWrap{overflow:auto;border:1px solid var(--line);border-radius:16px;background:#fff}.ganttGrid{display:grid;min-width:1180px;align-items:stretch}.ganttCorner,.ganttDay,.ganttLabel{border-bottom:1px solid var(--line);border-right:1px solid var(--line);background:#f8fafc;padding:8px}.ganttCorner{font-weight:800;position:sticky;left:0;z-index:4}.ganttDay{text-align:center;font-size:12px;min-height:46px}.ganttDay b,.ganttDay span{display:block}.ganttDay span{color:var(--muted)}.ganttWeekend{background:#f3f4f6;color:#94a3b8}.ganttLabel{position:sticky;left:0;z-index:3;background:#fff;min-height:64px}.ganttLabel b,.ganttLabel span,.ganttLabel small{display:block}.ganttLabel span,.ganttLabel small{color:var(--muted);margin-top:3px}.ganttRow{position:relative;min-height:64px;border-bottom:1px solid var(--line);background:repeating-linear-gradient(90deg,#fff 0,#fff 33px,#f6f8fc 34px)}.ganttBar{position:absolute;top:18px;height:24px;border-radius:999px;border:1px solid #cbd5e1;background:#dbeafe;color:#172033;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap}.ganttScheduled{background:#dbeafe;border-color:#bfdbfe}.ganttAtRisk{background:#fef3c7;border-color:#fcd34d}.ganttLate{background:#fee2e2;border-color:#fca5a5}.ganttBlocked{background:#e5e7eb;border-color:#cbd5e1}.ganttComplete{background:#dcfce7;border-color:#86efac}.ganttShip{position:absolute;top:12px;transform:translateX(-50%);color:#7c2d12;font-size:20px;z-index:2}.ganttMilestone{position:absolute;top:40px;transform:translateX(-50%);border-radius:999px;width:20px;height:20px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff}.ganttMilestone.finalize{background:#eef2ff;color:#3730a3}.ganttMilestone.ship{background:#dcfce7;color:#166534}.ganttLegend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:13px}.legend{border:1px solid var(--line);border-radius:999px;padding:4px 9px;font-weight:800;color:#172033}.legend.scheduled{background:#dbeafe}.legend.risk{background:#fef3c7}.legend.late{background:#fee2e2}.legend.blocked{background:#e5e7eb}.legend.complete{background:#dcfce7}.emptyState{padding:12px}
 /* v46 backup and restore */
 .backupWarning{margin-top:12px;border:1px solid #f3b1b1;background:#fff1f1;color:#8a1f1f;border-radius:12px;padding:12px}.backupWarning ul{margin:6px 0 0 18px}
 
@@ -1456,12 +1456,12 @@ html[data-theme="dark"] .warningCard span,html[data-theme="dark"] .warningCard s
 .warningActionButton{border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer}
 .phaseCard{border-left-width:8px!important}
 .phaseCard.phase-build{background:#ffffff;border-left-color:#475569!important}
-.phaseCard.phase-inspect{background:#fffaf0;border-left-color:#d97706!important}
+.phaseCard.phase-finalize{background:#fffaf0;border-left-color:#d97706!important}
 .phaseCard.phase-ship{background:#f0fdf9;border-left-color:#0f766e!important}
 .phaseCard.phase-test{background:#faf5ff;border-left-color:#7c3aed!important}
 .phaseBadge{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:3px 8px;border-radius:999px;border:1px solid #cbd5e1;background:#fff;font-size:11px;font-weight:900;letter-spacing:.05em}
 .phaseBadge.phase-build{background:#e5e7eb;border-color:#cbd5e1;color:#334155}
-.phaseBadge.phase-inspect{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.phaseBadge.phase-finalize{background:#fef3c7;border-color:#fcd34d;color:#92400e}
 .phaseBadge.phase-ship{background:#ccfbf1;border-color:#5eead4;color:#115e59}
 .phaseBadge.phase-test,.mobileTaskBadge.phase-test,.mobileTaskBadge.phase-slate{background:#ede9fe;border-color:#c4b5fd;color:#6d28d9}
 .taskDimmed{opacity:.34;filter:blur(.6px)}
@@ -1481,10 +1481,10 @@ html[data-theme="dark"] .warningCard span,html[data-theme="dark"] .warningCard s
 .mobileHealthBadge.tone-info{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
 .mobileInfoBadgeStack{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
 .mobileTaskBadge.phase-build{background:#e5e7eb;border-color:#cbd5e1;color:#334155}
-.mobileTaskBadge.phase-inspect{background:#fef3c7;border-color:#fcd34d;color:#92400e}
+.mobileTaskBadge.phase-finalize{background:#fef3c7;border-color:#fcd34d;color:#92400e}
 .mobileTaskBadge.phase-ship{background:#ccfbf1;border-color:#5eead4;color:#115e59}
 .mobileTaskCard.phase-build{border-left:5px solid #475569}
-.mobileTaskCard.phase-inspect{border-left:5px solid #d97706}
+.mobileTaskCard.phase-finalize{border-left:5px solid #d97706}
 .mobileTaskCard.phase-ship{border-left:5px solid #0f766e}
 .mobileTaskCard.phase-test{border-left:5px solid #7c3aed}
 .mobileTimeline{display:flex;flex-direction:column;gap:8px}
@@ -1535,14 +1535,14 @@ html[data-theme="dark"] .mobileTimelineStep.state-scheduled{background:#172554!i
 html[data-theme="dark"] .timelineStepCard.state-waiting,
 html[data-theme="dark"] .mobileTimelineStep.state-waiting{background:#2b1644!important;border-color:#7c3aed!important}
 html[data-theme="dark"] .phaseCard.phase-build{background:#111827!important;border-left-color:#64748b!important}
-html[data-theme="dark"] .phaseCard.phase-inspect{background:#2b2111!important;border-left-color:#f59e0b!important}
+html[data-theme="dark"] .phaseCard.phase-finalize{background:#2b2111!important;border-left-color:#f59e0b!important}
 html[data-theme="dark"] .phaseCard.phase-ship{background:#0f2423!important;border-left-color:#14b8a6!important}
 html[data-theme="dark"] .phaseCard.phase-test,
 html[data-theme="dark"] .testMiniCard{background:#231436!important;border-left-color:#8b5cf6!important}
 html[data-theme="dark"] .phaseBadge.phase-build,
 html[data-theme="dark"] .mobileTaskBadge.phase-build{background:#1f2937!important;border-color:#475569!important;color:#e2e8f0!important}
-html[data-theme="dark"] .phaseBadge.phase-inspect,
-html[data-theme="dark"] .mobileTaskBadge.phase-inspect{background:#3f2b11!important;border-color:#d97706!important;color:#fde68a!important}
+html[data-theme="dark"] .phaseBadge.phase-finalize,
+html[data-theme="dark"] .mobileTaskBadge.phase-finalize{background:#3f2b11!important;border-color:#d97706!important;color:#fde68a!important}
 html[data-theme="dark"] .phaseBadge.phase-ship,
 html[data-theme="dark"] .mobileTaskBadge.phase-ship{background:#11312e!important;border-color:#14b8a6!important;color:#ccfbf1!important}
 html[data-theme="dark"] .phaseBadge.phase-test,

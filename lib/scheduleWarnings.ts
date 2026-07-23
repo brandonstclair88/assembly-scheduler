@@ -3,7 +3,7 @@ import {buildSchedule,capacityForDate} from './scheduler';
 import {previewSmartAssignSuggestions} from './smartAssign';
 
 export type ScheduleWarningLevel='critical'|'capacity'|'info';
-export type ScheduleWarningCode='sub_after_parent'|'non_working_day'|'over_capacity'|'missing_build_assignment'|'missing_inspection_assignment'|'missing_shipping_assignment'|'no_preferred_employee_available'|'no_qualified_builder_available'|'no_qualified_inspector_available'|'no_qualified_shipper_available'|'employee_unavailable'|'over_capacity_smart_assign'|'smart_assign_available'|'assigned_to_non_preferred_employee';
+export type ScheduleWarningCode='sub_after_parent'|'non_working_day'|'over_capacity'|'missing_build_assignment'|'missing_finalizing_assignment'|'missing_shipping_assignment'|'no_preferred_employee_available'|'no_qualified_builder_available'|'no_qualified_finalizer_available'|'no_qualified_shipper_available'|'employee_unavailable'|'over_capacity_smart_assign'|'smart_assign_available'|'assigned_to_non_preferred_employee';
 export type ScheduleWarning={
   id:string;
   level:ScheduleWarningLevel;
@@ -17,7 +17,7 @@ export type ScheduleWarning={
   employeeId?:string;
   employeeName?:string;
   reason:string;
-  phase?:'Build'|'Inspection'|'Shipping';
+  phase?:'Build'|'Finalizing'|'Shipping';
 };
 
 const MS_DAY=86400000;
@@ -62,9 +62,9 @@ function projectLabel(project:any){
   return project.projectId || project.name || 'Project';
 }
 
-function effectiveAssignmentIds(assembly:any,phase:'Build'|'Inspection'|'Shipping'){
-  const raw=phase==='Inspection'
-    ? (assembly?.inspectionAssignedTo||assembly?.assignedTo)
+function effectiveAssignmentIds(assembly:any,phase:'Build'|'Finalizing'|'Shipping'){
+  const raw=phase==='Finalizing'
+    ? (assembly?.finalizingAssignedTo||assembly?.assignedTo)
     : phase==='Shipping'
       ? (assembly?.shippingAssignedTo||assembly?.assignedTo)
       : assembly?.assignedTo;
@@ -75,7 +75,7 @@ function buildItemMap(schedule:ScheduledItem[]){
   const byKey:Record<string,ScheduledItem>={};
   for(const item of schedule){
     const sourceId=item.sourceAssemblyId||String(item.id).split('|')[0];
-    const phase=(item.phase||'Build') as 'Build'|'Inspection'|'Shipping';
+    const phase=(item.phase||'Build') as 'Build'|'Finalizing'|'Shipping';
     byKey[`${sourceId}|${phase}`]=item;
   }
   return byKey;
@@ -164,7 +164,7 @@ export function calculateScheduleWarnings(data:AppData,scheduleInput?:ScheduledI
   for(const assembly of assemblies){
     const base=warningBase(assembly);
     const buildItem=scheduleByKey[`${assembly.id}|Build`];
-    const inspectionItem=scheduleByKey[`${assembly.id}|Inspection`];
+    const finalizingItem=scheduleByKey[`${assembly.id}|Finalizing`];
     const shippingItem=scheduleByKey[`${assembly.id}|Shipping`];
     const buildDone=assembly.status==='Complete'||Number(assembly.percent||0)>=100;
     const shippingNeedsAssignment=!!assembly.shippingRequired || (!!assembly.shipDate && (assembly.type==='Top Level Assembly' || isStandaloneSub(assembly)));
@@ -181,15 +181,15 @@ export function calculateScheduleWarnings(data:AppData,scheduleInput?:ScheduledI
       });
     }
 
-    if(assembly.inspectionRequired && !assembly.inspectionComplete && effectiveAssignmentIds(assembly,'Inspection').length===0){
+    if(assembly.finalizingRequired && !assembly.finalizingComplete && effectiveAssignmentIds(assembly,'Finalizing').length===0){
       pushWarning({
-        id:`missing-inspection-${assembly.id}`,
+        id:`missing-finalizing-${assembly.id}`,
         level:'critical',
-        code:'missing_inspection_assignment',
+        code:'missing_finalizing_assignment',
         ...base,
-        date:inspectionItem?.scheduledStart||buildItem?.scheduledEnd||assembly.shipDate||'',
-        reason:'Inspection is required but no inspection employee is assigned.',
-        phase:'Inspection',
+        date:finalizingItem?.scheduledStart||buildItem?.scheduledEnd||assembly.shipDate||'',
+        reason:'Finalizing is required but no finalizing employee is assigned.',
+        phase:'Finalizing',
       });
     }
 
@@ -249,7 +249,7 @@ export function calculateScheduleWarnings(data:AppData,scheduleInput?:ScheduledI
           employeeId:employee.id,
           employeeName:employee.name||employee.id,
           reason:'Assigned on a non-working day from the employee weekly schedule.',
-          phase:(chunk.phase||'Build') as 'Build'|'Inspection'|'Shipping',
+          phase:(chunk.phase||'Build') as 'Build'|'Finalizing'|'Shipping',
         });
       }
     }
@@ -270,7 +270,7 @@ export function calculateScheduleWarnings(data:AppData,scheduleInput?:ScheduledI
       employeeId:cell.employeeId,
       employeeName:cell.employeeName,
       reason:`${cell.hours.toFixed(1)} scheduled hours exceeds ${cap.toFixed(1)} available hours for the day.`,
-      phase:(first?.phase||'Build') as 'Build'|'Inspection'|'Shipping',
+      phase:(first?.phase||'Build') as 'Build'|'Finalizing'|'Shipping',
     });
   }
 
@@ -281,7 +281,7 @@ export function calculateScheduleWarnings(data:AppData,scheduleInput?:ScheduledI
       smart_assign_available:'smart_assign_available',
       no_preferred_employee_available:'no_preferred_employee_available',
       no_qualified_builder_available:'no_qualified_builder_available',
-      no_qualified_inspector_available:'no_qualified_inspector_available',
+      no_qualified_finalizer_available:'no_qualified_finalizer_available',
       no_qualified_shipper_available:'no_qualified_shipper_available',
       employee_unavailable:'employee_unavailable',
       over_capacity_smart_assign:'over_capacity_smart_assign',

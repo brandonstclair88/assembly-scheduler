@@ -97,14 +97,14 @@ function warningTone(level: string) {
 }
 
 function phaseLabel(phase: string) {
-  if (phase === 'Inspection') return 'INSPECT';
+  if (phase === 'Finalizing') return 'INSPECT';
   if (phase === 'Shipping') return 'SHIP';
   if (phase === 'Test') return 'TEST';
   return 'BUILD';
 }
 
 function phaseTone(phase: string) {
-  if (phase === 'Inspection') return 'inspect';
+  if (phase === 'Finalizing') return 'finalize';
   if (phase === 'Shipping') return 'ship';
   if (phase === 'Test') return 'test';
   return 'build';
@@ -298,7 +298,7 @@ export default function MobileViewer() {
     const rows: any[] = [];
     for (const assembly of (data.projectAssemblies || [])) {
       const hasTest = !!assembly.testRequired || Number(assembly.testHours || 0) > 0 || !!assembly.testReturnDateTime;
-      if (!hasTest || assembly.inspectionComplete || assembly.shippingComplete) continue;
+      if (!hasTest || assembly.finalizingComplete || assembly.shippingComplete) continue;
       if (weeklyProjectFocusId !== 'All' && assembly.projectId !== weeklyProjectFocusId) continue;
       const buildEnd = schedule.find(item => (item.sourceAssemblyId || String(item.id).split('|')[0]) === assembly.id && (item.phase || 'Build') === 'Build')?.scheduledEnd || '';
       if (!buildEnd) continue;
@@ -325,7 +325,7 @@ export default function MobileViewer() {
   function phaseLine(assembly: any) {
     const parts = [`Build ${taskHours(assembly).toFixed(1)}h`];
     if (assembly.testRequired || Number(assembly.testHours || 0) > 0) parts.push(`Test ${Number(assembly.testHours || 0).toFixed(1)}h`);
-    if (assembly.inspectionRequired) parts.push(`Inspection ${Number(assembly.inspectionHours || 0).toFixed(1)}h`);
+    if (assembly.finalizingRequired) parts.push(`Finalizing ${Number(assembly.finalizingHours || 0).toFixed(1)}h`);
     if (assembly.shippingRequired) parts.push(`Shipping ${Number(assembly.shippingHours || 0).toFixed(1)}h`);
     return parts.join(' • ');
   }
@@ -391,7 +391,7 @@ export default function MobileViewer() {
                 <div className="mobilePanelHeader">
                   <div>
                     <h2>Today&apos;s Priorities</h2>
-                    <p>Compact read-only list for inspections, shipping, capacity, dependencies, and assignments.</p>
+                    <p>Compact read-only list for finalizings, shipping, capacity, dependencies, and assignments.</p>
                   </div>
                 </div>
                 <div className="mobileMiniList">
@@ -921,7 +921,7 @@ export default function MobileViewer() {
                       <span>{employeeTodayHours(selectedEmployee.id).toFixed(1)}h scheduled today</span>
                       <span>{employeeWeekHours(selectedEmployee.id).toFixed(1)}h scheduled this week</span>
                       <span>{selectedEmployee.canBuild === false ? 'Build off' : 'Build on'}</span>
-                      <span>{selectedEmployee.canInspect === false ? 'Inspect off' : 'Inspect on'}</span>
+                      <span>{selectedEmployee.canFinalize === false ? 'Finalize off' : 'Finalize on'}</span>
                       <span>{selectedEmployee.canShip === false ? 'Ship off' : 'Ship on'}</span>
                       <span>{nextTimeOff(selectedEmployee) ? `Next time off ${fmtDate(nextTimeOff(selectedEmployee))}` : 'No upcoming time off'}</span>
                     </div>

@@ -82,7 +82,7 @@ export default function App(){
  function handleDashboardWarningAction(warning:any){
   const target=warningActionTarget(warning);
   if(!target)return;
-  if(target.tab==='Projects')openProjectPanel(warning.projectId||'',warning.code==='missing_build_assignment'||warning.code==='missing_inspection_assignment'||warning.code==='missing_shipping_assignment'?'Missing Assignment':'All');
+  if(target.tab==='Projects')openProjectPanel(warning.projectId||'',warning.code==='missing_build_assignment'||warning.code==='missing_finalizing_assignment'||warning.code==='missing_shipping_assignment'?'Missing Assignment':'All');
   else focusWeeklyBoard(warning.projectId||'',warning.date||'');
  }
  function handlePriorityAction(priority:TodayPriority){
