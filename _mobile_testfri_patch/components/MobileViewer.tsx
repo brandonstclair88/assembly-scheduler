@@ -63,7 +63,7 @@ async function loadFromApi() {
     const response = await fetch('/api/data', { cache: 'no-store' });
     const json = await response.json().catch(() => null);
     if (response.ok && json?.ok && json?.data) {
-      return { data: migrate(json.data), source: 'Shared scheduler data' };
+      return { data: migrate(json.data), source: 'SQLite data' };
     }
     throw new Error(json?.error || 'Unable to load scheduler data.');
   } catch (error: any) {
@@ -120,7 +120,6 @@ export default function MobileViewer() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [weeklyProjectFocusId, setWeeklyProjectFocusId] = useState('All');
   const [weekStart, setWeekStart] = useState(() => mondayOfDate(new Date()));
-  const [showCompletedMobile, setShowCompletedMobile] = useState(false);
 
   async function refresh() {
     const result = await loadFromApi();
@@ -286,17 +285,9 @@ export default function MobileViewer() {
     return sourceAssembly(chunk)?.projectId || chunk?.projectId || '';
   }
 
-  function isChunkComplete(chunk: any) {
-    const src = sourceAssembly(chunk);
-    const phase = chunk?.phase || 'Build';
-    if (phase === 'Shipping') return !!src?.shippingComplete;
-    if (phase === 'Finalizing') return !!src?.finalizingComplete;
-    return Number(src?.percent || 0) >= 100;
-  }
-  const visibleWeekChunks = (weeklyProjectFocusId === 'All'
+  const visibleWeekChunks = weeklyProjectFocusId === 'All'
     ? weekChunks
-    : weekChunks.filter(chunk => chunkProjectId(chunk) === weeklyProjectFocusId)
-  ).filter(chunk => showCompletedMobile || !isChunkComplete(chunk));
+    : weekChunks.filter(chunk => chunkProjectId(chunk) === weeklyProjectFocusId);
 
   function projectOpenHolds(projectId: string) {
     return (data.holds || []).filter(hold => hold.projectId === projectId && hold.status !== 'Closed').length
@@ -359,7 +350,7 @@ export default function MobileViewer() {
         <div>
           <span className="mobileEyebrow">Shop Floor Viewer</span>
           <h1>Assembly Scheduler Mobile</h1>
-          <p>Read-only phone view using the same live scheduler data as the main app.</p>
+          <p>Read-only phone view using the same SQLite scheduler data as the main app.</p>
         </div>
         <button className="mobileActionButton" onClick={refresh}>Refresh</button>
       </section>
@@ -585,10 +576,6 @@ export default function MobileViewer() {
                     ))}
                   </select>
                 </div>
-                <label className="mobileField" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <input type="checkbox" checked={showCompletedMobile} onChange={event => setShowCompletedMobile(event.target.checked)} />
-                  <span>Show completed work</span>
-                </label>
               </section>
 
               {boardDates.map(day => {
@@ -637,7 +624,7 @@ export default function MobileViewer() {
                                       <span>{card.description || source?.description || 'Assembly work'}</span>
                                       {!card.employeeChunkId && suggestion?.employeeName && <small>Suggested: {suggestion.employeeName}</small>}
                                       {suggestion?.nonPreferredButNecessary && <small>Non-preferred but necessary</small>}
-                                      <small>{card.projectName} • {Number(card.chunkHours || 0).toFixed(1)}h{source?.shipDate ? ` • Ship By ${fmtDate(source.shipDate)}` : ''}</small>
+                                      <small>{card.projectName} • {Number(card.chunkHours || 0).toFixed(1)}h • Ship By {fmtDate(source?.shipDate || '')}</small>
                                     </div>
                                   );
                                 })}
@@ -671,7 +658,7 @@ export default function MobileViewer() {
                                     <span>{card.description || source?.description || 'Assembly work'}</span>
                                     {suggestion?.employeeName && <small>Suggested: {suggestion.employeeName}</small>}
                                     {suggestion?.nonPreferredButNecessary && <small>Non-preferred but necessary</small>}
-                                    <small>{card.projectName} • {Number(card.chunkHours || 0).toFixed(1)}h{source?.shipDate ? ` • Ship By ${fmtDate(source.shipDate)}` : ''}</small>
+                                    <small>{card.projectName} • {Number(card.chunkHours || 0).toFixed(1)}h • Ship By {fmtDate(source?.shipDate || '')}</small>
                                   </div>
                                 );
                               })}
@@ -835,7 +822,7 @@ export default function MobileViewer() {
                               </div>
                             </div>
                             <div className="mobileMetaGrid">
-                              {top.shipDate && <span>Ship By {fmtDate(top.shipDate)}</span>}
+                              <span>Ship By {fmtDate(top.shipDate)}</span>
                               <span>{top.status}</span>
                               <span>{phaseLine(top)}</span>
                               <span>{splitIds(top.assignedTo).length ? `${splitIds(top.assignedTo).length} assigned` : 'Unassigned'}</span>
@@ -847,7 +834,7 @@ export default function MobileViewer() {
                                   <div className={`mobileSubItem tone-${statusTone(sub, sub)}`} key={sub.id}>
                                     <b>{sub.partNumber} {sub.instanceLabel || ''}</b>
                                     <span>{sub.description || 'Sub assembly'}</span>
-                                    <small>{sub.status} • {sub.percent || 0}%{sub.shipDate ? ` • Ship By ${fmtDate(sub.shipDate)}` : ''}</small>
+                                    <small>{sub.status} • {sub.percent || 0}% • Ship By {fmtDate(sub.shipDate)}</small>
                                   </div>
                                 ))}
                               </div>
@@ -874,7 +861,7 @@ export default function MobileViewer() {
                             </div>
                           </div>
                           <div className="mobileMetaGrid">
-                            {sub.shipDate && <span>Ship By {fmtDate(sub.shipDate)}</span>}
+                            <span>Ship By {fmtDate(sub.shipDate)}</span>
                             <span>{sub.status}</span>
                             <span>{phaseLine(sub)}</span>
                             <span>{splitIds(sub.assignedTo).length ? `${splitIds(sub.assignedTo).length} assigned` : 'Unassigned'}</span>
