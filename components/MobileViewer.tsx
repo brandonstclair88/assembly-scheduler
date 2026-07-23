@@ -136,7 +136,28 @@ export default function MobileViewer() {
   }
 
   useEffect(() => {
+    let alive = true;
+    const POLL_MS = 3 * 60 * 1000;
+    function refreshIfVisible() {
+      if (!alive) return;
+      // Skip polling while the tab is hidden (phone asleep / backgrounded) so we
+      // don't hit the database for nothing; a focus/visibility event refetches
+      // the moment it comes back to the foreground.
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') refresh();
+    }
     refresh();
+    const timer = setInterval(refreshIfVisible, POLL_MS);
+    function onVisible() {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') refreshIfVisible();
+    }
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisible);
+    if (typeof window !== 'undefined') window.addEventListener('focus', refreshIfVisible);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+      if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisible);
+      if (typeof window !== 'undefined') window.removeEventListener('focus', refreshIfVisible);
+    };
   }, []);
 
   const schedule = useMemo(() => buildSchedule(data), [data]);
@@ -350,7 +371,7 @@ export default function MobileViewer() {
         <span className="mobileBadge mobileReadOnly">Read Only</span>
         <span className="mobileBadge">v{APP_VERSION}</span>
         <span className="mobileBadge">{sourceLabel}</span>
-        <span className="mobileBadge">{updatedAt ? `Updated ${fmtDateTime(updatedAt)}` : 'Waiting for data'}</span>
+        <span className="mobileBadge">{updatedAt ? `Checked ${fmtDateTime(updatedAt)}` : 'Waiting for data'}</span>
       </section>
 
       {loadError && <section className="mobileWarning"><b>Data warning:</b> {loadError}</section>}
